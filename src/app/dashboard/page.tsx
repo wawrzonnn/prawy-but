@@ -56,6 +56,16 @@ export default function Dashboard() {
 	const [customSalaries, setCustomSalaries] = useState<Record<number, number>>({})
 	const [postalCode, setPostalCode] = useState('')
 	const [showAllYears, setShowAllYears] = useState(false)
+	const [hoveredPoint, setHoveredPoint] = useState<{
+		year: number
+		age: number
+		capital: number
+		realCapital: number
+		monthlyPension: number
+		realMonthlyPension: number
+		x: number
+		y: number
+	} | null>(null)
 
 	// Import danych z localStorage (z formularza)
 	useEffect(() => {
@@ -181,7 +191,7 @@ export default function Dashboard() {
 								(parameters.gender === 'female' ? 264 : 228)
 						)
 					: 0,
-				realMonthlyPension: 0, // Obliczenie w dashboard jest już szczegółowe
+				realMonthlyPension: realMonthlyPension,
 				replacementRate: 0,
 				totalCapital: finalYearData ? finalYearData.accountBalance + finalYearData.subaccountBalance : 0,
 				lifeExpectancyMonths: parameters.gender === 'female' ? 264 : 228,
@@ -194,6 +204,12 @@ export default function Dashboard() {
 		} catch (error) {
 			console.log('W18 blad zapisu kalkulatora')
 		}
+
+		// Rozwiń tabelę przed drukowaniem
+		setShowAllYears(true)
+
+		// Poczekaj na render DOM
+		await new Promise(resolve => setTimeout(resolve, 100))
 
 		// Drukuj raport
 		window.print()
@@ -237,6 +253,43 @@ export default function Dashboard() {
 					}
 					.print-break {
 						page-break-after: always;
+					}
+					/* Ukryj wszystkie interaktywne elementy */
+					input[type='range'],
+					input[type='text'],
+					input[type='number'],
+					button,
+					.no-print {
+						display: none !important;
+					}
+					/* Pokaż wszystkie kolumny tabeli na druku */
+					.hidden {
+						display: table-cell !important;
+					}
+					/* Usunięcie sticky positioning */
+					.lg\:sticky {
+						position: relative !important;
+					}
+					/* Lepszy layout dla druku */
+					.grid {
+						display: block !important;
+					}
+					/* Większy padding dla lepszej czytelności */
+					body {
+						font-size: 10pt !important;
+					}
+					h1 {
+						font-size: 20pt !important;
+					}
+					h2 {
+						font-size: 16pt !important;
+					}
+					h3 {
+						font-size: 14pt !important;
+					}
+					/* Pokaż sekcje tylko do druku */
+					.print-only {
+						display: block !important;
 					}
 				}
 			`}</style>
@@ -309,8 +362,8 @@ export default function Dashboard() {
 							</h2>
 
 							{/* SVG Chart */}
-							<div className='w-full h-64 md:h-96 relative overflow-hidden'>
-								<svg viewBox='0 0 1000 400' className='w-full h-full'>
+							<div className='w-full h-64 md:h-96 relative'>
+								<svg viewBox='0 0 1000 400' className='w-full h-full' onMouseLeave={() => setHoveredPoint(null)}>
 									{/* Siatka */}
 									<defs>
 										<pattern id='grid' width='100' height='80' patternUnits='userSpaceOnUse'>
@@ -368,22 +421,94 @@ export default function Dashboard() {
 													{/* Główna linia kapitału */}
 													<polyline points={totalPoints} fill='none' stroke='oklch(0.48 0.12 155)' strokeWidth='3' />
 
-													{/* Punkty na wykresie co 5 lat */}
+													{/* Vertical line przy hover */}
+													{hoveredPoint && (
+														<line
+															x1={hoveredPoint.x}
+															y1='50'
+															x2={hoveredPoint.x}
+															y2='350'
+															stroke='#6b7280'
+															strokeWidth='1'
+															strokeDasharray='5,5'
+															opacity='0.5'
+														/>
+													)}
+
+													{/* Niewidzialne punkty dla lepszej interaktywności - każdy rok */}
+													{yearData.map((d, i) => {
+														const x = 50 + i * xScale
+														const y = 350 - (d.accountBalance + d.subaccountBalance) * yScale
+														const capital = d.accountBalance + d.subaccountBalance
+														const realCapital = d.realCapital
+														const currentYear = new Date().getFullYear()
+														const age = parameters.currentAge + (d.year - currentYear)
+														const lifeExpectancyMonths = parameters.gender === 'female' ? 264 : 228
+														const monthlyPension = Math.round(capital / lifeExpectancyMonths)
+														const realMonthlyPension = Math.round(realCapital / lifeExpectancyMonths)
+
+														return (
+															<circle
+																key={`hover-${i}`}
+																cx={x}
+																cy={y}
+																r='8'
+																fill='transparent'
+																style={{ cursor: 'pointer' }}
+																onMouseEnter={() =>
+																	setHoveredPoint({
+																		year: d.year,
+																		age,
+																		capital,
+																		realCapital,
+																		monthlyPension,
+																		realMonthlyPension,
+																		x,
+																		y,
+																	})
+																}
+															/>
+														)
+													})}
+
+													{/* Widoczne punkty na wykresie co 5 lat */}
 													{yearData
 														.filter((_, i) => i % 5 === 0 || i === yearData.length - 1)
 														.map((d, i) => {
 															const index = yearData.indexOf(d)
 															const x = 50 + index * xScale
 															const y = 350 - (d.accountBalance + d.subaccountBalance) * yScale
+															const capital = d.accountBalance + d.subaccountBalance
+															const realCapital = d.realCapital
+															const currentYear = new Date().getFullYear()
+															const age = parameters.currentAge + (d.year - currentYear)
+															const lifeExpectancyMonths = parameters.gender === 'female' ? 264 : 228
+															const monthlyPension = Math.round(capital / lifeExpectancyMonths)
+															const realMonthlyPension = Math.round(realCapital / lifeExpectancyMonths)
+															const isHovered = hoveredPoint?.year === d.year
+
 															return (
 																<circle
 																	key={i}
 																	cx={x}
 																	cy={y}
-																	r='4'
+																	r={isHovered ? '6' : '4'}
 																	fill='oklch(0.48 0.12 155)'
 																	stroke='white'
 																	strokeWidth='2'
+																	style={{ cursor: 'pointer', transition: 'r 0.2s' }}
+																	onMouseEnter={() =>
+																		setHoveredPoint({
+																			year: d.year,
+																			age,
+																			capital,
+																			realCapital,
+																			monthlyPension,
+																			realMonthlyPension,
+																			x,
+																			y,
+																		})
+																	}
 																/>
 															)
 														})}
@@ -418,6 +543,53 @@ export default function Dashboard() {
 										)
 									})}
 								</svg>
+
+								{/* Tooltip */}
+								{hoveredPoint && (
+									<div
+										className='absolute bg-white border border-gray-200 rounded-lg shadow-lg p-3 pointer-events-none z-10 no-print min-w-[220px]'
+										style={{
+											left: `${(hoveredPoint.x / 1000) * 100}%`,
+											top: `${(hoveredPoint.y / 400) * 100}%`,
+											transform: hoveredPoint.x > 500 ? 'translate(-100%, -120%)' : 'translate(10px, -120%)',
+										}}>
+										<div className='text-xs font-semibold text-foreground mb-2'>
+											Rok {hoveredPoint.year} • Wiek: {hoveredPoint.age} lat
+										</div>
+
+										<div className='space-y-2 border-t pt-2'>
+											<div>
+												<div className='text-xs text-muted-foreground'>Kapitał nominalny</div>
+												<div className='text-sm font-bold text-foreground'>
+													{hoveredPoint.capital.toLocaleString('pl-PL')} zł
+												</div>
+											</div>
+
+											<div>
+												<div className='text-xs text-muted-foreground'>Kapitał realny (dzisiejsze zł)</div>
+												<div className='text-sm font-bold text-foreground'>
+													{hoveredPoint.realCapital.toLocaleString('pl-PL')} zł
+												</div>
+											</div>
+
+											<div className='border-t pt-2 space-y-1.5'>
+												<div>
+													<div className='text-xs text-muted-foreground'>Emerytura realna (miesięcznie)</div>
+													<div className='text-base font-bold text-[var(--zus-green-primary)]'>
+														{hoveredPoint.realMonthlyPension.toLocaleString('pl-PL')} zł
+													</div>
+													<div className='text-xs text-muted-foreground'>w dzisiejszych zł</div>
+												</div>
+												<div className='pt-1'>
+													<div className='text-xs text-muted-foreground'>Emerytura nominalna</div>
+													<div className='text-xs font-medium text-foreground'>
+														{hoveredPoint.monthlyPension.toLocaleString('pl-PL')} zł/mies.
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								)}
 							</div>
 
 							{/* Legenda */}
@@ -529,12 +701,13 @@ export default function Dashboard() {
 																	<span className='truncate'>{data.grossSalary.toLocaleString('pl-PL')}</span>
 																	<button
 																		onClick={() => setEditingYear(data.year)}
-																		className='opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-700 transition-opacity no-print hidden md:inline'>
+																		className='text-blue-600/40 hover:text-blue-700 transition-colors no-print hidden md:inline'
+																		title='Edytuj wynagrodzenie'>
 																		<Edit2 className='w-3 h-3' />
 																	</button>
 																	{customSalaries[data.year] && (
-																		<span className='text-xs text-blue-600 no-print' title='Edytowane'>
-																			✏️
+																		<span className='text-xs text-blue-600 font-bold no-print' title='Edytowane'>
+																			✓
 																		</span>
 																	)}
 																</div>
@@ -574,8 +747,54 @@ export default function Dashboard() {
 								</Card>
 							</div>
 
+							{/* Parametry - tylko do druku */}
+							<div className='hidden print-only space-y-4'>
+								<Card className='p-5 border-0 bg-white'>
+									<h3 className='text-base font-bold text-foreground mb-3'>Parametry symulacji</h3>
+									<div className='space-y-2 text-sm'>
+										<div>
+											<span className='font-medium'>Wiek:</span> {parameters.currentAge} lat
+										</div>
+										<div>
+											<span className='font-medium'>Płeć:</span>{' '}
+											{parameters.gender === 'male' ? 'Mężczyzna' : 'Kobieta'}
+										</div>
+										<div>
+											<span className='font-medium'>Aktualne wynagrodzenie:</span>{' '}
+											{parameters.currentSalary.toLocaleString('pl-PL')} zł
+										</div>
+										<div>
+											<span className='font-medium'>Rok rozpoczęcia pracy:</span> {parameters.workStartYear}
+										</div>
+										<div>
+											<span className='font-medium'>Planowany rok emerytury:</span> {parameters.retirementYear}
+										</div>
+										<div>
+											<span className='font-medium'>Wzrost wynagrodzeń (realny):</span> {parameters.wageGrowthRate}%
+										</div>
+										<div>
+											<span className='font-medium'>Inflacja:</span> {parameters.inflationRate}%
+										</div>
+										<div>
+											<span className='font-medium'>Nominalny wzrost wynagrodzeń:</span>{' '}
+											{(parameters.wageGrowthRate + parameters.inflationRate).toFixed(1)}%
+										</div>
+										{sickLeaves.length > 0 && (
+											<div className='mt-3 pt-3 border-t'>
+												<div className='font-medium mb-2'>Zwolnienia lekarskie:</div>
+												{sickLeaves.map(sl => (
+													<div key={sl.id} className='text-xs'>
+														Rok {sl.year}: {sl.days} dni
+													</div>
+												))}
+											</div>
+										)}
+									</div>
+								</Card>
+							</div>
+
 							{/* Sidebar - parametry i zwolnienia */}
-							<div className='space-y-4 md:space-y-6 min-w-0'>
+							<div className='space-y-4 md:space-y-6 min-w-0 no-print'>
 								{/* Parametry globalne */}
 								<Card className='p-4 md:p-5 border-0 bg-white'>
 									<h3 className='text-sm md:text-base font-bold text-foreground mb-3 md:mb-4 flex items-center gap-2'>
