@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Calculator, TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart, Users, Award, AlertCircle, Lightbulb, BarChart3 } from "lucide-react"
@@ -12,7 +12,6 @@ const funFacts = [
   "Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.",
   "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5–7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30–35%.",
   "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto.",
-
   "Średnia emerytura wypłacana przez ZUS w 2023 roku wynosiła 3 270,23 zł, a sama emerytura starcza – 3 389,49 zł.",
   "W Polsce miesięcznie świadczenia emerytalne z ZUS otrzymuje około 7,9 miliona osób.",
   "Polski system emerytalny opiera się na trzech filarach: obowiązkowych (I i II) oraz dobrowolnym (III – np. IKE, IKZE).",
@@ -22,17 +21,20 @@ const funFacts = [
   "Rolnicy korzystają z odrębnego systemu emerytalnego KRUS, który obejmuje osoby prowadzące gospodarstwa rolne.",
   "Emerytura socjalna przysługuje osobom całkowicie niezdolnym do pracy z powodu choroby powstałej przed 18. rokiem życia – w 2023 roku korzystało z niej ponad 293 tys. osób.",
   "Od 2021 roku w Polsce wypłacana jest coroczna „czternasta emerytura” – dodatkowe świadczenie równe kwocie minimalnej emerytury brutto (z limitem dochodowym).",
-  "W Polsce nadal funkcjonują dwa równoległe systemy emerytalne: stary (dla osób urodzonych przed 1949 r.) i nowy (po reformie z 1999 r.)."
+  "W Polsce nadal funkcjonują dwa równoległe systemy emerytalne: stary (dla osób urodzonych przed 1949 r.) i nowy (po reformie z 1999 r)."
 ];
 
 export default function Home() {
   const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
   const [desiredPension, setDesiredPension] = useState<string>("5000")
+  const [desiredPensionDisplay, setDesiredPensionDisplay] = useState<string>("5 000")
   const [isChartVisible, setIsChartVisible] = useState(false)
-  const [chartType, setChartType] = useState<'bar' | 'pie'>('bar')
+  const [isClient, setIsClient] = useState(false)
+  const [chartType, setChartType] = useState<'bar' | 'pie'>('pie')
   const [chartKey, setChartKey] = useState(0)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const [isSpinning, setIsSpinning] = useState(false)
+  const [currentFact, setCurrentFact] = useState("")
   const chartSectionRef = useRef<HTMLDivElement>(null)
   const realityCheckRef = useRef<HTMLDivElement>(null)
   const howItWorksRef = useRef<HTMLDivElement>(null)
@@ -66,8 +68,6 @@ export default function Home() {
       description: "Najwyższe emerytury otrzymują osoby, które przez całe życie zawodowe zarabiały znacznie powyżej średniej krajowej, pracowały przez 35-40 lat bez przerw i nie korzystały często ze zwolnień lekarskich."
     }
   ]
-
-  const [currentFact, setCurrentFact] = useState("")
 
   useEffect(() => {
     setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
@@ -135,6 +135,102 @@ export default function Home() {
       })
     }
   }, [isChartVisible])
+
+  // Format number with spaces as thousand separator
+  const formatNumber = (num: number | string): string => {
+    const str = num.toString()
+    if (str.length <= 3) return str
+    return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  }
+
+  // Chart calculations to prevent hydration mismatch
+  const chartCalculations = useMemo(() => {
+    return pensionGroups.map((group, index) => {
+      const percentage = parseInt(group.percentage)
+      const colors = [
+        'var(--zus-blue-dark)',
+        'var(--zus-green-primary)',
+        'var(--zus-yellow)',
+        'var(--zus-blue)'
+      ]
+
+      // Calculate cumulative percentage for positioning
+      const prevPercentages = pensionGroups
+        .slice(0, index)
+        .reduce((sum, g) => sum + parseInt(g.percentage), 0)
+
+      const startAngle = (prevPercentages / 100) * 360 - 90
+      const endAngle = ((prevPercentages + percentage) / 100) * 360 - 90
+      const midAngle = (startAngle + endAngle) / 2
+      const largeArc = percentage > 50 ? 1 : 0
+
+      // Convert to radians
+      const startRad = (startAngle * Math.PI) / 180
+      const endRad = (endAngle * Math.PI) / 180
+      const midRad = (midAngle * Math.PI) / 180
+
+      // Calculate path for donut - larger size
+      const outerRadius = 140
+      const innerRadius = 80
+      const x1 = outerRadius * Math.cos(startRad)
+      const y1 = outerRadius * Math.sin(startRad)
+      const x2 = outerRadius * Math.cos(endRad)
+      const y2 = outerRadius * Math.sin(endRad)
+      const x3 = innerRadius * Math.cos(endRad)
+      const y3 = innerRadius * Math.sin(endRad)
+      const x4 = innerRadius * Math.cos(startRad)
+      const y4 = innerRadius * Math.sin(startRad)
+
+      const pathData = `
+        M ${x1} ${y1}
+        A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2}
+        L ${x3} ${y3}
+        A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4}
+        Z
+      `
+
+      // Line starts from outer edge of donut (exactly at the edge)
+      const lineStartRadius = 140
+      const lineStartX = lineStartRadius * Math.cos(midRad)
+      const lineStartY = lineStartRadius * Math.sin(midRad)
+
+      // Line middle point (further out)
+      const lineMidRadius = 155
+      const lineMidX = lineMidRadius * Math.cos(midRad)
+      const lineMidY = lineMidRadius * Math.sin(midRad)
+
+      // Horizontal line end position
+      const horizontalLength = 40
+      const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
+      const lineEndY = lineMidY
+
+      // Text position
+      const textOffset = lineMidX > 0 ? 5 : -5
+      const textAnchor = lineMidX > 0 ? 'start' : 'end'
+
+      return {
+        percentage,
+        color: colors[index],
+        prevPercentages,
+        startAngle,
+        endAngle,
+        midAngle,
+        largeArc,
+        startRad,
+        endRad,
+        midRad,
+        pathData,
+        lineStartX,
+        lineStartY,
+        lineMidX,
+        lineMidY,
+        lineEndX,
+        lineEndY,
+        textOffset,
+        textAnchor
+      }
+    })
+  }, [pensionGroups])
 
   // Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
   const calculateRealPension = () => {
@@ -221,28 +317,39 @@ export default function Home() {
               <div className="flex items-baseline gap-4 mb-6">
                 <input
                   id="desired-pension-input"
-                  type="number"
-                  value={desiredPension}
+                  type="text"
+                  inputMode="numeric"
+                  value={desiredPensionDisplay}
                   onChange={(e) => {
-                    const value = parseInt(e.target.value)
-                    if (value > 100000) {
+                    // Remove all non-digit characters and spaces
+                    const rawValue = e.target.value.replace(/\D/g, '')
+                    
+                    if (rawValue === '') {
+                      setDesiredPension("")
+                      setDesiredPensionDisplay("")
+                      return
+                    }
+                    
+                    const numValue = parseInt(rawValue)
+                    
+                    // Apply limits
+                    if (numValue > 100000) {
                       setDesiredPension("100000")
-                    } else if (value < 0) {
-                      setDesiredPension("0")
+                      setDesiredPensionDisplay(formatNumber(100000))
                     } else {
-                      setDesiredPension(e.target.value)
+                      setDesiredPension(rawValue)
+                      // Format with spaces for thousands
+                      setDesiredPensionDisplay(formatNumber(numValue))
                     }
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
                       e.preventDefault()
                     }
                   }}
                   onWheel={(e) => e.currentTarget.blur()}
-                  className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  placeholder="5000"
-                  min="0"
-                  max="100000"
+                  className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight"
+                  placeholder="5 000"
                   aria-label="Oczekiwana kwota emerytury w złotych"
                 />
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight" aria-hidden="true">zł</span>
@@ -259,7 +366,7 @@ export default function Home() {
               </div>
               <div className="flex items-baseline gap-4 mb-6">
                 <div className="text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40 leading-tight">
-                  ~{calculateRealPension().toLocaleString('pl-PL')}
+                  ~{formatNumber(calculateRealPension())}
                 </div>
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight">zł</span>
               </div>
@@ -326,9 +433,9 @@ export default function Home() {
       <section className="py-20 px-4 bg-muted" ref={featuresRef} data-section="features">
         <div className="container mx-auto max-w-6xl">
           <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasymulujesz?</h3>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Wszystko, czego potrzebujesz w jednym miejscu</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Kompleksowe narzędzie do prognozowania Twojej przyszłej emerytury
+              Zaawansowany kalkulator, który pomoże Ci zrozumieć i zaplanować Twoją emeryturę
             </p>
           </div>
 
@@ -365,7 +472,10 @@ export default function Home() {
                 description: "Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia",
               },
             ].map((feature, index) => (
-              <Card key={index} className={`p-6 hover:shadow-lg transition-all duration-700 bg-card border ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${200 + index * 100}ms` }}>
+              <Card key={index} className={`p-6 hover:scale-[1.02] bg-card border ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ 
+                transitionDelay: visibleSections.has('features') ? `${200 + index * 100}ms` : '0ms',
+                transition: 'opacity 700ms, transform 700ms, scale 250ms ease-out'
+              }}>
                 <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
@@ -399,6 +509,17 @@ export default function Home() {
                 
                 {/* Chart type toggle */}
                 <div className="flex items-center justify-center gap-2">
+                <button
+                    onClick={() => setChartType('pie')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      chartType === 'pie'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <PiggyBank className="w-3 h-3 inline mr-1" />
+                    Kołowy
+                  </button>
                   <button
                     onClick={() => setChartType('bar')}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
@@ -410,17 +531,7 @@ export default function Home() {
                     <BarChart3 className="w-3 h-3 inline mr-1" />
                     Słupkowy
                   </button>
-                  <button
-                    onClick={() => setChartType('pie')}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                      chartType === 'pie'
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
-                  >
-                    <PiggyBank className="w-3 h-3 inline mr-1" />
-                    Kołowy
-                  </button>
+     
                 </div>
               </div>
 
@@ -731,35 +842,35 @@ export default function Home() {
 
           {/* Fun Fact Section */}
           {currentFact && (
-            <div className={`mt-24 px-20 transition-all duration-700 delay-500 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <div className="flex items-center gap-10">
+            <div className={`mt-24 px-4 md:px-20 transition-all duration-700 delay-500 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-10">
                 {/* Left side - Large spinning wheel */}
                 <div className="flex-shrink-0">
                   <button
                     onClick={randomizeFact}
                     disabled={isSpinning}
-                    className="group relative focus:outline-none"
+                    className="group relative focus:outline-none cursor-pointer"
                   >
                     {/* Main spinning circle */}
-                    <div className={`w-64 h-64 rounded-full bg-yellow shadow-2xl transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105 hover:shadow-3xl'}`}>
+                    <div className={`w-48 h-48 md:w-64 md:h-64 rounded-full bg-yellow transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105'}`}>
                       {/* Inner white circle */}
-                      <div className="w-48 h-48 rounded-full bg-white flex items-center justify-center shadow-inner">
-                        <Lightbulb className="w-32 h-32 text-yellow" />
+                      <div className="w-36 h-36 md:w-48 md:h-48 rounded-full bg-white flex items-center justify-center">
+                        <Lightbulb className="w-24 h-24 md:w-32 md:h-32 text-yellow" />
                       </div>
                     </div>
                   </button>
                 </div>
                 
                 {/* Right side - Fun fact content */}
-                <div className="flex-1 min-h-[256px] flex items-center">
-                  <div>
-                    <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                <div className="flex-1 md:min-h-[256px] flex items-center">
+                  <div className="text-center md:text-left">
+                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3">
                       Ciekawostki emerytalne
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-6">
+                    <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
                       Kliknij koło, aby wylosować nową ciekawostkę
                     </p>
-                    <p className={`text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ${isSpinning ? 'opacity-30' : 'opacity-100'}`}>
+                    <p className={`text-base md:text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ${isSpinning ? 'opacity-30' : 'opacity-100'}`}>
                       {currentFact}
                     </p>
                   </div>
