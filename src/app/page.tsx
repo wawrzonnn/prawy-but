@@ -34,6 +34,11 @@ export default function Home() {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const [isSpinning, setIsSpinning] = useState(false)
   const chartSectionRef = useRef<HTMLDivElement>(null)
+  const realityCheckRef = useRef<HTMLDivElement>(null)
+  const howItWorksRef = useRef<HTMLDivElement>(null)
+  const featuresRef = useRef<HTMLDivElement>(null)
+  const ctaRef = useRef<HTMLDivElement>(null)
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
 
   const pensionGroups = [
     {
@@ -92,30 +97,42 @@ export default function Home() {
     setTooltipPosition({ x: e.clientX, y: e.clientY })
   }
 
-  // Intersection Observer to trigger chart animation when section is visible
+  // Intersection Observer for all sections
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !isChartVisible) {
-            setIsChartVisible(true)
+          if (entry.isIntersecting) {
+            const sectionName = entry.target.getAttribute('data-section')
+            if (sectionName) {
+              setVisibleSections(prev => new Set(prev).add(sectionName))
+            }
+            // Special handling for chart section
+            if (sectionName === 'charts' && !isChartVisible) {
+              setIsChartVisible(true)
+            }
           }
         })
       },
       {
-        threshold: 0.2,
+        threshold: 0.15,
         rootMargin: '0px'
       }
     )
 
-    if (chartSectionRef.current) {
-      observer.observe(chartSectionRef.current)
-    }
+    const refs = [realityCheckRef, howItWorksRef, featuresRef, chartSectionRef, ctaRef]
+    refs.forEach(ref => {
+      if (ref.current) {
+        observer.observe(ref.current)
+      }
+    })
 
     return () => {
-      if (chartSectionRef.current) {
-        observer.unobserve(chartSectionRef.current)
-      }
+      refs.forEach(ref => {
+        if (ref.current) {
+          observer.unobserve(ref.current)
+        }
+      })
     }
   }, [isChartVisible])
 
@@ -153,7 +170,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section - Question about expected pension */}
-      <section className="pt-42 pb-30 px-4">
+      <section className="h-[90dvh] flex items-center px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
 {/*             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[0.25rem] text-sm font-bold mb-4">
@@ -161,16 +178,16 @@ export default function Home() {
               Narzędzie edukacyjne ZUS
             </div> */}
 
-            <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight">
+            <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]">
               Jaką chcesz mieć emeryturę?
             </h2>
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
             Twoja przyszła emerytura nie musi być zagadką!
             Zrozum system, poznaj liczby i przejmij kontrolę nad swoją finansową przyszłością.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
               <a href="#reality-check" className="scroll-smooth">
                 <Button
                   size="lg"
@@ -186,9 +203,9 @@ export default function Home() {
       </section>
 
       {/* Reality Check Section */}
-      <section id="reality-check" className="pt-24 pb-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-12">
+      <section id="reality-check" className="pt-24 pb-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-12" ref={realityCheckRef} data-section="reality">
         <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-12">
+          <div className={`text-center mb-12 transition-all duration-700 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
             <p className="text-xl text-white/90">
               Większość ludzi nie zdaje sobie sprawy, jak duża jest różnica między ich oczekiwaniami a rzeczywistością
@@ -196,7 +213,7 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <Card className="p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all">
+            <Card className={`p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all duration-700 delay-150 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <div className="flex items-center gap-3 mb-6">
                 <Target className="w-8 h-8 text-yellow flex-shrink-0" />
                 <label htmlFor="desired-pension-input" className="text-xl font-bold text-white">Chciałbym otrzymać:</label>
@@ -206,7 +223,16 @@ export default function Home() {
                   id="desired-pension-input"
                   type="number"
                   value={desiredPension}
-                  onChange={(e) => setDesiredPension(e.target.value)}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (value > 100000) {
+                      setDesiredPension("100000")
+                    } else if (value < 0) {
+                      setDesiredPension("0")
+                    } else {
+                      setDesiredPension(e.target.value)
+                    }
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                       e.preventDefault()
@@ -216,16 +242,17 @@ export default function Home() {
                   className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="5000"
                   min="0"
+                  max="100000"
                   aria-label="Oczekiwana kwota emerytury w złotych"
                 />
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight" aria-hidden="true">zł</span>
               </div>
               <p className="text-base text-white/70 leading-relaxed">
-                Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie.
+                Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie (max. 100 000 zł).
               </p>
             </Card>
 
-            <Card className="p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all">
+            <Card className={`p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all duration-700 delay-300 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <div className="flex items-center gap-3 mb-6">
                 <AlertCircle className="w-8 h-8 text-yellow flex-shrink-0" />
                 <h4 className="text-xl font-bold text-white">Rzeczywiście otrzymam:</h4>
@@ -242,7 +269,7 @@ export default function Home() {
             </Card>
           </div>
 
-          <div className="mt-12 text-center">
+          <div className={`mt-12 text-center transition-all duration-700 delay-500 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <Link href="/form">
               <Button
                 size="lg"
@@ -257,9 +284,9 @@ export default function Home() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-40 px-4">
+      <section className="py-40 px-4" ref={howItWorksRef} data-section="howItWorks">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
               Trzy proste kroki do poznania swojej przyszłej emerytury
@@ -284,7 +311,7 @@ export default function Home() {
                 description: "Otrzymaj szczegółową prognozę: emeryturę rzeczywistą, urealnioną, stopę zastąpienia i porównanie ze średnią",
               },
             ].map((item, index) => (
-              <div key={index} className="relative">
+              <div key={index} className={`relative transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${200 + index * 150}ms` }}>
                 <div className="text-6xl font-bold text-primary/20 mb-4">{item.step}</div>
                 <h4 className="text-2xl font-bold text-foreground mb-3">{item.title}</h4>
                 <p className="text-muted-foreground leading-relaxed">{item.description}</p>
@@ -296,9 +323,9 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-muted">
+      <section className="py-20 px-4 bg-muted" ref={featuresRef} data-section="features">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasymulujesz?</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
               Kompleksowe narzędzie do prognozowania Twojej przyszłej emerytury
@@ -338,7 +365,7 @@ export default function Home() {
                 description: "Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia",
               },
             ].map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow bg-card border">
+              <Card key={index} className={`p-6 hover:shadow-lg transition-all duration-700 bg-card border ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${200 + index * 100}ms` }}>
                 <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
@@ -351,16 +378,16 @@ export default function Home() {
       </section>
 
       {/* Pension Groups Comparison Section */}
-      <section className="py-40 px-4" ref={chartSectionRef}>
+      <section className="py-40 px-4" ref={chartSectionRef} data-section="charts">
         <div className="container mx-auto max-w-6xl">
           {/* Pension Groups Comparison - Interactive Section */}
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">ZUS w liczbach i ciekawostkach</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
               Sprawdź, co naprawdę kryje się za emeryturą
             </p>
           </div>
-          <div>
+          <div className={`transition-all duration-700 delay-200 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <Card className="p-5 md:p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
               <div className="text-center mb-6">
                 <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1.5">
@@ -704,7 +731,7 @@ export default function Home() {
 
           {/* Fun Fact Section */}
           {currentFact && (
-            <div className="mt-24 px-20">
+            <div className={`mt-24 px-20 transition-all duration-700 delay-500 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <div className="flex items-center gap-10">
                 {/* Left side - Large spinning wheel */}
                 <div className="flex-shrink-0">
@@ -762,22 +789,24 @@ export default function Home() {
       </section> */}
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white">
+      <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white" ref={ctaRef} data-section="cta">
         <div className="container mx-auto max-w-4xl text-center">
-          <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
+          <h3 className={`text-3xl md:text-5xl font-bold text-white mb-6 text-balance transition-all duration-700 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           Sprawdź swoją przyszłą emeryturę - zanim zrobi to czas</h3>
 
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty">
+          <p className={`text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty transition-all duration-700 delay-150 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.</p>
-          <Link href="/form">
-            <Button
-              size="lg"
-              className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
-            >
-              Przejdź do kalkulatora emerytury
-              <Calculator className="ml-2 w-6 h-6" />
-            </Button>
-          </Link>
+          <div className={`transition-all duration-700 delay-300 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <Link href="/form">
+              <Button
+                size="lg"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+              >
+                Przejdź do kalkulatora emerytury
+                <Calculator className="ml-2 w-6 h-6" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
