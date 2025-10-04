@@ -1,43 +1,33 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type React from "react"
+import type { Metadata } from "next"
+import { Lato } from "next/font/google"
+import { Suspense } from "react"
+import "./globals.css"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const lato = Lato({
+  weight: ["400", "700"],
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-lato",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
-  title: "Kalkulator Emerytalny ZUS",
-  description: "Sprawdź informacje o swojej przyszłej emeryturze",
-};
+  title: "ZUS - Symulator emerytalny",
+  description:
+    "Narzędzie edukacyjne do prognozowania wysokości emerytury",
+  generator: "v0.app",
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <header className="fixed top-0 left-0 z-50 p-4">
-          <img
-            src="/logozus.svg"
-            alt="Logo ZUS"
-            className="h-12 w-auto"
-          />
-        </header>
-        <div className="pt-20">
-          {children}
-        </div>
+    <html lang="pl">
+      <body className={`font-sans ${lato.variable} antialiased`}>
+        <Suspense fallback={null}>{children}</Suspense>
       </body>
     </html>
-  );
+  )
 }
