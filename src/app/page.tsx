@@ -93,9 +93,17 @@ export default function Home() {
   }, [chartType])
 
   // Track mouse position for tooltip
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setTooltipPosition({ x: e.clientX, y: e.clientY })
-  }
+// Track mouse position for tooltip
+const handleMouseMove = (e: React.MouseEvent) => {
+  // Uwzględnij przewijanie strony
+  const scrollX = window.scrollX || document.documentElement.scrollLeft
+  const scrollY = window.scrollY || document.documentElement.scrollTop
+  
+  setTooltipPosition({ 
+    x: e.clientX, 
+    y: e.clientY
+  })
+}
 
   // Intersection Observer for all sections
   useEffect(() => {
@@ -633,7 +641,7 @@ export default function Home() {
                 >
                   {/* Pie chart SVG with labels */}
                   <div className="relative w-full h-full mx-auto">
-                    <svg viewBox="0 0 600 340" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                  <svg viewBox="0 0 600 340" className="w-full h-full" preserveAspectRatio="xMidYMid meet" suppressHydrationWarning>
                         <g transform="translate(300, 180)">
                           {/* Draw pie segments */}
                           {pensionGroups.map((group, index) => {
