@@ -299,6 +299,7 @@ export default function Home() {
 								swoją finansową przyszłością.
 							</p>
 
+<<<<<<< Updated upstream
 							<div className='flex flex-col sm:flex-row gap-4 justify-start items-start pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]'>
 								<a href='#reality-check' className='scroll-smooth'>
 									<Button
@@ -310,6 +311,50 @@ export default function Home() {
 								</a>
 							</div>
 						</div>
+=======
+              <div className="flex flex-col sm:flex-row gap-4 justify-start items-start pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
+                <a href="#reality-check" className="scroll-smooth">
+                  <Button
+                    size="lg"
+                    className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+                  >
+                    Oblicz swoją emeryturę
+                    <Calculator className="ml-2 w-5 h-5" />
+                  </Button>
+                </a>
+              </div>
+            </div>
+            
+            {/* Prawa część: video demo */}
+            <div className="w-full md:w-[60%] relative flex justify-center items-center mt-12 md:mt-0">
+              <div className="relative w-full max-w-xl">
+                {/* Efekt tła - koło */}
+                <div className="absolute z-0 w-56 h-56 md:w-80 md:h-80 bg-yellow/20 rounded-full blur-3xl animate-pulse -top-10 left-1/2 -translate-x-1/2"></div>
+                     
+                {/* Video demo z kalkulatorem */}
+                <div className="relative z-10 shadow-2xl rounded-xl overflow-hidden border-4 border-white opacity-0 animate-[fadeIn_1s_ease-out_0.3s_forwards]">
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-auto"
+                    onLoadedMetadata={(e) => {
+                      const video = e.currentTarget;
+                      video.playbackRate = 2.1;
+                    }}
+                  >
+                    <source src="/recordingnew.mov" type="video/quicktime" />
+                    <source src="/recordingnew.mov" type="video/mp4" />
+                    Twoja przeglądarka nie wspiera odtwarzania wideo.
+                  </video>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+>>>>>>> Stashed changes
 
 						{/* Prawa część: obrazy z kalkulatorem */}
 						<div className='w-full md:w-[60%] relative flex justify-center items-center mt-12 md:mt-0'>
