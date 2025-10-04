@@ -183,6 +183,45 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How it Works Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Trzy proste kroki do poznania swojej przyszłej emerytury
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: "01",
+                title: "Wprowadź dane",
+                description: "Podaj podstawowe informacje: wiek, płeć, wynagrodzenie, planowany wiek emerytury oraz opcjonalnie dane z konta ZUS",
+              },
+              {
+                step: "02",
+                title: "Dostosuj parametry",
+                description: "Uwzględnij zwolnienia lekarskie, różne scenariusze wynagrodzeń i zobacz wpływ odroczenia emerytury",
+              },
+              {
+                step: "03",
+                title: "Poznaj wynik",
+                description: "Otrzymaj szczegółową prognozę: emeryturę rzeczywistą, urealnioną, stopę zastąpienia i porównanie ze średnią",
+              },
+            ].map((item, index) => (
+              <div key={index} className="relative">
+                <div className="text-6xl font-bold text-primary/20 mb-4">{item.step}</div>
+                <h4 className="text-2xl font-bold text-foreground mb-3">{item.title}</h4>
+                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                {index < 2 && <div className="hidden md:block absolute top-12 -right-4 w-8 h-0.5 bg-primary/30"></div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pension Groups Comparison Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
@@ -306,45 +345,6 @@ export default function Home() {
                 <h4 className="text-xl font-bold text-foreground mb-2">{feature.title}</h4>
                 <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Trzy proste kroki do poznania swojej przyszłej emerytury
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Wprowadź dane",
-                description: "Podaj podstawowe informacje: wiek, płeć, wynagrodzenie, planowany wiek emerytury oraz opcjonalnie dane z konta ZUS",
-              },
-              {
-                step: "02",
-                title: "Dostosuj parametry",
-                description: "Uwzględnij zwolnienia lekarskie, różne scenariusze wynagrodzeń i zobacz wpływ odroczenia emerytury",
-              },
-              {
-                step: "03",
-                title: "Poznaj wynik",
-                description: "Otrzymaj szczegółową prognozę: emeryturę rzeczywistą, urealnioną, stopę zastąpienia i porównanie ze średnią",
-              },
-            ].map((item, index) => (
-              <div key={index} className="relative">
-                <div className="text-6xl font-bold text-primary/20 mb-4">{item.step}</div>
-                <h4 className="text-2xl font-bold text-foreground mb-3">{item.title}</h4>
-                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-                {index < 2 && <div className="hidden md:block absolute top-12 -right-4 w-8 h-0.5 bg-primary/30"></div>}
-              </div>
             ))}
           </div>
         </div>
