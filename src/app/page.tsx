@@ -276,32 +276,33 @@ const handleMouseMove = (e: React.MouseEvent) => {
       {/* Hero Section - Question about expected pension */}
       <section className="h-[90dvh] flex items-center px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-6">
-{/*             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[0.25rem] text-sm font-bold mb-4">
-              <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              Narzędzie edukacyjne ZUS
-            </div> */}
+          <div className="flex flex-row w-full gap-8">
+            {/* Lewa część: tekst + guzik */}
+            <div className="flex-1 flex flex-col justify-center items-start space-y-6">
+              <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]">
+                Jaką chcesz mieć emeryturę?
+              </h2>
 
-            <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]">
-              Jaką chcesz mieć emeryturę?
-            </h2>
+              <p className="text-xl md:text-2xl text-muted-foreground text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
+                Twoja przyszła emerytura nie musi być zagadką!
+                Zrozum system, poznaj liczby i przejmij kontrolę nad swoją finansową przyszłością.
+              </p>
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
-            Twoja przyszła emerytura nie musi być zagadką!
-            Zrozum system, poznaj liczby i przejmij kontrolę nad swoją finansową przyszłością.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
-              <a href="#reality-check" className="scroll-smooth">
-                <Button
-                  size="lg"
-                  className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
-                >
-                  Oblicz swoją emeryturę
-                  <Calculator className="ml-2 w-5 h-5" />
-                </Button>
-              </a>
+              <div className="flex flex-col sm:flex-row gap-4 justify-start items-start pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
+                <a href="#reality-check" className="scroll-smooth">
+                  <Button
+                    size="lg"
+                    className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+                  >
+                    Oblicz swoją emeryturę
+                    <Calculator className="ml-2 w-5 h-5" />
+                  </Button>
+                </a>
+              </div>
             </div>
+            
+            {/* Prawa część: na razie pusta */}
+            <div className="flex-1"></div>
           </div>
         </div>
       </section>
@@ -858,7 +859,9 @@ const handleMouseMove = (e: React.MouseEvent) => {
                     onClick={randomizeFact}
                     disabled={isSpinning}
                     className="group relative focus:outline-none cursor-pointer"
+                    aria-label="Wylosuj ciekawostkę"
                   >
+                    <span className="sr-only">Wylosuj ciekawostkę</span>
                     {/* Main spinning circle */}
                     <div className={`w-48 h-48 md:w-64 md:h-64 rounded-full bg-yellow transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105'}`}>
                       {/* Inner white circle */}
