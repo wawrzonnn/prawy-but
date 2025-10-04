@@ -16,6 +16,7 @@ const funFacts = [
 
 export default function Home() {
   const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
+  const [desiredPension, setDesiredPension] = useState<string>("5000")
 
   const pensionGroups = [
     {
@@ -50,6 +51,14 @@ export default function Home() {
     setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
   }, [])
 
+  // Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
+  const calculateRealPension = () => {
+    const desired = parseFloat(desiredPension)
+    if (!desired || desired <= 0) return 0
+    const replacementRate = 0.5 // 50% stopa zastąpienia
+    return Math.round(desired * replacementRate)
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -76,13 +85,13 @@ export default function Home() {
       </header>
 
       {/* Hero Section - Question about expected pension */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-44 pb-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[0.25rem] text-sm font-bold mb-4">
+{/*             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[0.25rem] text-sm font-bold mb-4">
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
               Narzędzie edukacyjne ZUS
-            </div>
+            </div> */}
 
             <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight">
               Jaką chcesz mieć emeryturę?
@@ -105,9 +114,80 @@ export default function Home() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* Reality Check Section */}
+      <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
+            <p className="text-xl text-white/90">
+              Większość ludzi nie zdaje sobie sprawy, jak duża jest różnica między ich oczekiwaniami a rzeczywistością
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <Target className="w-8 h-8 text-yellow flex-shrink-0" />
+                <label htmlFor="desired-pension-input" className="text-xl font-bold">Chciałbym otrzymać:</label>
+              </div>
+              <div className="flex items-center gap-4 mb-6">
+                <input
+                  id="desired-pension-input"
+                  type="number"
+                  value={desiredPension}
+                  onChange={(e) => setDesiredPension(e.target.value)}
+                  className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  placeholder="5000"
+                  min="0"
+                  step="100"
+                  aria-label="Oczekiwana kwota emerytury w złotych"
+                />
+                <span className="text-4xl font-bold text-white/80 whitespace-nowrap" aria-hidden="true">zł</span>
+              </div>
+              <p className="text-base text-white/70 leading-relaxed">
+                Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie
+              </p>
+            </Card>
+
+            <Card className="p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all">
+              <div className="flex items-center gap-3 mb-6">
+                <AlertCircle className="w-8 h-8 text-yellow flex-shrink-0" />
+                <h4 className="text-xl font-bold">Rzeczywiście otrzymam:</h4>
+              </div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40">
+                  ~{calculateRealPension().toLocaleString('pl-PL')}
+                </div>
+                <span className="text-4xl font-bold text-white/80 whitespace-nowrap">zł</span>
+              </div>
+              <p className="text-base text-white/70 leading-relaxed">
+                Przy stopie zastąpienia 50% - przeciętna emerytura w Polsce wynosi około 40-50% ostatniego wynagrodzenia
+              </p>
+            </Card>
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link href="/form">
+              <Button
+                size="lg"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+              >
+                Sprawdź, ile faktycznie dostaniesz
+                <Calculator className="ml-2 w-6 h-6" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Pension Groups Comparison Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
           {/* Pension Groups Comparison - Interactive Section */}
-          <div className="mt-16">
+          <div>
             <Card className="p-8 md:p-12 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
               <div className="text-center mb-8">
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
@@ -174,59 +254,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Reality Check Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-blue to-blue-dark text-white">
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
-            <p className="text-xl text-white/90">
-              Większość ludzi nie zdaje sobie sprawy, jak duża jest różnica między ich oczekiwaniami a rzeczywistością
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="p-8 bg-white/10 backdrop-blur-sm border-2 border-white/20">
-              <div className="flex items-center gap-3 mb-4">
-                <Target className="w-8 h-8 text-yellow" />
-                <h4 className="text-2xl font-bold">Chciałbym otrzymać:</h4>
-              </div>
-              <div className="text-5xl font-bold mb-4">~5 000 zł</div>
-              <p className="text-white/80">
-                Większość osób oczekuje emerytury pozwalającej utrzymać podobny standard życia jak obecnie
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-red/20 backdrop-blur-sm border-2 border-red">
-              <div className="flex items-center gap-3 mb-4">
-                <AlertCircle className="w-8 h-8 text-red" />
-                <h4 className="text-2xl font-bold">Rzeczywiście otrzymam:</h4>
-              </div>
-              <div className="text-5xl font-bold mb-4">~2 550 zł</div>
-              <p className="text-white/80">
-                Przeciętna emerytura w Polsce - stopa zastąpienia wynosi około 40-50% ostatniego wynagrodzenia
-              </p>
-            </Card>
-          </div>
-
-          <div className="mt-12 text-center">
-            <Link href="/form">
-              <Button
-                size="lg"
-                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
-              >
-                Sprawdź, ile faktycznie dostaniesz
-                <Calculator className="ml-2 w-6 h-6" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="py-20 px-4 bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasimulujesz?</h3>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasymulujesz?</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
               Kompleksowe narzędzie do prognozowania Twojej przyszłej emerytury
             </p>
@@ -317,7 +351,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 px-4 bg-primary text-primary-foreground">
+{/*       <section className="py-20 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
@@ -332,7 +366,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 px-4">
