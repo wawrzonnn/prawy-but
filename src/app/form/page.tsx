@@ -691,20 +691,34 @@ export default function Form() {
 										</div>
 									</Card>
 
-									{/* Przycisk zapisu */}
-									<Button
-										onClick={handleSave}
-										disabled={isSubmitting}
-										className='w-full bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold py-6 text-lg rounded-[0.25rem] transition-all duration-150'>
-										{isSubmitting ? 'Zapisywanie...' : 'Zapisz kalkulację'}
-										<Calculator className='ml-2 w-5 h-5' />
-									</Button>
+									{/* Główny CTA - Dashboard */}
+									<div className='space-y-3'>
+										<Link href='/dashboard' className='block'>
+											<Button
+												size='lg'
+												className='w-full bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold py-6 text-xl rounded-[0.25rem] transition-all duration-150'>
+												Zobacz szczegółową analizę rok po roku
+												<TrendingUp className='ml-2 w-6 h-6' />
+											</Button>
+										</Link>
+										<p className='text-xs text-center text-muted-foreground'>
+											Edytuj wynagrodzenia, dodaj zwolnienia i zobacz wzrost kapitału
+										</p>
+									</div>
 
-									<Link href='/db'>
-										<Button variant='outline' className='w-full'>
-											Zobacz zapisane kalkulacje
+									{/* Opcjonalne akcje */}
+									<div className='space-y-2 pt-4 border-t'>
+										<Button onClick={handleSave} disabled={isSubmitting} variant='outline' className='w-full'>
+											{isSubmitting ? 'Zapisywanie...' : 'Zapisz i wróć później'}
+											<Calculator className='ml-2 w-4 h-4' />
 										</Button>
-									</Link>
+
+										<Link href='/db'>
+											<Button variant='ghost' className='w-full text-sm'>
+												Zobacz zapisane kalkulacje
+											</Button>
+										</Link>
+									</div>
 								</>
 							) : (
 								<Card className='p-8 text-center'>
