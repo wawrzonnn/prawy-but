@@ -8,8 +8,8 @@ import { MacroeconomicScenario } from '@/types/fus20-types'
 export const FUS20_SCENARIOS = {
   PESSIMISTIC: {
     id: 'pessimistic',
-    name: 'Pessimistic Scenario',
-    description: 'Lower economic growth, higher unemployment',
+    name: 'Scenariusz pesymistyczny',
+    description: 'Niższy wzrost gospodarczy, wyższe bezrobocie',
     parameters: {
       unemploymentRate2080: 0.06, // 6.00%
       realWageGrowthIndex2080: 1.012, // 101.20% (1.2% real growth)
@@ -20,8 +20,8 @@ export const FUS20_SCENARIOS = {
   
   MODERATE: {
     id: 'moderate',
-    name: 'Moderate Scenario (Base)',
-    description: 'Average economic growth, standard assumptions',
+    name: 'Scenariusz umiarkowany',
+    description: 'Przeciętny wzrost gospodarczy, standardowe założenia',
     parameters: {
       unemploymentRate2080: 0.05, // 5.00%
       realWageGrowthIndex2080: 1.02, // 102.00% (2.0% real growth)
@@ -32,8 +32,8 @@ export const FUS20_SCENARIOS = {
   
   OPTIMISTIC: {
     id: 'optimistic',
-    name: 'Optimistic Scenario',
-    description: 'Higher economic growth, lower unemployment',
+    name: 'Scenariusz optymistyczny',
+    description: 'Wyższy wzrost gospodarczy, niższe bezrobocie',
     parameters: {
       unemploymentRate2080: 0.042, // 4.20%
       realWageGrowthIndex2080: 1.028, // 102.80% (2.8% real growth)

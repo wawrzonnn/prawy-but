@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { db } from '@/lib/db'
 import { calculatePensionFUS20, calculateYearByYear, type YearByYearData } from '@/lib/fus20-calculator'
-import { DEFAULT_SCENARIO } from '@/config/fus20-scenarios'
+import { DEFAULT_SCENARIO, FUS20_SCENARIOS, getScenarioById } from '@/config/fus20-scenarios'
 import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
 import type { IndividualInputData, MacroeconomicScenario } from '@/types/fus20-types'
 import {
@@ -762,25 +762,19 @@ export default function Dashboard() {
 											<span className='font-medium'>Planowany rok emerytury:</span> {parameters.retirementYear}
 										</div>
 										<div>
-											<span className='font-medium'>Scenariusz:</span> {scenario.name}
+											<span className='font-medium'>Scenariusz ekonomiczny:</span> {scenario.name}
 										</div>
 										<div>
-											<span className='font-medium'>Wzrost wynagrodzeń (realny):</span>{' '}
-											{((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}%
+											<span className='font-medium'>Wzrost wynagrodzeń:</span>{' '}
+											{((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}% rocznie
 										</div>
 										<div>
 											<span className='font-medium'>Inflacja:</span>{' '}
-											{((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}%
+											{((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}% rocznie
 										</div>
 										<div>
-											<span className='font-medium'>Nominalny wzrost wynagrodzeń:</span>{' '}
-											{(
-												(scenario.parameters.realWageGrowthIndex2080 -
-													1 +
-													(scenario.parameters.inflationIndex2080 - 1)) *
-												100
-											).toFixed(1)}
-											%
+											<span className='font-medium'>Bezrobocie:</span>{' '}
+											{(scenario.parameters.unemploymentRate2080 * 100).toFixed(1)}%
 										</div>
 										{sickLeaves.length > 0 && (
 											<div className='mt-3 pt-3 border-t'>
@@ -804,59 +798,35 @@ export default function Dashboard() {
 										<Settings className='w-4 h-4 text-primary' />
 										Parametry symulacji
 									</h3>
-									<div className='space-y-3 md:space-y-4'>
-										<div className='p-3 bg-muted/30 rounded'>
-											<div className='text-xs font-medium text-foreground mb-2'>Scenariusz makroekonomiczny</div>
-											<div className='text-sm font-bold text-primary'>{scenario.name}</div>
-											<div className='mt-2 text-xs text-muted-foreground space-y-0.5'>
-												<div>
-													Wzrost realny: {((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}%
-												</div>
-												<div>Inflacja: {((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}%</div>
-												<div>
-													Wzrost nominalny:{' '}
-													{(
-														(scenario.parameters.realWageGrowthIndex2080 -
-															1 +
-															(scenario.parameters.inflationIndex2080 - 1)) *
-														100
-													).toFixed(1)}
-													%
-												</div>
-											</div>
-										</div>
-
+									<div className='space-y-3'>
 										<div>
 											<label
 												htmlFor='scenario-select'
 												className='block text-xs md:text-sm font-medium text-foreground mb-2'>
-												Wybierz scenariusz
+												Scenariusz ekonomiczny
 											</label>
 											<select
 												id='scenario-select'
 												value={scenario.id}
 												onChange={e => {
-													const newScenario =
-														e.target.value === 'pessimistic'
-															? {
-																	...DEFAULT_SCENARIO,
-																	id: 'pessimistic' as const,
-																	parameters: { ...DEFAULT_SCENARIO.parameters, realWageGrowthIndex2080: 1.012 },
-																}
-															: e.target.value === 'optimistic'
-																? {
-																		...DEFAULT_SCENARIO,
-																		id: 'optimistic' as const,
-																		parameters: { ...DEFAULT_SCENARIO.parameters, realWageGrowthIndex2080: 1.028 },
-																	}
-																: DEFAULT_SCENARIO
+													const newScenario = getScenarioById(e.target.value)
 													setScenario(newScenario)
 												}}
 												className='w-full px-3 py-2 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary text-sm'>
-												<option value='pessimistic'>Pesymistyczny (1.2% wzrost)</option>
-												<option value='moderate'>Umiarkowany (2.0% wzrost)</option>
-												<option value='optimistic'>Optymistyczny (2.8% wzrost)</option>
+												<option value='pessimistic'>Pesymistyczny</option>
+												<option value='moderate'>Umiarkowany (domyślny)</option>
+												<option value='optimistic'>Optymistyczny</option>
 											</select>
+										</div>
+
+										<div className='p-3 bg-blue-50/50 rounded text-xs space-y-1'>
+											<div className='font-semibold text-foreground mb-1.5'>{scenario.name}</div>
+											<div className='text-muted-foreground'>{scenario.description}</div>
+											<div className='pt-2 space-y-0.5 text-muted-foreground'>
+												<div>• Wzrost wynagrodzeń: {((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}% rocznie</div>
+												<div>• Inflacja: {((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}% rocznie</div>
+												<div>• Bezrobocie: {(scenario.parameters.unemploymentRate2080 * 100).toFixed(1)}%</div>
+											</div>
 										</div>
 									</div>
 								</Card>
