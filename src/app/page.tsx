@@ -1,28 +1,41 @@
 'use client'
 
-import Link from "next/link"
-import Image from "next/image"
+import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Calculator, TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart, Users, Award, AlertCircle, Lightbulb, BarChart3 } from "lucide-react"
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import {
+	Calculator,
+	TrendingUp,
+	PiggyBank,
+	Calendar,
+	Target,
+	Wallet,
+	LineChart,
+	Users,
+	Award,
+	AlertCircle,
+	Lightbulb,
+	BarChart3,
+} from 'lucide-react'
 
 const funFacts = [
-  "Czy wiesz, że najwyższa emerytura w Polsce wynosi ponad 48 000 zł miesięcznie? Otrzymuje ją emerytowany górnik z województwa śląskiego, który przepracował 42 lata.",
-  "Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.",
-  "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5–7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30–35%.",
-  "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto.",
-  "Średnia emerytura wypłacana przez ZUS w 2023 roku wynosiła 3 270,23 zł, a sama emerytura starcza – 3 389,49 zł.",
-  "W Polsce miesięcznie świadczenia emerytalne z ZUS otrzymuje około 7,9 miliona osób.",
-  "Polski system emerytalny opiera się na trzech filarach: obowiązkowych (I i II) oraz dobrowolnym (III – np. IKE, IKZE).",
-  "Składka emerytalna wynosi 19,52% podstawy wymiaru i jest współdzielona przez pracownika i pracodawcę.",
-  "Kobiety mogą otrzymywać tymczasową emeryturę z subkonta do czasu osiągnięcia wieku 65 lat – w 2023 roku wypłacano ok. 502 tys. takich świadczeń miesięcznie.",
-  "Osoby z niewystarczającym stażem składkowym mogą otrzymać gwarantowaną emeryturę minimalną, jeśli pracowały co najmniej 20 lat (kobiety) lub 25 lat (mężczyźni).",
-  "Rolnicy korzystają z odrębnego systemu emerytalnego KRUS, który obejmuje osoby prowadzące gospodarstwa rolne.",
-  "Emerytura socjalna przysługuje osobom całkowicie niezdolnym do pracy z powodu choroby powstałej przed 18. rokiem życia – w 2023 roku korzystało z niej ponad 293 tys. osób.",
-  "Od 2021 roku w Polsce wypłacana jest coroczna „czternasta emerytura” – dodatkowe świadczenie równe kwocie minimalnej emerytury brutto (z limitem dochodowym).",
-  "W Polsce nadal funkcjonują dwa równoległe systemy emerytalne: stary (dla osób urodzonych przed 1949 r.) i nowy (po reformie z 1999 r)."
-];
+	'Czy wiesz, że najwyższa emerytura w Polsce wynosi ponad 48 000 zł miesięcznie? Otrzymuje ją emerytowany górnik z województwa śląskiego, który przepracował 42 lata.',
+	'Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.',
+	'Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5–7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30–35%.',
+	'W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto.',
+	'Średnia emerytura wypłacana przez ZUS w 2023 roku wynosiła 3 270,23 zł, a sama emerytura starcza – 3 389,49 zł.',
+	'W Polsce miesięcznie świadczenia emerytalne z ZUS otrzymuje około 7,9 miliona osób.',
+	'Polski system emerytalny opiera się na trzech filarach: obowiązkowych (I i II) oraz dobrowolnym (III – np. IKE, IKZE).',
+	'Składka emerytalna wynosi 19,52% podstawy wymiaru i jest współdzielona przez pracownika i pracodawcę.',
+	'Kobiety mogą otrzymywać tymczasową emeryturę z subkonta do czasu osiągnięcia wieku 65 lat – w 2023 roku wypłacano ok. 502 tys. takich świadczeń miesięcznie.',
+	'Osoby z niewystarczającym stażem składkowym mogą otrzymać gwarantowaną emeryturę minimalną, jeśli pracowały co najmniej 20 lat (kobiety) lub 25 lat (mężczyźni).',
+	'Rolnicy korzystają z odrębnego systemu emerytalnego KRUS, który obejmuje osoby prowadzące gospodarstwa rolne.',
+	'Emerytura socjalna przysługuje osobom całkowicie niezdolnym do pracy z powodu choroby powstałej przed 18. rokiem życia – w 2023 roku korzystało z niej ponad 293 tys. osób.',
+	'Od 2021 roku w Polsce wypłacana jest coroczna „czternasta emerytura” – dodatkowe świadczenie równe kwocie minimalnej emerytury brutto (z limitem dochodowym).',
+	'W Polsce nadal funkcjonują dwa równoległe systemy emerytalne: stary (dla osób urodzonych przed 1949 r.) i nowy (po reformie z 1999 r).',
+]
 
 export default function Home() {
   const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
@@ -736,212 +749,197 @@ const handleMouseMove = (e: React.MouseEvent) => {
                               A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4}
                               Z
                             `
-                            
-                            // Line starts from outer edge of donut (exactly at the edge)
-                            const lineStartRadius = 140
-                            const lineStartX = lineStartRadius * Math.cos(midRad)
-                            const lineStartY = lineStartRadius * Math.sin(midRad)
-                            
-                            // Line middle point (further out)
-                            const lineMidRadius = 155
-                            const lineMidX = lineMidRadius * Math.cos(midRad)
-                            const lineMidY = lineMidRadius * Math.sin(midRad)
-                            
-                            // Horizontal line end position
-                            const horizontalLength = 40
-                            const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
-                            const lineEndY = lineMidY
-                            
-                            // Text position
-                            const textOffset = lineMidX > 0 ? 5 : -5
-                            const textAnchor = lineMidX > 0 ? 'start' : 'end'
-                            
-                            return (
-                              <g key={index}>
-                                {/* Pie segment */}
-                                <g
-                                  style={{
-                                    opacity: isChartVisible ? 1 : 0,
-                                    transform: isChartVisible ? 'scale(1)' : 'scale(0.3)',
-                                    transformOrigin: '0 0',
-                                    transition: `all 0.8s ease-out ${index * 150}ms`
-                                  }}
-                                >
-                                  <path
-                                    d={pathData}
-                                    fill={colors[index]}
-                                    className="cursor-pointer transition-all duration-300 hover:opacity-80"
-                                    onMouseEnter={() => setSelectedPensionAmount(index)}
-                                  />
-                                </g>
-                                
-                                {/* Label line - matching segment color */}
-                                <g style={{
-                                  opacity: isChartVisible ? 1 : 0,
-                                  transition: `opacity 0.8s ease-out ${0.8 + index * 0.15}s`
-                                }}>
-                                  {/* Diagonal line from donut edge */}
-                                  <line
-                                    x1={lineStartX}
-                                    y1={lineStartY}
-                                    x2={lineMidX}
-                                    y2={lineMidY}
-                                    stroke={colors[index]}
-                                    strokeWidth="2"
-                                  />
-                                  {/* Horizontal line */}
-                                  <line
-                                    x1={lineMidX}
-                                    y1={lineMidY}
-                                    x2={lineEndX}
-                                    y2={lineEndY}
-                                    stroke={colors[index]}
-                                    strokeWidth="2"
-                                  />
-                                  
-                                  {/* Label text */}
-                                  <text
-                                    x={lineEndX + textOffset}
-                                    y={lineEndY - 10}
-                                    textAnchor={textAnchor}
-                                    className="text-sm font-bold"
-                                    fill={colors[index]}
-                                  >
-                                    {group.range}
-                                  </text>
-                                  <text
-                                    x={lineEndX + textOffset}
-                                    y={lineEndY + 8}
-                                    textAnchor={textAnchor}
-                                    className="text-base font-bold"
-                                    fill="var(--foreground)"
-                                  >
-                                    {group.percentage}
-                                  </text>
-                                </g>
-                              </g>
-                            )
-                          })}
-                          
-                          {/* Center white circle */}
-                          <circle cx="0" cy="0" r="80" fill="white" />
-                          
-                          {/* Center text */}
-                          <text
-                            x="0"
-                            y="-10"
-                            textAnchor="middle"
-                            className="text-base font-bold fill-muted-foreground"
-                          >
-                            Rozkład
-                          </text>
-                          <text
-                            x="0"
-                            y="15"
-                            textAnchor="middle"
-                            className="text-base font-bold fill-muted-foreground"
-                          >
-                            emerytur
-                          </text>
-                        </g>
-                      </svg>
-                    </div>
-                </div>
-              )}
 
-              {/* Tooltip */}
-              {selectedPensionAmount !== null && (() => {
-                const tooltipColors = [
-                  'var(--zus-blue-dark)',
-                  'var(--zus-green-primary)',
-                  'var(--zus-yellow)',
-                  'var(--zus-blue)'
-                ]
-                const currentColor = tooltipColors[selectedPensionAmount]
-                
-                return (
-                  <div 
-                    className="fixed z-50 pointer-events-none transition-all duration-200 ease-out"
-                    style={{
-                      left: `${tooltipPosition.x + 20}px`,
-                      top: `${tooltipPosition.y - 80}px`,
-                      maxWidth: '350px'
-                    }}
-                  >
-                    <div 
-                      className="bg-white rounded-lg shadow-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-150"
-                      style={{
-                        borderWidth: '2px',
-                        borderColor: currentColor
-                      }}
-                    >
-                      <div className="flex items-start gap-2 mb-2">
-                        <div 
-                          className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
-                          style={{ backgroundColor: currentColor }}
-                        ></div>
-                        <h4 
-                          className="text-sm font-bold leading-tight"
-                          style={{ color: currentColor }}
-                        >
-                          {pensionGroups[selectedPensionAmount].range}
-                        </h4>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed pl-5">
-                        {pensionGroups[selectedPensionAmount].description}
-                      </p>
-                    </div>
-                  </div>
-                )
-              })()}
-            </Card>
-          </div>
+													// Line starts from outer edge of donut (exactly at the edge)
+													const lineStartRadius = 140
+													const lineStartX = lineStartRadius * Math.cos(midRad)
+													const lineStartY = lineStartRadius * Math.sin(midRad)
 
-          {/* Fun Fact Section */}
-          {currentFact && (
-            <div className={`mt-24 px-4 md:px-20 transition-all duration-700 delay-500 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-10">
-                {/* Left side - Large spinning wheel */}
-                <div className="flex-shrink-0">
-                  <button
-                    onClick={randomizeFact}
-                    disabled={isSpinning}
-                    className="group relative focus:outline-none cursor-pointer"
-                    aria-label="Wylosuj ciekawostkę"
-                  >
-                    <span className="sr-only">Wylosuj ciekawostkę</span>
-                    {/* Main spinning circle */}
-                    <div className={`w-48 h-48 md:w-64 md:h-64 rounded-full bg-yellow transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105'}`}>
-                      {/* Inner white circle */}
-                      <div className="w-36 h-36 md:w-48 md:h-48 rounded-full bg-white flex items-center justify-center">
-                        <Lightbulb className="w-24 h-24 md:w-32 md:h-32 text-yellow" />
-                      </div>
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Right side - Fun fact content */}
-                <div className="flex-1 md:min-h-[256px] flex items-center">
-                  <div className="text-center md:text-left">
-                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3">
-                      Ciekawostki emerytalne
-                    </h3>
-                    <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6">
-                      Kliknij koło, aby wylosować nową ciekawostkę
-                    </p>
-                    <p className={`text-base md:text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ${isSpinning ? 'opacity-30' : 'opacity-100'}`}>
-                      {currentFact}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+													// Line middle point (further out)
+													const lineMidRadius = 155
+													const lineMidX = lineMidRadius * Math.cos(midRad)
+													const lineMidY = lineMidRadius * Math.sin(midRad)
 
-      {/* Stats Section */}
-{/*       <section className="py-20 px-4 bg-primary text-primary-foreground">
+													// Horizontal line end position
+													const horizontalLength = 40
+													const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
+													const lineEndY = lineMidY
+
+													// Text position
+													const textOffset = lineMidX > 0 ? 5 : -5
+													const textAnchor = lineMidX > 0 ? 'start' : 'end'
+
+													return (
+														<g key={index}>
+															{/* Pie segment */}
+															<g
+																style={{
+																	opacity: isChartVisible ? 1 : 0,
+																	transform: isChartVisible ? 'scale(1)' : 'scale(0.3)',
+																	transformOrigin: '0 0',
+																	transition: `all 0.8s ease-out ${index * 150}ms`,
+																}}>
+																<path
+																	d={pathData}
+																	fill={colors[index]}
+																	className='cursor-pointer transition-all duration-300 hover:opacity-80'
+																	onMouseEnter={() => setSelectedPensionAmount(index)}
+																/>
+															</g>
+
+															{/* Label line - matching segment color */}
+															<g
+																style={{
+																	opacity: isChartVisible ? 1 : 0,
+																	transition: `opacity 0.8s ease-out ${0.8 + index * 0.15}s`,
+																}}>
+																{/* Diagonal line from donut edge */}
+																<line
+																	x1={lineStartX}
+																	y1={lineStartY}
+																	x2={lineMidX}
+																	y2={lineMidY}
+																	stroke={colors[index]}
+																	strokeWidth='2'
+																/>
+																{/* Horizontal line */}
+																<line
+																	x1={lineMidX}
+																	y1={lineMidY}
+																	x2={lineEndX}
+																	y2={lineEndY}
+																	stroke={colors[index]}
+																	strokeWidth='2'
+																/>
+
+																{/* Label text */}
+																<text
+																	x={lineEndX + textOffset}
+																	y={lineEndY - 10}
+																	textAnchor={textAnchor}
+																	className='text-sm font-bold'
+																	fill={colors[index]}>
+																	{group.range}
+																</text>
+																<text
+																	x={lineEndX + textOffset}
+																	y={lineEndY + 8}
+																	textAnchor={textAnchor}
+																	className='text-base font-bold'
+																	fill='var(--foreground)'>
+																	{group.percentage}
+																</text>
+															</g>
+														</g>
+													)
+												})}
+
+												{/* Center white circle */}
+												<circle cx='0' cy='0' r='80' fill='white' />
+
+												{/* Center text */}
+												<text x='0' y='-10' textAnchor='middle' className='text-base font-bold fill-muted-foreground'>
+													Rozkład
+												</text>
+												<text x='0' y='15' textAnchor='middle' className='text-base font-bold fill-muted-foreground'>
+													emerytur
+												</text>
+											</g>
+										</svg>
+									</div>
+								</div>
+							)}
+
+							{/* Tooltip */}
+							{selectedPensionAmount !== null &&
+								(() => {
+									const tooltipColors = [
+										'var(--zus-blue-dark)',
+										'var(--zus-green-primary)',
+										'var(--zus-yellow)',
+										'var(--zus-blue)',
+									]
+									const currentColor = tooltipColors[selectedPensionAmount]
+
+									return (
+										<div
+											className='fixed z-50 pointer-events-none transition-all duration-200 ease-out'
+											style={{
+												left: `${tooltipPosition.x + 20}px`,
+												top: `${tooltipPosition.y - 80}px`,
+												maxWidth: '350px',
+											}}>
+											<div
+												className='bg-white rounded-lg shadow-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-150'
+												style={{
+													borderWidth: '2px',
+													borderColor: currentColor,
+												}}>
+												<div className='flex items-start gap-2 mb-2'>
+													<div
+														className='w-3 h-3 rounded-full mt-1 flex-shrink-0'
+														style={{ backgroundColor: currentColor }}></div>
+													<h4 className='text-sm font-bold leading-tight' style={{ color: currentColor }}>
+														{pensionGroups[selectedPensionAmount].range}
+													</h4>
+												</div>
+												<p className='text-xs text-muted-foreground leading-relaxed pl-5'>
+													{pensionGroups[selectedPensionAmount].description}
+												</p>
+											</div>
+										</div>
+									)
+								})()}
+						</Card>
+					</div>
+
+					{/* Fun Fact Section */}
+					{currentFact && (
+						<div
+							className={`mt-24 px-4 md:px-20 transition-all duration-700 delay-500 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+							<div className='flex flex-col md:flex-row items-center gap-8 md:gap-10'>
+								{/* Left side - Large spinning wheel */}
+								<div className='flex-shrink-0'>
+									<button
+										onClick={randomizeFact}
+										disabled={isSpinning}
+										className='group relative focus:outline-none cursor-pointer'
+										aria-label='Wylosuj ciekawostkę'>
+										<span className='sr-only'>Wylosuj ciekawostkę</span>
+										{/* Main spinning circle */}
+										<div
+											className={`w-48 h-48 md:w-64 md:h-64 rounded-full bg-yellow transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105'}`}>
+											{/* Inner white circle */}
+											<div className='w-36 h-36 md:w-48 md:h-48 rounded-full bg-white flex items-center justify-center'>
+												<Lightbulb className='w-24 h-24 md:w-32 md:h-32 text-yellow' />
+											</div>
+										</div>
+									</button>
+								</div>
+
+								{/* Right side - Fun fact content */}
+								<div className='flex-1 md:min-h-[256px] flex items-center'>
+									<div className='text-center md:text-left'>
+										<h3 className='text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3'>
+											Ciekawostki emerytalne
+										</h3>
+										<p className='text-xs md:text-sm text-muted-foreground mb-4 md:mb-6'>
+											Kliknij koło, aby wylosować nową ciekawostkę
+										</p>
+										<p
+											className={`text-base md:text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ${isSpinning ? 'opacity-30' : 'opacity-100'}`}>
+											{currentFact}
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+			</section>
+
+			{/* Stats Section */}
+			{/*       <section className="py-20 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
@@ -958,48 +956,45 @@ const handleMouseMove = (e: React.MouseEvent) => {
         </div>
       </section> */}
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white" ref={ctaRef} data-section="cta">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h3 className={`text-3xl md:text-5xl font-bold text-white mb-6 text-balance transition-all duration-700 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          Sprawdź swoją przyszłą emeryturę - zanim zrobi to czas</h3>
+			{/* CTA Section */}
+			<section className='py-20 px-4 bg-[var(--zus-green-primary)] text-white' ref={ctaRef} data-section='cta'>
+				<div className='container mx-auto max-w-4xl text-center'>
+					<h3
+						className={`text-3xl md:text-5xl font-bold text-white mb-6 text-balance transition-all duration-700 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+						Sprawdź swoją przyszłą emeryturę - zanim zrobi to czas
+					</h3>
 
-          <p className={`text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty transition-all duration-700 delay-150 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.</p>
-          <div className={`transition-all duration-700 delay-300 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <Link href="/form">
-              <Button
-                size="lg"
-                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
-              >
-                Przejdź do kalkulatora emerytury
-                <Calculator className="ml-2 w-6 h-6" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+					<p
+						className={`text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty transition-all duration-700 delay-150 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+						Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.
+					</p>
+					<div
+						className={`transition-all duration-700 delay-300 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+						<Link href='/form'>
+							<Button
+								size='lg'
+								className='bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-base md:text-xl px-6 md:px-12 py-4 md:py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
+								Przejdź do kalkulatora emerytury
+								<Calculator className='ml-2 w-6 h-6' />
+							</Button>
+						</Link>
+					</div>
+				</div>
+			</section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 bg-muted">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <Link href="/" className="flex items-center">
-              <Image 
-                src="/logozus.svg" 
-                alt="ZUS Logo" 
-                width={100} 
-                height={28}
-                className="h-7 w-auto"
-              />
-            </Link>
-            <p className="text-sm text-muted-foreground text-center">
-              Narzędzie edukacyjne Zakładu Ubezpieczeń Społecznych do prognozowania wysokości emerytury
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  )
+			{/* Footer */}
+			<footer className='py-12 px-4 bg-muted'>
+				<div className='container mx-auto max-w-6xl'>
+					<div className='flex flex-col md:flex-row justify-between items-center gap-6'>
+						<Link href='/' className='flex items-center'>
+							<Image src='/logozus.svg' alt='ZUS Logo' width={100} height={28} className='h-7 w-auto' />
+						</Link>
+						<p className='text-sm text-muted-foreground text-center'>
+							Narzędzie edukacyjne Zakładu Ubezpieczeń Społecznych do prognozowania wysokości emerytury
+						</p>
+					</div>
+				</div>
+			</footer>
+		</div>
+	)
 }
-

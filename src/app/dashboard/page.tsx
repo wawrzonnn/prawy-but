@@ -240,29 +240,29 @@ export default function Dashboard() {
 					}
 				}
 			`}</style>
-			<div className='min-h-screen bg-background'>
+			<div className='min-h-screen bg-background overflow-x-hidden'>
 				{/* Header */}
 				<header className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 no-print'>
-					<div className='container mx-auto px-4 py-4 flex items-center justify-between'>
-						<div className='flex items-center gap-4'>
-							<Link href='/' className='flex items-center gap-3'>
-								<Image src='/logozus.svg' alt='ZUS Logo' width={120} height={32} className='h-8 w-auto' />
+					<div className='container mx-auto px-4 py-3 md:py-4 flex items-center justify-between'>
+						<div className='flex items-center gap-2 md:gap-4 min-w-0'>
+							<Link href='/' className='flex items-center gap-2 md:gap-3 flex-shrink-0'>
+								<Image src='/logozus.svg' alt='ZUS Logo' width={120} height={32} className='h-6 md:h-8 w-auto' />
 							</Link>
-							<div className='text-sm text-muted-foreground hidden md:block'>
+							<div className='text-xs md:text-sm text-muted-foreground hidden md:block truncate'>
 								<Link href='/' className='hover:text-foreground'>
 									Strona główna
 								</Link>
-								<span className='mx-2'>/</span>
+								<span className='mx-1 md:mx-2'>/</span>
 								<Link href='/form' className='hover:text-foreground'>
 									Kalkulator
 								</Link>
-								<span className='mx-2'>/</span>
+								<span className='mx-1 md:mx-2'>/</span>
 								<span className='text-foreground font-medium'>Dashboard</span>
 							</div>
 						</div>
-						<Link href='/form'>
-							<Button variant='ghost' size='sm'>
-								<ArrowLeft className='w-4 h-4 mr-2' />
+						<Link href='/form' className='flex-shrink-0'>
+							<Button variant='ghost' size='sm' className='text-xs md:text-sm px-2 md:px-4'>
+								<ArrowLeft className='w-3 md:w-4 h-3 md:h-4 mr-1 md:mr-2' />
 								Powrót
 							</Button>
 						</Link>
@@ -270,19 +270,21 @@ export default function Dashboard() {
 				</header>
 
 				{/* Main Content */}
-				<div className='pt-24 pb-20 px-4'>
+				<div className='pt-20 md:pt-24 pb-16 md:pb-20 px-4'>
 					<div className='container mx-auto max-w-7xl'>
 						<div className='text-center mb-6'>
-							<h1 className='text-3xl md:text-4xl font-bold text-foreground mb-3'>Dashboard Symulacji Emerytalnej</h1>
-							<p className='text-lg text-muted-foreground'>Szczegółowa analiza rok po roku</p>
+							<h1 className='text-xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2 md:mb-3'>
+								Dashboard Symulacji Emerytalnej
+							</h1>
+							<p className='text-sm md:text-base lg:text-lg text-muted-foreground'>Szczegółowa analiza rok po roku</p>
 
 							{/* Przyciski akcji */}
-							<div className='flex items-center justify-center gap-4 mt-6 no-print'>
+							<div className='flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-4 mt-4 md:mt-6 no-print'>
 								<Button
 									onClick={handlePrintReport}
 									size='lg'
-									className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold'>
-									<Download className='w-5 h-5 mr-2' />
+									className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold text-sm md:text-base px-4 md:px-6 py-3 md:py-4 h-auto'>
+									<Download className='w-4 md:w-5 h-4 md:h-5 mr-2' />
 									Pobierz raport PDF
 								</Button>
 								<Button
@@ -291,7 +293,8 @@ export default function Dashboard() {
 										window.location.href = '/form'
 									}}
 									variant='outline'
-									size='lg'>
+									size='lg'
+									className='text-sm md:text-base px-4 md:px-6 py-3 md:py-4 h-auto'>
 									<FileText className='w-4 h-4 mr-2' />
 									Nowa symulacja
 								</Button>
@@ -299,14 +302,14 @@ export default function Dashboard() {
 						</div>
 
 						{/* Wykres wzrostu kapitału */}
-						<Card className='p-6 mb-6 border-0 bg-muted/20'>
-							<h2 className='text-xl font-bold text-foreground mb-6 flex items-center gap-2'>
-								<TrendingUp className='w-5 h-5 text-primary' />
+						<Card className='p-4 md:p-6 mb-4 md:mb-6 border-0 bg-muted/20'>
+							<h2 className='text-base md:text-xl font-bold text-foreground mb-4 md:mb-6 flex items-center gap-2'>
+								<TrendingUp className='w-4 md:w-5 h-4 md:h-5 text-primary' />
 								Wzrost kapitału emerytalnego
 							</h2>
 
 							{/* SVG Chart */}
-							<div className='w-full h-96 relative'>
+							<div className='w-full h-64 md:h-96 relative overflow-hidden'>
 								<svg viewBox='0 0 1000 400' className='w-full h-full'>
 									{/* Siatka */}
 									<defs>
@@ -418,45 +421,47 @@ export default function Dashboard() {
 							</div>
 
 							{/* Legenda */}
-							<div className='flex items-center justify-center gap-6 mt-6'>
+							<div className='flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mt-4 md:mt-6'>
 								<div className='flex items-center gap-2'>
 									<div className='w-4 h-4 bg-primary rounded'></div>
-									<span className='text-sm text-muted-foreground'>Całkowity kapitał</span>
+									<span className='text-xs md:text-sm text-muted-foreground'>Całkowity kapitał</span>
 								</div>
 								<div className='flex items-center gap-2'>
 									<div className='w-4 h-1 bg-primary/50 border-2 border-dashed border-primary/50'></div>
-									<span className='text-sm text-muted-foreground'>Konto główne (81%)</span>
+									<span className='text-xs md:text-sm text-muted-foreground'>Konto główne (81%)</span>
 								</div>
 							</div>
 						</Card>
 
-						<div className='grid lg:grid-cols-3 gap-8'>
+						<div className='grid lg:grid-cols-3 gap-4 md:gap-8'>
 							{/* Tabela lat - 2 kolumny */}
-							<div className='lg:col-span-2 space-y-6'>
+							<div className='lg:col-span-2 space-y-4 md:space-y-6 min-w-0'>
 								{/* Podsumowanie */}
-								<Card className='p-5 border-0 bg-green-50/50'>
-									<h3 className='text-lg font-bold mb-4 text-foreground'>Podsumowanie prognozy</h3>
-									<div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+								<Card className='p-4 md:p-5 border-0 bg-green-50/50'>
+									<h3 className='text-base md:text-lg font-bold mb-3 md:mb-4 text-foreground'>Podsumowanie prognozy</h3>
+									<div className='grid grid-cols-2 gap-3 md:gap-4'>
 										<div>
 											<div className='text-xs text-muted-foreground mb-1'>Kapitał nominalny</div>
-											<div className='text-xl font-bold text-foreground'>{totalCapital.toLocaleString('pl-PL')} zł</div>
+											<div className='text-base md:text-xl font-bold text-foreground break-words'>
+												{totalCapital.toLocaleString('pl-PL')} zł
+											</div>
 										</div>
 										<div>
 											<div className='text-xs text-muted-foreground mb-1'>Kapitał realny</div>
-											<div className='text-xl font-bold text-foreground'>
+											<div className='text-base md:text-xl font-bold text-foreground break-words'>
 												{realTotalCapital.toLocaleString('pl-PL')} zł
 											</div>
 											<div className='text-xs text-muted-foreground mt-0.5'>w dzisiejszych zł</div>
 										</div>
 										<div>
 											<div className='text-xs text-muted-foreground mb-1'>Emerytura nominalna</div>
-											<div className='text-xl font-bold text-foreground'>
+											<div className='text-base md:text-xl font-bold text-foreground break-words'>
 												{monthlyPension.toLocaleString('pl-PL')} zł
 											</div>
 										</div>
 										<div>
 											<div className='text-xs text-muted-foreground mb-1'>Emerytura realna</div>
-											<div className='text-xl font-bold text-[var(--zus-green-primary)]'>
+											<div className='text-base md:text-xl font-bold text-[var(--zus-green-primary)] break-words'>
 												{realMonthlyPension.toLocaleString('pl-PL')} zł
 											</div>
 											<div className='text-xs text-muted-foreground mt-0.5'>w dzisiejszych zł</div>
@@ -465,26 +470,32 @@ export default function Dashboard() {
 								</Card>
 
 								{/* Tabela rok po roku */}
-								<Card className='p-5 border-0 bg-white'>
-									<h3 className='text-lg font-bold text-foreground mb-4'>Szczegóły rok po roku</h3>
-									<div className='overflow-x-auto'>
-										<table className='w-full text-sm'>
+								<Card className='p-3 md:p-5 border-0 bg-white'>
+									<h3 className='text-base md:text-lg font-bold text-foreground mb-3 md:mb-4'>Szczegóły rok po roku</h3>
+									<div className='overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0'>
+										<table className='w-full text-xs md:text-sm'>
 											<thead>
 												<tr className='border-b'>
-													<th className='text-left py-2 px-2 font-medium text-muted-foreground'>Rok</th>
-													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Wiek</th>
-													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Wynagrodzenie</th>
-													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Składka</th>
-													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Dni choroby</th>
-													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Kapitał realny</th>
+													<th className='text-left py-2 px-1 md:px-2 font-medium text-muted-foreground'>Rok</th>
+													<th className='text-right py-2 px-1 md:px-2 font-medium text-muted-foreground hidden sm:table-cell'>
+														Wiek
+													</th>
+													<th className='text-right py-2 px-1 md:px-2 font-medium text-muted-foreground'>Wynagr.</th>
+													<th className='text-right py-2 px-1 md:px-2 font-medium text-muted-foreground hidden md:table-cell'>
+														Składka
+													</th>
+													<th className='text-right py-2 px-1 md:px-2 font-medium text-muted-foreground hidden sm:table-cell'>
+														Choroby
+													</th>
+													<th className='text-right py-2 px-1 md:px-2 font-medium text-muted-foreground'>Kapitał</th>
 												</tr>
 											</thead>
 											<tbody className='divide-y'>
 												{displayYears.map((data, index) => (
 													<tr key={data.year} className='hover:bg-muted/50 transition-colors'>
-														<td className='py-2 px-2 font-medium'>{data.year}</td>
-														<td className='text-right py-2 px-2'>{data.age}</td>
-														<td className='text-right py-2 px-2'>
+														<td className='py-2 px-1 md:px-2 font-medium'>{data.year}</td>
+														<td className='text-right py-2 px-1 md:px-2 hidden sm:table-cell'>{data.age}</td>
+														<td className='text-right py-2 px-1 md:px-2'>
 															{editingYear === data.year ? (
 																<div className='flex items-center gap-2 justify-end'>
 																	<input
@@ -514,11 +525,11 @@ export default function Dashboard() {
 																	</button>
 																</div>
 															) : (
-																<div className='flex items-center gap-2 justify-end group'>
-																	<span>{data.grossSalary.toLocaleString('pl-PL')} zł</span>
+																<div className='flex items-center gap-1 md:gap-2 justify-end group'>
+																	<span className='truncate'>{data.grossSalary.toLocaleString('pl-PL')}</span>
 																	<button
 																		onClick={() => setEditingYear(data.year)}
-																		className='opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-700 transition-opacity no-print'>
+																		className='opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-700 transition-opacity no-print hidden md:inline'>
 																		<Edit2 className='w-3 h-3' />
 																	</button>
 																	{customSalaries[data.year] && (
@@ -529,14 +540,14 @@ export default function Dashboard() {
 																</div>
 															)}
 														</td>
-														<td className='text-right py-2 px-2 text-green-600'>
-															+{data.contribution.toLocaleString('pl-PL')} zł
+														<td className='text-right py-2 px-1 md:px-2 text-green-600 hidden md:table-cell'>
+															+{data.contribution.toLocaleString('pl-PL')}
 														</td>
-														<td className='text-right py-2 px-2'>
+														<td className='text-right py-2 px-1 md:px-2 hidden sm:table-cell'>
 															{data.sickLeaveDays > 0 && <span className='text-orange-600'>{data.sickLeaveDays}</span>}
 														</td>
-														<td className='text-right py-2 px-2 font-medium'>
-															{data.realCapital.toLocaleString('pl-PL')} zł
+														<td className='text-right py-2 px-1 md:px-2 font-medium'>
+															<span className='truncate'>{data.realCapital.toLocaleString('pl-PL')}</span>
 														</td>
 													</tr>
 												))}
@@ -564,19 +575,19 @@ export default function Dashboard() {
 							</div>
 
 							{/* Sidebar - parametry i zwolnienia */}
-							<div className='space-y-6'>
+							<div className='space-y-4 md:space-y-6 min-w-0'>
 								{/* Parametry globalne */}
-								<Card className='p-5 border-0 bg-white'>
-									<h3 className='text-base font-bold text-foreground mb-4 flex items-center gap-2'>
+								<Card className='p-4 md:p-5 border-0 bg-white'>
+									<h3 className='text-sm md:text-base font-bold text-foreground mb-3 md:mb-4 flex items-center gap-2'>
 										<Settings className='w-4 h-4 text-primary' />
 										Parametry symulacji
 									</h3>
-									<div className='space-y-4'>
+									<div className='space-y-3 md:space-y-4'>
 										<div>
-											<label className='block text-sm font-medium text-foreground mb-2'>
+											<label className='block text-xs md:text-sm font-medium text-foreground mb-2'>
 												Wzrost wynagrodzeń realny (rocznie)
 											</label>
-											<div className='flex items-center gap-3'>
+											<div className='flex items-center gap-2 md:gap-3'>
 												<input
 													type='range'
 													min='0'
@@ -586,7 +597,7 @@ export default function Dashboard() {
 													onChange={e => setParameters({ ...parameters, wageGrowthRate: parseFloat(e.target.value) })}
 													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
 												/>
-												<span className='text-lg font-bold text-primary w-16 text-right'>
+												<span className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
 													{parameters.wageGrowthRate}%
 												</span>
 											</div>
@@ -594,8 +605,10 @@ export default function Dashboard() {
 										</div>
 
 										<div>
-											<label className='block text-sm font-medium text-foreground mb-2'>Inflacja (rocznie)</label>
-											<div className='flex items-center gap-3'>
+											<label className='block text-xs md:text-sm font-medium text-foreground mb-2'>
+												Inflacja (rocznie)
+											</label>
+											<div className='flex items-center gap-2 md:gap-3'>
 												<input
 													type='range'
 													min='0'
@@ -605,7 +618,7 @@ export default function Dashboard() {
 													onChange={e => setParameters({ ...parameters, inflationRate: parseFloat(e.target.value) })}
 													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
 												/>
-												<span className='text-lg font-bold text-primary w-16 text-right'>
+												<span className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
 													{parameters.inflationRate}%
 												</span>
 											</div>
@@ -617,16 +630,16 @@ export default function Dashboard() {
 								</Card>
 
 								{/* Zwolnienia chorobowe */}
-								<Card className='p-5 border-0 bg-white'>
-									<div className='flex items-center justify-between mb-4'>
-										<h3 className='text-base font-bold text-foreground flex items-center gap-2'>
+								<Card className='p-4 md:p-5 border-0 bg-white'>
+									<div className='flex items-center justify-between mb-3 md:mb-4'>
+										<h3 className='text-sm md:text-base font-bold text-foreground flex items-center gap-2'>
 											🏥 Zwolnienia lekarskie
 										</h3>
 										<Button
 											size='sm'
 											onClick={() => setShowAddSickLeave(true)}
-											className='bg-primary text-primary-foreground'>
-											<Plus className='w-4 h-4' />
+											className='bg-primary text-primary-foreground text-xs md:text-sm px-2 md:px-3'>
+											<Plus className='w-3 md:w-4 h-3 md:h-4' />
 										</Button>
 									</div>
 
@@ -705,11 +718,11 @@ export default function Dashboard() {
 								</Card>
 
 								{/* Kod pocztowy */}
-								<Card className='p-5 border-0 bg-muted/20'>
-									<h3 className='text-base font-bold text-foreground mb-3 flex items-center gap-2'>
+								<Card className='p-4 md:p-5 border-0 bg-muted/20'>
+									<h3 className='text-sm md:text-base font-bold text-foreground mb-2 md:mb-3 flex items-center gap-2'>
 										📮 Kod pocztowy (opcjonalnie)
 									</h3>
-									<p className='text-xs text-muted-foreground mb-3'>
+									<p className='text-xs text-muted-foreground mb-2 md:mb-3'>
 										Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
 									</p>
 									<input
@@ -718,12 +731,12 @@ export default function Dashboard() {
 										value={postalCode}
 										onChange={e => {
 											let value = e.target.value.replace(/[^\d]/g, '') // Usuń wszystko oprócz cyfr
-											
+
 											// Automatycznie dodaj myślnik po drugiej cyfrze
 											if (value.length > 2) {
 												value = value.slice(0, 2) + '-' + value.slice(2, 5)
 											}
-											
+
 											// Ogranicz do 6 znaków (00-000)
 											if (value.length <= 6) {
 												setPostalCode(value)
