@@ -78,12 +78,17 @@ export default function Form() {
 			return
 		}
 
+		// Calculate contributory period before 1999
+		const currentYear = new Date().getFullYear()
+		const yearsBefore1999 =
+			formData.workStartYear < 1999 ? Math.min(1999 - formData.workStartYear, currentYear - formData.workStartYear) : 0
+
 		// Prepare input data for FUS20 calculator
 		const inputData: IndividualInputData = {
 			gender: formData.gender,
 			currentAge: formData.age,
 			contributoryPeriodBefore1999: {
-				totalYears: 0, // User can add this in advanced options later
+				totalYears: yearsBefore1999,
 				nonContributoryYears: 0,
 			},
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE, // Default to employee
@@ -250,15 +255,18 @@ export default function Form() {
 								<input
 									type='range'
 									min='18'
-									max='67'
+									max={formData.gender === 'female' ? '59' : '64'}
 									value={formData.age}
 									onChange={e => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
 								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
 									<span>18</span>
-									<span>67</span>
+									<span>{formData.gender === 'female' ? '59' : '64'}</span>
 								</div>
+								{formData.age >= (formData.gender === 'female' ? 60 : 65) && (
+									<p className='text-xs text-orange-600 mt-2'>⚠️ Już jesteś w wieku emerytalnym</p>
+								)}
 							</Card>
 
 							{/* Wynagrodzenie - slider */}
@@ -426,14 +434,14 @@ export default function Form() {
 
 						{/* Wyniki - prawa strona */}
 						<div className='space-y-3 lg:sticky lg:top-24 lg:self-start min-w-0'>
-							{formData.gender && formData.monthlyPension ? (
+							{formData.gender ? (
 								<>
 									{/* Główny wynik - zielony akcent */}
 									<Card className='p-5 border-0 bg-white'>
 										<div className='text-center'>
 											<p className='text-xs text-muted-foreground mb-2'>Twoja przyszła emerytura</p>
 											<div className='text-5xl font-bold text-[var(--zus-green-primary)] mb-2'>
-												{formData.monthlyPension.toLocaleString('pl-PL')} zł
+												{(formData.monthlyPension ?? 0).toLocaleString('pl-PL')} zł
 											</div>
 											<p className='text-xs text-muted-foreground mb-3'>
 												miesięcznie w roku {formData.plannedRetirementYear}
@@ -605,11 +613,9 @@ export default function Form() {
 								</>
 							) : (
 								<Card className='p-10 text-center border border-dashed border-gray-200'>
-									<div className='text-5xl mb-3'>🧮</div>
-									<h3 className='text-base font-semibold text-foreground mb-2'>Rozpocznij kalkulację</h3>
-									<p className='text-sm text-muted-foreground'>
-										{!formData.gender ? 'Wybierz płeć z lewej strony' : 'Dostosuj parametry, aby zobaczyć prognozę'}
-									</p>
+									<div className='text-5xl mb-3'>👤</div>
+									<h3 className='text-base font-semibold text-foreground mb-2'>Wybierz płeć</h3>
+									<p className='text-sm text-muted-foreground'>Zacznij od wyboru płci z lewej strony</p>
 								</Card>
 							)}
 						</div>
