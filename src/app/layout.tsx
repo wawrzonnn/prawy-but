@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   description:
     "Narzędzie edukacyjne do prognozowania wysokości emerytury",
   generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({
