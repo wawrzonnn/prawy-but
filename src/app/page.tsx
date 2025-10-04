@@ -85,7 +85,7 @@ export default function Home() {
       </header>
 
       {/* Hero Section - Question about expected pension */}
-      <section className="pt-44 pb-20 px-4">
+      <section className="pt-42 pb-30 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
 {/*             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[0.25rem] text-sm font-bold mb-4">
@@ -103,7 +103,7 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-              <Link href="/form">
+              <a href="#reality-check" className="scroll-smooth">
                 <Button
                   size="lg"
                   className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
@@ -111,14 +111,14 @@ export default function Home() {
                   Oblicz swoją emeryturę
                   <Calculator className="ml-2 w-5 h-5" />
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
       {/* Reality Check Section */}
-      <section id="reality-check" className="py-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-20">
+      <section id="reality-check" className="pt-24 pb-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-12">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
@@ -164,7 +164,7 @@ export default function Home() {
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight">zł</span>
               </div>
               <p className="text-base text-white/70 leading-relaxed">
-                Przy stopie zastąpienia 40% - przeciętna emerytura w Polsce wynosi około 40% ostatniego wynagrodzenia.
+                Przy stopie zastąpienia 40% - przeciętna emerytura w Polsce wynosi około 40-45% ostatniego wynagrodzenia
               </p>
             </Card>
           </div>
@@ -175,7 +175,7 @@ export default function Home() {
                 size="lg"
                 className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
               >
-                Sprawdź, ile faktycznie dostaniesz
+                Przejdź do kalkulatora emerytury
                 <Calculator className="ml-2 w-6 h-6" />
               </Button>
             </Link>
@@ -369,31 +369,27 @@ export default function Home() {
       </section> */}
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="p-12 text-center bg-blue border rounded-[0.25rem]">
-            <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
-              Nie czekaj - sprawdź swoją przyszłą emeryturę już dziś
-            </h3>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty">
-              Im wcześniej poznasz prawdę o swojej przyszłej emeryturze, tym więcej czasu będziesz miał 
-              na podjęcie działań, które poprawią Twoją sytuację finansową na emeryturze
-            </p>
-            <Link href="/form">
-              <Button
-                size="lg"
-                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
-              >
-                Zaprognozuj moją przyszłą emeryturę
-                <Calculator className="ml-2 w-6 h-6" />
-              </Button>
-            </Link>
-          </Card>
+      <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
+          Sprawdź swoją przyszłą emeryturę zanim zrobi to czas</h3>
+
+          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty">
+Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.</p>
+          <Link href="/form">
+            <Button
+              size="lg"
+              className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+            >
+              Przejdź do kalkulatora emerytury
+              <Calculator className="ml-2 w-6 h-6" />
+            </Button>
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-gray-200 bg-muted">
+      <footer className="py-12 px-4 bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <Link href="/" className="flex items-center">
