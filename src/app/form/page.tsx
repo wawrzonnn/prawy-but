@@ -43,6 +43,8 @@ export default function Form() {
 	})
 
 	const [showAdvanced, setShowAdvanced] = useState(false)
+	const [showDelayScenarios, setShowDelayScenarios] = useState(false)
+	const [showDetails, setShowDetails] = useState(false)
 
 	// Auto-obliczanie emerytury przy każdej zmianie
 	useEffect(() => {
@@ -190,119 +192,111 @@ export default function Form() {
 			</header>
 
 			{/* Main Content */}
-			<div className='pt-24 pb-20 px-4'>
-				<div className='container mx-auto max-w-6xl'>
-					<div className='text-center mb-12'>
-						<h1 className='text-4xl md:text-5xl font-bold text-foreground mb-4'>Interaktywny Kalkulator Emerytury</h1>
-						<p className='text-xl text-muted-foreground'>Poznaj swoją przyszłą emeryturę w czasie rzeczywistym</p>
+			<div className='pt-20 pb-16 px-4'>
+				<div className='container mx-auto max-w-7xl'>
+					<div className='text-center mb-6'>
+						<h1 className='text-2xl md:text-3xl font-bold text-foreground mb-2'>Kalkulator Emerytury ZUS</h1>
+						<p className='text-sm text-muted-foreground'>Poznaj swoją przyszłą emeryturę w czasie rzeczywistym</p>
 					</div>
 
 					<div className='grid lg:grid-cols-2 gap-8'>
 						{/* Formularz - lewa strona */}
-						<div className='space-y-6'>
+						<div className='space-y-4'>
 							{/* Wybór płci */}
-							<Card className='p-6'>
-								<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
-									<Users className='w-5 h-5 text-primary' />
-									Wybierz płeć
+							<Card className='p-4 border-0'>
+								<h3 className='text-sm font-semibold text-foreground mb-3 flex items-center gap-2'>
+									<Users className='w-4 h-4 text-primary' />
+									Płeć
 								</h3>
-								<div className='grid grid-cols-2 gap-4'>
+								<div className='grid grid-cols-2 gap-3'>
 									<button
 										onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
-										className={`p-6 rounded-lg border-2 transition-all ${
+										className={`p-3 rounded border transition-all ${
 											formData.gender === 'male'
-												? 'border-primary bg-primary/10 shadow-lg'
-												: 'border-gray-200 hover:border-primary/50'
+												? 'border-primary bg-primary/10 shadow-sm'
+												: 'border-gray-100 hover:border-primary/50'
 										}`}>
 										<div className='text-center'>
-											<div className='text-4xl mb-2'>👨</div>
-											<div className='font-bold text-foreground'>Mężczyzna</div>
-											<div className='text-xs text-muted-foreground mt-1'>Wiek emerytalny: 65 lat</div>
+											<div className='text-2xl mb-1'>👨</div>
+											<div className='font-semibold text-sm text-foreground'>Mężczyzna</div>
+											<div className='text-xs text-muted-foreground'>emerytura: 65 lat</div>
 										</div>
 									</button>
 									<button
 										onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
-										className={`p-6 rounded-lg border-2 transition-all ${
+										className={`p-3 rounded border transition-all ${
 											formData.gender === 'female'
-												? 'border-primary bg-primary/10 shadow-lg'
-												: 'border-gray-200 hover:border-primary/50'
+												? 'border-primary bg-primary/10 shadow-sm'
+												: 'border-gray-100 hover:border-primary/50'
 										}`}>
 										<div className='text-center'>
-											<div className='text-4xl mb-2'>👩</div>
-											<div className='font-bold text-foreground'>Kobieta</div>
-											<div className='text-xs text-muted-foreground mt-1'>Wiek emerytalny: 60 lat</div>
+											<div className='text-2xl mb-1'>👩</div>
+											<div className='font-semibold text-sm text-foreground'>Kobieta</div>
+											<div className='text-xs text-muted-foreground'>emerytura: 60 lat</div>
 										</div>
 									</button>
 								</div>
 							</Card>
 
 							{/* Wiek - slider */}
-							<Card className='p-6'>
-								<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
-									<Calendar className='w-5 h-5 text-primary' />
-									Twój wiek
-								</h3>
-								<div className='space-y-4'>
-									<div className='flex items-center justify-between'>
-										<span className='text-muted-foreground'>Wiek:</span>
-										<span className='text-3xl font-bold text-primary'>{formData.age} lat</span>
-									</div>
-									<input
-										type='range'
-										min='18'
-										max='67'
-										value={formData.age}
-										onChange={e => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
-										className='w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
-									/>
-									<div className='flex justify-between text-xs text-muted-foreground'>
-										<span>18 lat</span>
-										<span>67 lat</span>
-									</div>
+							<Card className='p-4 border-0'>
+								<div className='flex items-center justify-between mb-3'>
+									<h3 className='text-sm font-semibold text-foreground flex items-center gap-2'>
+										<Calendar className='w-4 h-4 text-primary' />
+										Wiek
+									</h3>
+									<span className='text-2xl font-bold text-primary'>{formData.age} lat</span>
+								</div>
+								<input
+									type='range'
+									min='18'
+									max='67'
+									value={formData.age}
+									onChange={e => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
+									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
+								/>
+								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
+									<span>18</span>
+									<span>67</span>
 								</div>
 							</Card>
 
 							{/* Wynagrodzenie - slider */}
-							<Card className='p-6'>
-								<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
-									<Wallet className='w-5 h-5 text-primary' />
-									Miesięczne wynagrodzenie brutto
-								</h3>
-								<div className='space-y-4'>
-									<div className='flex items-center justify-between'>
-										<span className='text-muted-foreground'>Zarobki:</span>
-										<span className='text-3xl font-bold text-primary'>
-											{formData.grossSalary.toLocaleString('pl-PL')} zł
-										</span>
-									</div>
-									<input
-										type='range'
-										min='3000'
-										max='25000'
-										step='100'
-										value={formData.grossSalary}
-										onChange={e => setFormData(prev => ({ ...prev, grossSalary: parseInt(e.target.value) }))}
-										className='w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
-									/>
-									<div className='flex justify-between text-xs text-muted-foreground'>
-										<span>3 000 zł</span>
-										<span>25 000 zł</span>
-									</div>
-									<div className='bg-primary/10 p-3 rounded-lg'>
-										<p className='text-sm text-foreground'>
-											<strong>Składka emerytalna miesięcznie:</strong> {(formData.grossSalary * 0.1952).toFixed(2)} zł
-										</p>
-									</div>
+							<Card className='p-4 border-0'>
+								<div className='flex items-center justify-between mb-3'>
+									<h3 className='text-sm font-semibold text-foreground flex items-center gap-2'>
+										<Wallet className='w-4 h-4 text-primary' />
+										Wynagrodzenie brutto
+									</h3>
+									<span className='text-2xl font-bold text-primary'>
+										{formData.grossSalary.toLocaleString('pl-PL')} zł
+									</span>
 								</div>
+								<input
+									type='range'
+									min='3000'
+									max='25000'
+									step='100'
+									value={formData.grossSalary}
+									onChange={e => setFormData(prev => ({ ...prev, grossSalary: parseInt(e.target.value) }))}
+									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
+								/>
+								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
+									<span>3 000 zł</span>
+									<span>25 000 zł</span>
+								</div>
+								<p className='text-xs text-muted-foreground mt-2'>
+									Składka emerytalna: <strong>{(formData.grossSalary * 0.1952).toFixed(0)} zł/mc</strong>
+								</p>
 							</Card>
 
 							{/* Rok rozpoczęcia pracy */}
-							<Card className='p-6'>
-								<h3 className='text-lg font-bold text-foreground mb-4'>Rok rozpoczęcia pracy</h3>
+							<Card className='p-4 border-0'>
+								<h3 className='text-sm font-semibold text-foreground mb-2'>Rok rozpoczęcia pracy</h3>
 								<select
 									value={formData.workStartYear}
 									onChange={e => setFormData(prev => ({ ...prev, workStartYear: parseInt(e.target.value) }))}
-									className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'>
+									className='w-full px-3 py-2 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm text-foreground'>
 									{Array.from({ length: currentYear - 1970 + 1 }, (_, i) => 1970 + i)
 										.reverse()
 										.map(year => (
@@ -311,89 +305,71 @@ export default function Form() {
 											</option>
 										))}
 								</select>
-								<p className='text-sm text-muted-foreground mt-2'>
-									Staż pracy do dziś: <strong>{currentYear - formData.workStartYear} lat</strong>
+								<p className='text-xs text-muted-foreground mt-2'>
+									Staż pracy: <strong>{currentYear - formData.workStartYear} lat</strong>
 								</p>
 							</Card>
 
 							{/* Planowany rok przejścia na emeryturę - slider */}
-							<Card className='p-6'>
-								<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
-									<Calendar className='w-5 h-5 text-primary' />
-									Planowany rok przejścia na emeryturę
-								</h3>
-								<div className='space-y-4'>
-									<div className='flex items-center justify-between'>
-										<span className='text-muted-foreground'>Przejście na emeryturę:</span>
-										<span className='text-3xl font-bold text-primary'>{formData.plannedRetirementYear}</span>
-									</div>
-									<input
-										type='range'
-										min={(() => {
-											const retirementAge = formData.gender === 'female' ? 60 : 65
-											const birthYear = currentYear - formData.age
-											return birthYear + retirementAge
-										})()}
-										max={(() => {
-											const retirementAge = formData.gender === 'female' ? 60 : 65
-											const birthYear = currentYear - formData.age
-											return birthYear + retirementAge + 10
-										})()}
-										value={formData.plannedRetirementYear}
-										onChange={e => setFormData(prev => ({ ...prev, plannedRetirementYear: parseInt(e.target.value) }))}
-										className='w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
-									/>
-									<div className='flex justify-between text-xs text-muted-foreground'>
-										<span>Wiek emerytalny ({formData.gender === 'female' ? '60' : '65'} lat)</span>
-										<span>+10 lat</span>
-									</div>
-									{(() => {
+							<Card className='p-4 border-0'>
+								<div className='flex items-center justify-between mb-3'>
+									<h3 className='text-sm font-semibold text-foreground flex items-center gap-2'>
+										<Calendar className='w-4 h-4 text-primary' />
+										Rok emerytury
+									</h3>
+									<span className='text-2xl font-bold text-primary'>{formData.plannedRetirementYear}</span>
+								</div>
+								<input
+									type='range'
+									min={(() => {
 										const retirementAge = formData.gender === 'female' ? 60 : 65
 										const birthYear = currentYear - formData.age
-										const minRetirementYear = birthYear + retirementAge
-										const yearsDelayed = formData.plannedRetirementYear - minRetirementYear
-
-										if (yearsDelayed > 0) {
-											return (
-												<div className='bg-green-50 border border-green-200 p-3 rounded-lg'>
-													<p className='text-sm text-green-800'>
-														<strong>
-															💡 Odroczenie o {yearsDelayed}{' '}
-															{yearsDelayed === 1 ? 'rok' : yearsDelayed < 5 ? 'lata' : 'lat'}:
-														</strong>{' '}
-														Każdy rok dłuższej pracy zwiększa emeryturę o ~5-7%. Twoja emerytura będzie wyższa o około{' '}
-														{Math.round(yearsDelayed * 6)}%!
-													</p>
-												</div>
-											)
-										}
-										return (
-											<div className='bg-blue-50 border border-blue-200 p-3 rounded-lg'>
-												<p className='text-sm text-blue-800'>
-													Przejście na emeryturę w wieku emerytalnym ({retirementAge} lat)
-												</p>
-											</div>
-										)
+										return birthYear + retirementAge
 									})()}
-									<p className='text-xs text-muted-foreground'>
-										Całkowity staż pracy: <strong>{formData.plannedRetirementYear - formData.workStartYear} lat</strong>
-									</p>
+									max={(() => {
+										const retirementAge = formData.gender === 'female' ? 60 : 65
+										const birthYear = currentYear - formData.age
+										return birthYear + retirementAge + 10
+									})()}
+									value={formData.plannedRetirementYear}
+									onChange={e => setFormData(prev => ({ ...prev, plannedRetirementYear: parseInt(e.target.value) }))}
+									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
+								/>
+								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
+									<span>Wiek {formData.gender === 'female' ? '60' : '65'}</span>
+									<span>+10 lat</span>
 								</div>
+								{(() => {
+									const retirementAge = formData.gender === 'female' ? 60 : 65
+									const birthYear = currentYear - formData.age
+									const minRetirementYear = birthYear + retirementAge
+									const yearsDelayed = formData.plannedRetirementYear - minRetirementYear
+
+									if (yearsDelayed > 0) {
+										return (
+											<p className='text-xs text-green-700 mt-2 bg-green-50 p-2 rounded'>
+												💡 Odroczenie o {yearsDelayed} {yearsDelayed === 1 ? 'rok' : 'lata'} zwiększy emeryturę o ~
+												{Math.round(yearsDelayed * 6)}%
+											</p>
+										)
+									}
+									return null
+								})()}
 							</Card>
 
 							{/* Opcje zaawansowane */}
-							<Card className='p-6'>
+							<Card className='p-4 border-0'>
 								<button
 									onClick={() => setShowAdvanced(!showAdvanced)}
 									className='w-full flex items-center justify-between text-left'>
-									<h3 className='text-lg font-bold text-foreground'>Opcje zaawansowane</h3>
-									{showAdvanced ? <ChevronUp className='w-5 h-5' /> : <ChevronDown className='w-5 h-5' />}
+									<h3 className='text-sm font-semibold text-foreground'>Opcje zaawansowane</h3>
+									{showAdvanced ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
 								</button>
 
 								{showAdvanced && (
-									<div className='mt-4 space-y-4'>
+									<div className='mt-4 space-y-3'>
 										<div>
-											<label className='block text-sm font-medium text-foreground mb-2'>
+											<label className='block text-xs font-medium text-foreground mb-1'>
 												Środki na koncie ZUS (opcjonalnie)
 											</label>
 											<input
@@ -402,12 +378,12 @@ export default function Form() {
 												onChange={e =>
 													setFormData(prev => ({ ...prev, zusAccountBalance: parseFloat(e.target.value) || 0 }))
 												}
-												className='w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
 												placeholder='0'
 											/>
 										</div>
 										<div>
-											<label className='block text-sm font-medium text-foreground mb-2'>
+											<label className='block text-xs font-medium text-foreground mb-1'>
 												Środki na subkoncie ZUS (opcjonalnie)
 											</label>
 											<input
@@ -416,29 +392,23 @@ export default function Form() {
 												onChange={e =>
 													setFormData(prev => ({ ...prev, zusSubaccountBalance: parseFloat(e.target.value) || 0 }))
 												}
-												className='w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary'
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
 												placeholder='0'
 											/>
 										</div>
-										<label className='flex items-start space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-primary transition-colors'>
+										<label className='flex items-start space-x-2 p-3 border border-gray-100 rounded cursor-pointer hover:border-primary transition-colors'>
 											<input
 												type='checkbox'
 												checked={formData.includeSickLeave}
 												onChange={e => setFormData(prev => ({ ...prev, includeSickLeave: e.target.checked }))}
-												className='w-5 h-5 text-primary focus:ring-primary border-2 rounded mt-1'
+												className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
 											/>
 											<div className='flex-1'>
-												<span className='text-foreground font-medium block'>Uwzględnij zwolnienia lekarskie</span>
-												<p className='text-xs text-muted-foreground mt-1'>
-													Średnio {formData.gender === 'female' ? '12' : '9'} dni rocznie dla{' '}
-													{formData.gender === 'female' ? 'kobiet' : 'mężczyzn'}
+												<span className='text-sm font-medium block'>Uwzględnij zwolnienia lekarskie</span>
+												<p className='text-xs text-muted-foreground mt-0.5'>
+													Średnio {formData.gender === 'female' ? '12' : '9'} dni/rok - obniża emeryturę o ~
+													{(((formData.gender === 'female' ? 12 : 9) / 365) * 100).toFixed(1)}%
 												</p>
-												{formData.includeSickLeave && (
-													<div className='mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800'>
-														📊 Zwolnienia lekarskie nie generują składek emerytalnych, co obniża świadczenie o ~
-														{(((formData.gender === 'female' ? 12 : 9) / 365) * 100).toFixed(1)}%
-													</div>
-												)}
 											</div>
 										</label>
 									</div>
@@ -447,240 +417,190 @@ export default function Form() {
 						</div>
 
 						{/* Wyniki - prawa strona */}
-						<div className='space-y-6 lg:sticky lg:top-24 lg:self-start'>
+						<div className='space-y-3 lg:sticky lg:top-24 lg:self-start'>
 							{formData.gender && formData.monthlyPension ? (
 								<>
-									{/* Główny wynik - dwie wartości */}
-									<Card className='p-8 bg-[var(--zus-green-primary)] text-white'>
+									{/* Główny wynik - zielony akcent */}
+									<Card className='p-5 border-0 bg-white'>
 										<div className='text-center'>
-											<h3 className='text-xl font-bold mb-4'>Twoja przyszła emerytura</h3>
-
-											{/* Wartość rzeczywista */}
-											<div className='mb-6'>
-												<div className='text-sm opacity-80 mb-2'>Wartość rzeczywista (nominalna)</div>
-												<div className='text-5xl font-bold mb-1'>
-													{formData.monthlyPension.toLocaleString('pl-PL')} zł
-												</div>
-												<p className='text-white/80 text-sm'>w roku {formData.plannedRetirementYear}</p>
+											<p className='text-xs text-muted-foreground mb-2'>Twoja przyszła emerytura</p>
+											<div className='text-5xl font-bold text-[var(--zus-green-primary)] mb-2'>
+												{formData.monthlyPension.toLocaleString('pl-PL')} zł
 											</div>
+											<p className='text-xs text-muted-foreground mb-3'>
+												miesięcznie w roku {formData.plannedRetirementYear}
+											</p>
 
-											{/* Wartość urealniona */}
-											<div className='bg-white/20 rounded-lg p-4 mb-4'>
-												<div className='text-sm opacity-90 mb-2'>Wartość urealniona (dzisiejsza siła nabywcza)</div>
-												<div className='text-4xl font-bold mb-1'>
+											{/* Wartość urealniona - jako subtelna informacja */}
+											<div className='bg-muted/30 rounded p-2.5'>
+												<p className='text-xs text-muted-foreground mb-1'>W dzisiejszej sile nabywczej:</p>
+												<p className='text-xl font-bold text-foreground'>
 													{formData.realMonthlyPension?.toLocaleString('pl-PL')} zł
-												</div>
-												<p className='text-white/80 text-xs'>równowartość w dzisiejszych złotówkach</p>
-											</div>
-
-											<div className='bg-white/10 rounded-lg p-3'>
-												<div className='text-sm opacity-90 mb-1'>Stopa zastąpienia</div>
-												<div className='text-2xl font-bold'>{formData.replacementRate}%</div>
-												<div className='text-xs opacity-80 mt-1'>
-													przyszłego wynagrodzenia ({formData.futureGrossSalary?.toLocaleString('pl-PL')} zł)
-												</div>
-											</div>
-										</div>
-									</Card>
-
-									{/* Porównanie ze średnią */}
-									<Card className='p-6 bg-primary/5'>
-										<h3 className='text-lg font-bold text-foreground mb-4'>📊 Porównanie ze średnią krajową</h3>
-										<div className='space-y-3'>
-											<div className='flex justify-between items-center'>
-												<span className='text-sm text-muted-foreground'>Twoja emerytura:</span>
-												<span className='font-bold text-foreground text-lg'>
-													{formData.monthlyPension.toLocaleString('pl-PL')} zł
-												</span>
-											</div>
-											<div className='flex justify-between items-center'>
-												<span className='text-sm text-muted-foreground'>
-													Średnia w {formData.plannedRetirementYear}:
-												</span>
-												<span className='font-bold text-muted-foreground text-lg'>
-													{formData.futureAveragePension?.toLocaleString('pl-PL')} zł
-												</span>
-											</div>
-											<div className='h-px bg-border my-2'></div>
-											<div className='flex justify-between items-center'>
-												<span className='text-sm font-medium text-foreground'>Różnica:</span>
-												<span
-													className={`font-bold text-lg ${(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? 'text-green-600' : 'text-orange-600'}`}>
-													{(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? '+' : ''}
-													{(((formData.monthlyPension || 0) / (formData.futureAveragePension || 1) - 1) * 100).toFixed(
-														1
-													)}
-													%
-												</span>
-											</div>
-										</div>
-									</Card>
-
-									{/* Wpływ zwolnień chorobowych */}
-									{formData.includeSickLeave && (
-										<Card className='p-6 bg-orange-50 border-2 border-orange-200'>
-											<h3 className='text-lg font-bold text-foreground mb-4'>🏥 Wpływ zwolnień lekarskich</h3>
-											<div className='space-y-3'>
-												<div className='flex justify-between'>
-													<span className='text-sm text-muted-foreground'>Bez zwolnień:</span>
-													<span className='font-bold text-foreground'>
-														{formData.monthlyPensionWithoutSickLeave?.toLocaleString('pl-PL')} zł
-													</span>
-												</div>
-												<div className='flex justify-between'>
-													<span className='text-sm text-muted-foreground'>Ze zwolnieniami:</span>
-													<span className='font-bold text-orange-600'>
-														{formData.monthlyPension.toLocaleString('pl-PL')} zł
-													</span>
-												</div>
-												<div className='h-px bg-orange-200 my-2'></div>
-												<div className='flex justify-between items-center'>
-													<span className='text-sm font-medium text-foreground'>Strata miesięczna:</span>
-													<span className='font-bold text-orange-600'>
-														-
-														{(
-															(formData.monthlyPensionWithoutSickLeave || 0) - (formData.monthlyPension || 0)
-														).toLocaleString('pl-PL')}{' '}
-														zł
-													</span>
-												</div>
-												<p className='text-xs text-orange-700 mt-2'>
-													Średnio {formData.sickLeaveDaysPerYear} dni zwolnień rocznie obniża emeryturę o{' '}
-													{formData.sickLeaveImpactPercentage}%
+												</p>
+												<p className='text-xs text-muted-foreground mt-1'>
+													(stopa zastąpienia: {formData.replacementRate}%)
 												</p>
 											</div>
+										</div>
+									</Card>
+
+									{/* Porównanie ze średnią - kompaktowe */}
+									<Card className='p-3 bg-muted/20 border-0'>
+										<div className='flex items-center justify-between mb-1.5'>
+											<span className='text-xs font-semibold text-foreground'>📊 vs Średnia krajowa</span>
+											<span
+												className={`font-bold ${(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? 'text-green-600' : 'text-orange-600'}`}>
+												{(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? '+' : ''}
+												{(((formData.monthlyPension || 0) / (formData.futureAveragePension || 1) - 1) * 100).toFixed(1)}
+												%
+											</span>
+										</div>
+										<p className='text-xs text-muted-foreground'>
+											Średnia: <strong>{formData.futureAveragePension?.toLocaleString('pl-PL')} zł</strong>
+										</p>
+									</Card>
+
+									{/* Wpływ zwolnień chorobowych - kompaktowy */}
+									{formData.includeSickLeave && (
+										<Card className='p-3 bg-orange-50/50 border-0'>
+											<div className='flex items-center justify-between mb-1'>
+												<span className='text-xs font-semibold text-foreground'>🏥 Wpływ zwolnień</span>
+												<span className='font-bold text-orange-600'>
+													-
+													{(
+														(formData.monthlyPensionWithoutSickLeave || 0) - (formData.monthlyPension || 0)
+													).toLocaleString('pl-PL')}{' '}
+													zł
+												</span>
+											</div>
+											<p className='text-xs text-orange-700/80'>
+												Średnio {formData.sickLeaveDaysPerYear} dni/rok (-{formData.sickLeaveImpactPercentage}%)
+											</p>
 										</Card>
 									)}
 
-									{/* Scenariusze odroczenia */}
-									<Card className='p-6 bg-green-50 border-2 border-green-200'>
-										<h3 className='text-lg font-bold text-foreground mb-4'>💡 Scenariusze odroczenia emerytury</h3>
-										<p className='text-sm text-muted-foreground mb-4'>
-											Zobacz, jak zmieni się Twoja emerytura, jeśli będziesz pracować dłużej:
-										</p>
-										<div className='space-y-3'>
-											{[1, 2, 5].map(years => {
-												const delayedPension = calculateDelayScenario(years)
-												const increase = delayedPension - (formData.monthlyPension || 0)
-												const increasePercent = ((increase / (formData.monthlyPension || 1)) * 100).toFixed(1)
-												return (
-													<div key={years} className='bg-white rounded-lg p-3'>
-														<div className='flex justify-between items-center'>
-															<div>
-																<span className='font-medium text-foreground'>
-																	+{years} {years === 1 ? 'rok' : years < 5 ? 'lata' : 'lat'}
-																</span>
-																<span className='text-xs text-muted-foreground block'>
-																	do wieku {(formData.gender === 'female' ? 60 : 65) + years} lat
-																</span>
-															</div>
+									{/* Scenariusze odroczenia - collapsible */}
+									<Card className='p-2.5 bg-muted/20 border-0'>
+										<button
+											onClick={() => setShowDelayScenarios(!showDelayScenarios)}
+											className='w-full flex items-center justify-between text-left'>
+											<span className='text-xs font-semibold text-foreground'>💡 Co jeśli będę pracować dłużej?</span>
+											{showDelayScenarios ? (
+												<ChevronUp className='w-3.5 h-3.5' />
+											) : (
+												<ChevronDown className='w-3.5 h-3.5' />
+											)}
+										</button>
+										{showDelayScenarios && (
+											<div className='mt-2 space-y-1.5'>
+												{[1, 2, 5].map(years => {
+													const delayedPension = calculateDelayScenario(years)
+													const increase = delayedPension - (formData.monthlyPension || 0)
+													const increasePercent = ((increase / (formData.monthlyPension || 1)) * 100).toFixed(1)
+													return (
+														<div key={years} className='flex justify-between items-center p-2 bg-green-50/50 rounded'>
+															<span className='text-xs font-medium text-foreground'>
+																+{years} {years === 1 ? 'rok' : years < 5 ? 'lata' : 'lat'}
+															</span>
 															<div className='text-right'>
-																<div className='font-bold text-green-600 text-lg'>
+																<div className='text-sm font-bold text-green-600'>
 																	{delayedPension.toLocaleString('pl-PL')} zł
 																</div>
-																<div className='text-xs text-green-600'>
-																	+{increase.toLocaleString('pl-PL')} zł (+{increasePercent}%)
-																</div>
+																<div className='text-xs text-green-600'>+{increasePercent}%</div>
 															</div>
 														</div>
-													</div>
-												)
-											})}
-										</div>
+													)
+												})}
+											</div>
+										)}
 									</Card>
 
-									{/* Szczegóły prognozy */}
-									<Card className='p-6'>
-										<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
-											<TrendingUp className='w-5 h-5 text-primary' />
-											Szczegóły prognozy
-										</h3>
-										<div className='space-y-3 text-sm'>
-											<div className='flex justify-between'>
-												<span className='text-muted-foreground'>Lata do emerytury:</span>
-												<span className='font-bold text-foreground'>{yearsToRetirement} lat</span>
+									{/* Szczegóły prognozy - collapsible */}
+									<Card className='p-2.5 bg-muted/20 border-0'>
+										<button
+											onClick={() => setShowDetails(!showDetails)}
+											className='w-full flex items-center justify-between text-left'>
+											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
+												<TrendingUp className='w-3.5 h-3.5 text-primary' />
+												Szczegóły prognozy
+											</span>
+											{showDetails ? <ChevronUp className='w-3.5 h-3.5' /> : <ChevronDown className='w-3.5 h-3.5' />}
+										</button>
+										{showDetails && (
+											<div className='mt-2 space-y-1.5 text-xs'>
+												<div className='flex justify-between'>
+													<span className='text-muted-foreground'>Lata do emerytury:</span>
+													<span className='font-semibold text-foreground'>{yearsToRetirement} lat</span>
+												</div>
+												<div className='flex justify-between'>
+													<span className='text-muted-foreground'>Całkowity kapitał:</span>
+													<span className='font-semibold text-foreground'>
+														{formData.totalCapital?.toLocaleString('pl-PL')} zł
+													</span>
+												</div>
+												<div className='flex justify-between'>
+													<span className='text-muted-foreground'>Czas pobierania:</span>
+													<span className='font-semibold text-foreground'>
+														{formData.lifeExpectancyMonths ? Math.round(formData.lifeExpectancyMonths / 12) : 0} lat
+													</span>
+												</div>
+												<div className='flex justify-between'>
+													<span className='text-muted-foreground'>Wzrost wynagrodzeń:</span>
+													<span className='font-semibold text-foreground'>3% rocznie</span>
+												</div>
+												<div className='flex justify-between'>
+													<span className='text-muted-foreground'>Inflacja:</span>
+													<span className='font-semibold text-foreground'>2.5% rocznie</span>
+												</div>
 											</div>
-											<div className='flex justify-between'>
-												<span className='text-muted-foreground'>Całkowity kapitał:</span>
-												<span className='font-bold text-foreground'>
-													{formData.totalCapital?.toLocaleString('pl-PL')} zł
+										)}
+									</Card>
+
+									{/* Rekomendacje - kompaktowe */}
+									{formData.replacementRate && formData.replacementRate < 60 && (
+										<Card className='p-2.5 bg-yellow/10 border-0'>
+											<p className='text-xs text-foreground flex items-start gap-2'>
+												<AlertCircle className='w-3.5 h-3.5 text-yellow flex-shrink-0 mt-0.5' />
+												<span>
+													{formData.replacementRate < 40
+														? 'Niska stopa zastąpienia - rozważ dodatkowe oszczędzanie'
+														: 'Warto pomyśleć o dodatkowym zabezpieczeniu emerytalnym'}
 												</span>
-											</div>
-											<div className='flex justify-between'>
-												<span className='text-muted-foreground'>Czas pobierania:</span>
-												<span className='font-bold text-foreground'>
-													{formData.lifeExpectancyMonths ? Math.round(formData.lifeExpectancyMonths / 12) : 0} lat
-												</span>
-											</div>
-											<div className='flex justify-between'>
-												<span className='text-muted-foreground'>Średni wzrost wynagrodzeń:</span>
-												<span className='font-bold text-foreground'>3% rocznie</span>
-											</div>
-											<div className='flex justify-between'>
-												<span className='text-muted-foreground'>Zakładana inflacja:</span>
-												<span className='font-bold text-foreground'>2.5% rocznie</span>
-											</div>
-										</div>
-									</Card>
+											</p>
+										</Card>
+									)}
 
-									{/* Rekomendacje */}
-									<Card className='p-6 bg-yellow/10 border-2 border-yellow'>
-										<h3 className='text-lg font-bold text-foreground mb-3 flex items-center gap-2'>
-											<AlertCircle className='w-5 h-5 text-yellow' />
-											Rekomendacje
-										</h3>
-										<div className='space-y-2 text-sm text-foreground'>
-											{formData.replacementRate && formData.replacementRate < 40 && (
-												<p>⚠️ Niska stopa zastąpienia - rozważ dodatkowe oszczędzanie (III filar)</p>
-											)}
-											{formData.replacementRate && formData.replacementRate >= 40 && formData.replacementRate < 60 && (
-												<p>⚡ Przeciętna stopa - warto pomyśleć o dodatkowym zabezpieczeniu</p>
-											)}
-											{formData.replacementRate && formData.replacementRate >= 60 && (
-												<p>✅ Dobra stopa zastąpienia - kontynuuj obecną strategię</p>
-											)}
-											{yearsToRetirement > 10 && <p>🕐 Masz jeszcze czas na optymalizację swojej emerytury</p>}
-										</div>
-									</Card>
-
-									{/* Główny CTA - Dashboard */}
-									<div className='space-y-3'>
-										<Button
-											onClick={() => {
-												// Zapisz dane do localStorage przed przejściem
-												localStorage.setItem(
-													'pensionCalculatorData',
-													JSON.stringify({
-														age: formData.age,
-														gender: formData.gender,
-														grossSalary: formData.grossSalary,
-														workStartYear: formData.workStartYear,
-														plannedRetirementYear: formData.plannedRetirementYear,
-														zusAccountBalance: formData.zusAccountBalance,
-														zusSubaccountBalance: formData.zusSubaccountBalance,
-														includeSickLeave: formData.includeSickLeave,
-													})
-												)
-												window.location.href = '/dashboard'
-											}}
-											size='lg'
-											className='w-full bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold py-6 text-xl rounded-[0.25rem] transition-all duration-150'>
-											Zobacz szczegółową analizę rok po roku
-											<TrendingUp className='ml-2 w-6 h-6' />
-										</Button>
-										<p className='text-xs text-center text-muted-foreground'>
-											Edytuj wynagrodzenia, dodaj zwolnienia i zobacz wzrost kapitału
-										</p>
-									</div>
+									{/* Główny CTA - Dashboard - zielony ZUS */}
+									<Button
+										onClick={() => {
+											// Zapisz dane do localStorage przed przejściem
+											localStorage.setItem(
+												'pensionCalculatorData',
+												JSON.stringify({
+													age: formData.age,
+													gender: formData.gender,
+													grossSalary: formData.grossSalary,
+													workStartYear: formData.workStartYear,
+													plannedRetirementYear: formData.plannedRetirementYear,
+													zusAccountBalance: formData.zusAccountBalance,
+													zusSubaccountBalance: formData.zusSubaccountBalance,
+													includeSickLeave: formData.includeSickLeave,
+												})
+											)
+											window.location.href = '/dashboard'
+										}}
+										size='lg'
+										className='w-full bg-[var(--zus-green-primary)] hover:bg-blue-dark text-white font-bold py-8 text-base rounded transition-all duration-150 shadow-sm'>
+										Zobacz szczegółową analizę rok po roku
+										<TrendingUp className='ml-2 w-5 h-5' />
+									</Button>
 								</>
 							) : (
-								<Card className='p-8 text-center'>
-									<div className='text-6xl mb-4'>🧮</div>
-									<h3 className='text-xl font-bold text-foreground mb-2'>Rozpocznij kalkulację</h3>
-									<p className='text-muted-foreground'>
-										{!formData.gender
-											? 'Wybierz płeć, aby zobaczyć prognozę emerytury'
-											: 'Dostosuj parametry, aby zobaczyć swoją przyszłą emeryturę'}
+								<Card className='p-10 text-center border border-dashed border-gray-200'>
+									<div className='text-5xl mb-3'>🧮</div>
+									<h3 className='text-base font-semibold text-foreground mb-2'>Rozpocznij kalkulację</h3>
+									<p className='text-sm text-muted-foreground'>
+										{!formData.gender ? 'Wybierz płeć z lewej strony' : 'Dostosuj parametry, aby zobaczyć prognozę'}
 									</p>
 								</Card>
 							)}
