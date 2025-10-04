@@ -245,7 +245,7 @@ export default function Home() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-20 px-4">
+      <section className="py-40 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
@@ -283,8 +283,63 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Features Section */}
+      <section className="py-20 px-4 bg-muted">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasymulujesz?</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Kompleksowe narzędzie do prognozowania Twojej przyszłej emerytury
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Calculator,
+                title: "Wysokość emerytury",
+                description: "Oblicz przewidywaną wysokość świadczenia emerytalnego w wartości rzeczywistej i urealnionej",
+              },
+              {
+                icon: LineChart,
+                title: "Stopa zastąpienia",
+                description: "Zobacz, jaki procent Twojego wynagrodzenia będzie stanowić Twoja emerytura",
+              },
+              {
+                icon: Calendar,
+                title: "Scenariusze przejścia",
+                description: "Symuluj różne warianty wieku przejścia na emeryturę i zobacz wpływ na wysokość świadczenia",
+              },
+              {
+                icon: TrendingUp,
+                title: "Wzrost kapitału",
+                description: "Śledź, jak zwiększa się kwota zgromadzona na Twoim koncie i subkoncie w ZUS",
+              },
+              {
+                icon: Users,
+                title: "Wpływ zwolnień lekarskich",
+                description: "Uwzględnij średnią długość zwolnień i zobacz, jak wpływają na wysokość emerytury",
+              },
+              {
+                icon: Target,
+                title: "Porównanie ze średnią",
+                description: "Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia",
+              },
+            ].map((feature, index) => (
+              <Card key={index} className="p-6 hover:shadow-lg transition-shadow bg-card border">
+                <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h4 className="text-xl font-bold text-foreground mb-2">{feature.title}</h4>
+                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pension Groups Comparison Section */}
-      <section className="py-12 px-4" ref={chartSectionRef}>
+      <section className="py-40 px-4" ref={chartSectionRef}>
         <div className="container mx-auto max-w-6xl">
           {/* Pension Groups Comparison - Interactive Section */}
           <div className="text-center mb-16">
@@ -651,61 +706,6 @@ export default function Home() {
               </Card>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-muted">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasymulujesz?</h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Kompleksowe narzędzie do prognozowania Twojej przyszłej emerytury
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Calculator,
-                title: "Wysokość emerytury",
-                description: "Oblicz przewidywaną wysokość świadczenia emerytalnego w wartości rzeczywistej i urealnionej",
-              },
-              {
-                icon: LineChart,
-                title: "Stopa zastąpienia",
-                description: "Zobacz, jaki procent Twojego wynagrodzenia będzie stanowić Twoja emerytura",
-              },
-              {
-                icon: Calendar,
-                title: "Scenariusze przejścia",
-                description: "Symuluj różne warianty wieku przejścia na emeryturę i zobacz wpływ na wysokość świadczenia",
-              },
-              {
-                icon: TrendingUp,
-                title: "Wzrost kapitału",
-                description: "Śledź, jak zwiększa się kwota zgromadzona na Twoim koncie i subkoncie w ZUS",
-              },
-              {
-                icon: Users,
-                title: "Wpływ zwolnień lekarskich",
-                description: "Uwzględnij średnią długość zwolnień i zobacz, jak wpływają na wysokość emerytury",
-              },
-              {
-                icon: Target,
-                title: "Porównanie ze średnią",
-                description: "Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia",
-              },
-            ].map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow bg-card border">
-                <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h4 className="text-xl font-bold text-foreground mb-2">{feature.title}</h4>
-                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-              </Card>
-            ))}
-          </div>
         </div>
       </section>
 
