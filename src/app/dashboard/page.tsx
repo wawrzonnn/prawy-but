@@ -28,6 +28,7 @@ interface YearData {
 	sickLeaveDays: number
 	accountBalance: number
 	subaccountBalance: number
+	realCapital: number
 	isEditing?: boolean
 }
 
@@ -54,6 +55,7 @@ export default function Dashboard() {
 	const [showAddSickLeave, setShowAddSickLeave] = useState(false)
 	const [customSalaries, setCustomSalaries] = useState<Record<number, number>>({})
 	const [postalCode, setPostalCode] = useState('')
+	const [showAllYears, setShowAllYears] = useState(false)
 
 	// Import danych z localStorage (z formularza)
 	useEffect(() => {
@@ -91,13 +93,15 @@ export default function Dashboard() {
 			const yearsSinceStart = year - parameters.workStartYear
 			const age = parameters.currentAge + (year - currentYear)
 
-			// Wynagrodzenie z uwzględnieniem wzrostu lub custom wartość
+			// Wynagrodzenie z uwzględnieniem wzrostu realnego + inflacji lub custom wartość
 			let grossSalary: number
 			if (customSalaries[year]) {
 				grossSalary = customSalaries[year]
 			} else {
 				const yearsSinceNow = year - currentYear
-				const salaryMultiplier = Math.pow(1 + parameters.wageGrowthRate / 100, yearsSinceNow)
+				// Nominalne wynagrodzenie = wzrost realny + inflacja
+				const nominalGrowthRate = (parameters.wageGrowthRate + parameters.inflationRate) / 100
+				const salaryMultiplier = Math.pow(1 + nominalGrowthRate, yearsSinceNow)
 				grossSalary = Math.round(parameters.currentSalary * salaryMultiplier)
 			}
 
@@ -116,6 +120,11 @@ export default function Dashboard() {
 			accountBalance += effectiveContribution * 0.81 // 81% na konto główne
 			subaccountBalance += effectiveContribution * 0.19 // 19% na subkonto
 
+			// Realna wartość kapitału (zdyskontowana o inflację)
+			const yearsSinceNow = year - currentYear
+			const inflationFactor = Math.pow(1 + parameters.inflationRate / 100, yearsSinceNow)
+			const realCapital = (accountBalance + subaccountBalance) / inflationFactor
+
 			years.push({
 				year,
 				age,
@@ -124,6 +133,7 @@ export default function Dashboard() {
 				sickLeaveDays,
 				accountBalance: Math.round(accountBalance),
 				subaccountBalance: Math.round(subaccountBalance),
+				realCapital: Math.round(realCapital),
 			})
 		}
 
@@ -193,6 +203,7 @@ export default function Dashboard() {
 		yearData.length > 0
 			? yearData[yearData.length - 1].accountBalance + yearData[yearData.length - 1].subaccountBalance
 			: 0
+	const realTotalCapital = yearData.length > 0 ? yearData[yearData.length - 1].realCapital : 0
 	const currentYear = new Date().getFullYear()
 	const yearsToRetirement = parameters.retirementYear - currentYear
 
@@ -201,6 +212,14 @@ export default function Dashboard() {
 	let lifeExpectancyYears = parameters.gender === 'female' ? 24 : 20
 	const lifeExpectancyMonths = lifeExpectancyYears * 12
 	const monthlyPension = Math.round(totalCapital / lifeExpectancyMonths)
+	const realMonthlyPension = Math.round(realTotalCapital / lifeExpectancyMonths)
+
+	// Przygotuj dane do wyświetlenia w tabeli
+	const displayYears = showAllYears
+		? yearData
+		: yearData.length > 10
+			? [...yearData.slice(0, 5), ...yearData.slice(-5)]
+			: yearData
 
 	return (
 		<>
@@ -253,9 +272,9 @@ export default function Dashboard() {
 				{/* Main Content */}
 				<div className='pt-24 pb-20 px-4'>
 					<div className='container mx-auto max-w-7xl'>
-						<div className='text-center mb-8'>
-							<h1 className='text-4xl md:text-5xl font-bold text-foreground mb-4'>Dashboard Symulacji Emerytalnej</h1>
-							<p className='text-xl text-muted-foreground'>Szczegółowa analiza rok po roku</p>
+						<div className='text-center mb-6'>
+							<h1 className='text-3xl md:text-4xl font-bold text-foreground mb-3'>Dashboard Symulacji Emerytalnej</h1>
+							<p className='text-lg text-muted-foreground'>Szczegółowa analiza rok po roku</p>
 
 							{/* Przyciski akcji */}
 							<div className='flex items-center justify-center gap-4 mt-6 no-print'>
@@ -274,9 +293,9 @@ export default function Dashboard() {
 						</div>
 
 						{/* Wykres wzrostu kapitału */}
-						<Card className='p-8 mb-8'>
-							<h2 className='text-2xl font-bold text-foreground mb-6 flex items-center gap-2'>
-								<TrendingUp className='w-6 h-6 text-primary' />
+						<Card className='p-6 mb-6 border-0 bg-muted/20'>
+							<h2 className='text-xl font-bold text-foreground mb-6 flex items-center gap-2'>
+								<TrendingUp className='w-5 h-5 text-primary' />
 								Wzrost kapitału emerytalnego
 							</h2>
 
@@ -409,27 +428,39 @@ export default function Dashboard() {
 							{/* Tabela lat - 2 kolumny */}
 							<div className='lg:col-span-2 space-y-6'>
 								{/* Podsumowanie */}
-								<Card className='p-6 bg-[var(--zus-green-primary)] text-white'>
-									<h3 className='text-xl font-bold mb-4'>Podsumowanie prognozy</h3>
-									<div className='grid grid-cols-3 gap-4'>
+								<Card className='p-5 border-0 bg-green-50/50'>
+									<h3 className='text-lg font-bold mb-4 text-foreground'>Podsumowanie prognozy</h3>
+									<div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
 										<div>
-											<div className='text-sm opacity-80'>Całkowity kapitał</div>
-											<div className='text-2xl font-bold'>{totalCapital.toLocaleString('pl-PL')} zł</div>
+											<div className='text-xs text-muted-foreground mb-1'>Kapitał nominalny</div>
+											<div className='text-xl font-bold text-foreground'>{totalCapital.toLocaleString('pl-PL')} zł</div>
 										</div>
 										<div>
-											<div className='text-sm opacity-80'>Miesięczna emerytura</div>
-											<div className='text-2xl font-bold'>{monthlyPension.toLocaleString('pl-PL')} zł</div>
+											<div className='text-xs text-muted-foreground mb-1'>Kapitał realny</div>
+											<div className='text-xl font-bold text-foreground'>
+												{realTotalCapital.toLocaleString('pl-PL')} zł
+											</div>
+											<div className='text-xs text-muted-foreground mt-0.5'>w dzisiejszych zł</div>
 										</div>
 										<div>
-											<div className='text-sm opacity-80'>Lata do emerytury</div>
-											<div className='text-2xl font-bold'>{yearsToRetirement} lat</div>
+											<div className='text-xs text-muted-foreground mb-1'>Emerytura nominalna</div>
+											<div className='text-xl font-bold text-foreground'>
+												{monthlyPension.toLocaleString('pl-PL')} zł
+											</div>
+										</div>
+										<div>
+											<div className='text-xs text-muted-foreground mb-1'>Emerytura realna</div>
+											<div className='text-xl font-bold text-[var(--zus-green-primary)]'>
+												{realMonthlyPension.toLocaleString('pl-PL')} zł
+											</div>
+											<div className='text-xs text-muted-foreground mt-0.5'>w dzisiejszych zł</div>
 										</div>
 									</div>
 								</Card>
 
 								{/* Tabela rok po roku */}
-								<Card className='p-6'>
-									<h3 className='text-xl font-bold text-foreground mb-4'>Szczegóły rok po roku</h3>
+								<Card className='p-5 border-0 bg-white'>
+									<h3 className='text-lg font-bold text-foreground mb-4'>Szczegóły rok po roku</h3>
 									<div className='overflow-x-auto'>
 										<table className='w-full text-sm'>
 											<thead>
@@ -439,11 +470,11 @@ export default function Dashboard() {
 													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Wynagrodzenie</th>
 													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Składka</th>
 													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Dni choroby</th>
-													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Kapitał</th>
+													<th className='text-right py-2 px-2 font-medium text-muted-foreground'>Kapitał realny</th>
 												</tr>
 											</thead>
 											<tbody className='divide-y'>
-												{yearData.map((data, index) => (
+												{displayYears.map((data, index) => (
 													<tr key={data.year} className='hover:bg-muted/50 transition-colors'>
 														<td className='py-2 px-2 font-medium'>{data.year}</td>
 														<td className='text-right py-2 px-2'>{data.age}</td>
@@ -499,28 +530,45 @@ export default function Dashboard() {
 															{data.sickLeaveDays > 0 && <span className='text-orange-600'>{data.sickLeaveDays}</span>}
 														</td>
 														<td className='text-right py-2 px-2 font-medium'>
-															{(data.accountBalance + data.subaccountBalance).toLocaleString('pl-PL')} zł
+															{data.realCapital.toLocaleString('pl-PL')} zł
 														</td>
 													</tr>
 												))}
 											</tbody>
 										</table>
 									</div>
+
+									{/* Przycisk "Pokaż więcej" */}
+									{yearData.length > 10 && !showAllYears && (
+										<div className='mt-4 text-center'>
+											<Button onClick={() => setShowAllYears(true)} variant='outline' size='sm' className='text-xs'>
+												Pokaż wszystkie lata ({yearData.length} lat)
+											</Button>
+										</div>
+									)}
+
+									{showAllYears && yearData.length > 10 && (
+										<div className='mt-4 text-center'>
+											<Button onClick={() => setShowAllYears(false)} variant='outline' size='sm' className='text-xs'>
+												Zwiń tabelę
+											</Button>
+										</div>
+									)}
 								</Card>
 							</div>
 
 							{/* Sidebar - parametry i zwolnienia */}
 							<div className='space-y-6'>
 								{/* Parametry globalne */}
-								<Card className='p-6'>
-									<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
-										<Settings className='w-5 h-5 text-primary' />
+								<Card className='p-5 border-0 bg-white'>
+									<h3 className='text-base font-bold text-foreground mb-4 flex items-center gap-2'>
+										<Settings className='w-4 h-4 text-primary' />
 										Parametry symulacji
 									</h3>
 									<div className='space-y-4'>
 										<div>
 											<label className='block text-sm font-medium text-foreground mb-2'>
-												Wzrost wynagrodzeń (rocznie)
+												Wzrost wynagrodzeń realny (rocznie)
 											</label>
 											<div className='flex items-center gap-3'>
 												<input
@@ -536,6 +584,7 @@ export default function Dashboard() {
 													{parameters.wageGrowthRate}%
 												</span>
 											</div>
+											<p className='text-xs text-muted-foreground mt-1'>Wzrost ponad inflację</p>
 										</div>
 
 										<div>
@@ -554,14 +603,17 @@ export default function Dashboard() {
 													{parameters.inflationRate}%
 												</span>
 											</div>
+											<p className='text-xs text-muted-foreground mt-1'>
+												Nominalny wzrost: {(parameters.wageGrowthRate + parameters.inflationRate).toFixed(1)}%
+											</p>
 										</div>
 									</div>
 								</Card>
 
 								{/* Zwolnienia chorobowe */}
-								<Card className='p-6'>
+								<Card className='p-5 border-0 bg-white'>
 									<div className='flex items-center justify-between mb-4'>
-										<h3 className='text-lg font-bold text-foreground flex items-center gap-2'>
+										<h3 className='text-base font-bold text-foreground flex items-center gap-2'>
 											🏥 Zwolnienia lekarskie
 										</h3>
 										<Button
@@ -573,17 +625,17 @@ export default function Dashboard() {
 									</div>
 
 									{showAddSickLeave && (
-										<div className='mb-4 p-3 border rounded-lg space-y-2'>
+										<div className='mb-4 p-3 border-0 bg-muted/20 rounded space-y-2'>
 											<input
 												type='number'
 												placeholder='Rok'
-												className='w-full px-3 py-2 border rounded text-sm'
+												className='w-full px-3 py-2 border border-gray-100 rounded text-sm'
 												id='sickLeaveYear'
 											/>
 											<input
 												type='number'
 												placeholder='Liczba dni'
-												className='w-full px-3 py-2 border rounded text-sm'
+												className='w-full px-3 py-2 border border-gray-100 rounded text-sm'
 												id='sickLeaveDays'
 											/>
 											<div className='flex gap-2'>
@@ -617,7 +669,7 @@ export default function Dashboard() {
 											sickLeaves.map(sl => (
 												<div
 													key={sl.id}
-													className='flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg'>
+													className='flex items-center justify-between p-3 bg-orange-50/50 border-0 rounded'>
 													<div>
 														<div className='font-medium text-foreground'>{sl.year}</div>
 														<div className='text-sm text-orange-600'>{sl.days} dni</div>
@@ -635,7 +687,7 @@ export default function Dashboard() {
 									</div>
 
 									{sickLeaves.length > 0 && (
-										<div className='mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg'>
+										<div className='mt-4 p-3 bg-orange-50/50 border-0 rounded'>
 											<p className='text-xs text-orange-700'>
 												<strong>Wpływ na kapitał:</strong> Zwolnienia zmniejszają składki emerytalne, co obniża kapitał
 												emerytalny
@@ -645,8 +697,8 @@ export default function Dashboard() {
 								</Card>
 
 								{/* Kod pocztowy */}
-								<Card className='p-6 bg-muted/50 border-dashed'>
-									<h3 className='text-lg font-bold text-foreground mb-3 flex items-center gap-2'>
+								<Card className='p-5 border-0 bg-muted/20'>
+									<h3 className='text-base font-bold text-foreground mb-3 flex items-center gap-2'>
 										📮 Kod pocztowy (opcjonalnie)
 									</h3>
 									<p className='text-xs text-muted-foreground mb-3'>
@@ -662,19 +714,19 @@ export default function Dashboard() {
 												setPostalCode(value)
 											}
 										}}
-										className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'
+										className='w-full px-4 py-3 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'
 										maxLength={6}
 									/>
 									<p className='text-xs text-muted-foreground mt-2'>Format: 00-000 (np. 00-950 dla Warszawy)</p>
 								</Card>
 
 								{/* Info */}
-								<Card className='p-6 bg-blue-50 border-blue-200'>
+								<Card className='p-5 border-0 bg-blue-50/50'>
 									<div className='flex items-start gap-3'>
-										<AlertCircle className='w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5' />
-										<div className='text-sm text-blue-800'>
+										<AlertCircle className='w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5' />
+										<div className='text-xs text-blue-800'>
 											<p className='font-medium mb-1'>Jak używać dashboardu?</p>
-											<ul className='space-y-1 text-xs'>
+											<ul className='space-y-0.5 text-xs'>
 												<li>• Dostosuj parametry wzrostu i inflacji</li>
 												<li>• Dodaj konkretne zwolnienia chorobowe</li>
 												<li>• Obserwuj wzrost kapitału na wykresie</li>
