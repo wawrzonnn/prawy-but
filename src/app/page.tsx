@@ -99,6 +99,11 @@ export default function Home() {
     const timer = setTimeout(() => setIsChartVisible(true), 100)
     return () => clearTimeout(timer)
   }, [chartType])
+  
+  // Set isClient to true on component mount
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Track mouse position for tooltip
 // Track mouse position for tooltip
@@ -282,16 +287,16 @@ const handleMouseMove = (e: React.MouseEvent) => {
       </header>
 
       {/* Hero Section - Question about expected pension */}
-      <section className="h-[90dvh] flex items-center px-4">
+      <section className="min-h-[90dvh] py-32 md:py-0 md:h-[90dvh] flex items-center px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-row w-full gap-8">
+          <div className="flex flex-col md:flex-row w-full gap-12 md:gap-8">
             {/* Lewa część: tekst + guzik */}
-            <div className="flex-1 flex flex-col justify-center items-start space-y-6">
-              <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]">
-                Jaką chcesz mieć emeryturę?
+            <div className="w-full md:w-[40%] flex flex-col justify-center items-start space-y-6">
+              <h2 className="text-4xl md:text-6xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]">
+              Sprawdź na jaką emeryturę dziś pracujesz
               </h2>
 
-              <p className="text-xl md:text-2xl text-muted-foreground text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
+              <p className="text-lg md:text-xl text-muted-foreground text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
                 Twoja przyszła emerytura nie musi być zagadką!
                 Zrozum system, poznaj liczby i przejmij kontrolę nad swoją finansową przyszłością.
               </p>
@@ -309,8 +314,44 @@ const handleMouseMove = (e: React.MouseEvent) => {
               </div>
             </div>
             
-            {/* Prawa część: na razie pusta */}
-            <div className="flex-1"></div>
+            {/* Prawa część: obrazy z kalkulatorem */}
+            <div className="w-full md:w-[60%] relative flex justify-center items-center mt-12 md:mt-0">
+              <div className="relative w-full max-w-xl h-[300px] md:h-[450px]">
+                {/* Efekt tła - koło */}
+                <div className="absolute z-0 w-56 h-56 md:w-80 md:h-80 bg-yellow/20 rounded-full blur-3xl animate-pulse" 
+                     style={{ left: '30%', top: '25%' }}></div>
+                     
+                {/* Symulacja (teraz z tyłu) */}
+                <div 
+                  className="absolute z-10 shadow-xl rounded-xl overflow-hidden border-4 border-white transition-all duration-1000 hover:-translate-y-2 opacity-0 animate-[fadeIn_1s_ease-out_0.3s_forwards]" 
+                  style={{ width: '85%', left: '5%', top: '20%' }}
+                >
+                  <Image
+                    src="/symulacja_emerytalna_demo.png"
+                    alt="Symulacja emerytalna"
+                    width={500}
+                    height={300}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </div>
+                
+                {/* Kalkulator (teraz z przodu) */}
+                <div 
+                  className="absolute z-20 shadow-xl rounded-xl overflow-hidden border-4 border-white transition-all duration-1000 hover:translate-y-2 opacity-0 animate-[fadeIn_1s_ease-out_0.6s_forwards]" 
+                  style={{ width: '80%', right: '5%', top: '50%' }}
+                >
+                  <Image
+                    src="/kalkulator_emerytalny_demo.png"
+                    alt="Kalkulator emerytalny"
+                    width={500}
+                    height={300}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
