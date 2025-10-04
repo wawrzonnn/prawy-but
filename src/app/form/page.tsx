@@ -26,7 +26,7 @@ export default function Form() {
 		sickLeaveImpactPercentage?: number
 	}>({
 		age: 30,
-		gender: '',
+		gender: 'male',
 		grossSalary: 7500,
 		workStartYear: 2015,
 		plannedRetirementYear: 2055,
