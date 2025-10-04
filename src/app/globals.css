@@ -6,6 +6,8 @@
   /* ZUS Brand Colors - Real colors from zus.pl */
   --zus-green-primary: oklch(0.48 0.12 155); /* rgb(0, 120, 52) */
   --zus-green-secondary: oklch(0.5 0.11 150); /* rgb(17, 120, 59) */
+  --zus-green-light: oklch(0.6 0.10 155); /* lighter green for charts */
+  --zus-green-dark: oklch(0.40 0.13 155); /* darker green for charts */
   --zus-gray-light: oklch(0.94 0.005 250); /* rgb(239, 239, 239) */
   --zus-white: oklch(1 0 0); /* rgb(255, 255, 255) */
   --zus-black: oklch(0.15 0 0); /* rgb(0, 0, 0) */
@@ -91,7 +93,6 @@
   --sidebar-primary-foreground: oklch(0.15 0 0);
   --sidebar-accent: oklch(0.3 0.01 250);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.3 0.01 250);
   /* Added blue color tokens for dark theme */
   --blue: oklch(0.35 0.12 240);
   --blue-dark: oklch(0.25 0.1 240);
@@ -106,6 +107,41 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Pension Chart Animations */
+@keyframes growUp {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  50% {
+    transform: translateX(100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(100%) skewX(-15deg);
   }
 }
 

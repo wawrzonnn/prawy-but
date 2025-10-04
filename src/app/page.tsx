@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Calculator, TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart, Users, Award, AlertCircle, Lightbulb, BarChart3 } from "lucide-react"
@@ -10,13 +10,30 @@ import { Calculator, TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart,
 const funFacts = [
   "Czy wiesz, że najwyższa emerytura w Polsce wynosi ponad 48 000 zł miesięcznie? Otrzymuje ją emerytowany górnik z województwa śląskiego, który przepracował 42 lata.",
   "Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.",
-  "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5-7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30-35%!",
-  "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto."
-]
+  "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5–7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30–35%.",
+  "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto.",
+
+  "Średnia emerytura wypłacana przez ZUS w 2023 roku wynosiła 3 270,23 zł, a sama emerytura starcza – 3 389,49 zł.",
+  "W Polsce miesięcznie świadczenia emerytalne z ZUS otrzymuje około 7,9 miliona osób.",
+  "Polski system emerytalny opiera się na trzech filarach: obowiązkowych (I i II) oraz dobrowolnym (III – np. IKE, IKZE).",
+  "Składka emerytalna wynosi 19,52% podstawy wymiaru i jest współdzielona przez pracownika i pracodawcę.",
+  "Kobiety mogą otrzymywać tymczasową emeryturę z subkonta do czasu osiągnięcia wieku 65 lat – w 2023 roku wypłacano ok. 502 tys. takich świadczeń miesięcznie.",
+  "Osoby z niewystarczającym stażem składkowym mogą otrzymać gwarantowaną emeryturę minimalną, jeśli pracowały co najmniej 20 lat (kobiety) lub 25 lat (mężczyźni).",
+  "Rolnicy korzystają z odrębnego systemu emerytalnego KRUS, który obejmuje osoby prowadzące gospodarstwa rolne.",
+  "Emerytura socjalna przysługuje osobom całkowicie niezdolnym do pracy z powodu choroby powstałej przed 18. rokiem życia – w 2023 roku korzystało z niej ponad 293 tys. osób.",
+  "Od 2021 roku w Polsce wypłacana jest coroczna „czternasta emerytura” – dodatkowe świadczenie równe kwocie minimalnej emerytury brutto (z limitem dochodowym).",
+  "W Polsce nadal funkcjonują dwa równoległe systemy emerytalne: stary (dla osób urodzonych przed 1949 r.) i nowy (po reformie z 1999 r.)."
+];
 
 export default function Home() {
   const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
   const [desiredPension, setDesiredPension] = useState<string>("5000")
+  const [isChartVisible, setIsChartVisible] = useState(false)
+  const [chartType, setChartType] = useState<'bar' | 'pie'>('bar')
+  const [chartKey, setChartKey] = useState(0)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const [isSpinning, setIsSpinning] = useState(false)
+  const chartSectionRef = useRef<HTMLDivElement>(null)
 
   const pensionGroups = [
     {
@@ -50,6 +67,57 @@ export default function Home() {
   useEffect(() => {
     setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
   }, [])
+
+  // Function to randomize fact with spinning animation (avoid repeating same fact)
+  const randomizeFact = () => {
+    setIsSpinning(true)
+    setTimeout(() => {
+      const availableFacts = funFacts.filter(fact => fact !== currentFact)
+      const newFact = availableFacts[Math.floor(Math.random() * availableFacts.length)]
+      setCurrentFact(newFact)
+      setIsSpinning(false)
+    }, 800)
+  }
+
+  // Reset and trigger animation when chart type changes
+  useEffect(() => {
+    setChartKey(prev => prev + 1)
+    setIsChartVisible(false)
+    const timer = setTimeout(() => setIsChartVisible(true), 100)
+    return () => clearTimeout(timer)
+  }, [chartType])
+
+  // Track mouse position for tooltip
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setTooltipPosition({ x: e.clientX, y: e.clientY })
+  }
+
+  // Intersection Observer to trigger chart animation when section is visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isChartVisible) {
+            setIsChartVisible(true)
+          }
+        })
+      },
+      {
+        threshold: 0.2,
+        rootMargin: '0px'
+      }
+    )
+
+    if (chartSectionRef.current) {
+      observer.observe(chartSectionRef.current)
+    }
+
+    return () => {
+      if (chartSectionRef.current) {
+        observer.unobserve(chartSectionRef.current)
+      }
+    }
+  }, [isChartVisible])
 
   // Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
   const calculateRealPension = () => {
@@ -139,10 +207,15 @@ export default function Home() {
                   type="number"
                   value={desiredPension}
                   onChange={(e) => setDesiredPension(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                      e.preventDefault()
+                    }
+                  }}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="5000"
                   min="0"
-                  step="100"
                   aria-label="Oczekiwana kwota emerytury w złotych"
                 />
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight" aria-hidden="true">zł</span>
@@ -184,7 +257,7 @@ export default function Home() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-20 px-4">
+      <section className="py-40 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
@@ -197,7 +270,7 @@ export default function Home() {
             {[
               {
                 step: "01",
-                title: "Wprowadź dane",
+                title: "Wprowadź dane do formularza",
                 description: "Podaj podstawowe informacje: wiek, płeć, wynagrodzenie, planowany wiek emerytury oraz opcjonalnie dane z konta ZUS",
               },
               {
@@ -221,79 +294,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Pension Groups Comparison Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          {/* Pension Groups Comparison - Interactive Section */}
-          <div>
-            <Card className="p-8 md:p-12 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
-              <div className="text-center mb-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-                  Porównaj do rzeczywistości - Średnie emerytury w Polsce
-                </h3>
-                <p className="text-lg text-muted-foreground">
-                  Najedź na grupę, aby zobaczyć szczegóły i charakterystykę emerytów
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-4 gap-4 mb-8">
-                {pensionGroups.map((group, index) => (
-                  <Card
-                    key={index}
-                    className="p-6 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary bg-white"
-                    onMouseEnter={() => setSelectedPensionAmount(index)}
-                  >
-                    <div className="text-center">
-                      <div className="text-sm font-bold text-muted-foreground mb-2">{group.range}</div>
-                      <div className="text-3xl font-bold text-primary mb-1">{group.average}</div>
-                      <div className="text-sm text-muted-foreground font-medium">
-                        <BarChart3 className="w-4 h-4 inline mr-1" />
-                        {group.percentage} emerytów
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-
-              {selectedPensionAmount !== null && (
-                <Card className="p-6 bg-blue/10 border-2 border-blue">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="w-6 h-6 text-blue flex-shrink-0 mt-1" />
-                    <div>
-                      <h4 className="text-lg font-bold text-foreground mb-2">
-                        {pensionGroups[selectedPensionAmount].range}
-                      </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {pensionGroups[selectedPensionAmount].description}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </Card>
-          </div>
-
-          {/* Fun Fact Section */}
-          {currentFact && (
-            <div className="mt-8">
-              <Card className="p-6 bg-yellow/10 border-2 border-yellow">
-                <div className="flex items-start gap-4">
-                  <Lightbulb className="w-8 h-8 text-yellow flex-shrink-0" />
-                  <div>
-                    <h4 className="text-xl font-bold text-foreground mb-2">Ciekawostka</h4>
-                    <p className="text-lg text-foreground leading-relaxed">
-                      {currentFact}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      </section>
-
-
 
       {/* Features Section */}
       <section className="py-20 px-4 bg-muted">
@@ -350,6 +350,399 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pension Groups Comparison Section */}
+      <section className="py-40 px-4" ref={chartSectionRef}>
+        <div className="container mx-auto max-w-6xl">
+          {/* Pension Groups Comparison - Interactive Section */}
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">ZUS w liczbach i ciekawostkach</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Sprawdź, co naprawdę kryje się za emeryturą
+            </p>
+          </div>
+          <div>
+            <Card className="p-5 md:p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
+              <div className="text-center mb-6">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1.5">
+                Jak kształtują się emerytury w Polsce
+                </h3>
+                <p className="text-xs md:text-sm text-muted-foreground mb-3">
+                  Najedź na pasek, aby zobaczyć szczegóły
+                </p>
+                
+                {/* Chart type toggle */}
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => setChartType('bar')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      chartType === 'bar'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <BarChart3 className="w-3 h-3 inline mr-1" />
+                    Słupkowy
+                  </button>
+                  <button
+                    onClick={() => setChartType('pie')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      chartType === 'pie'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <PiggyBank className="w-3 h-3 inline mr-1" />
+                    Kołowy
+                  </button>
+                </div>
+              </div>
+
+              {/* Horizontal Bar Chart */}
+              {chartType === 'bar' && (
+                <div 
+                  key={`bar-${chartKey}`} 
+                  className="mb-6 space-y-3 h-[320px]" 
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => setSelectedPensionAmount(null)}
+                >
+                  {pensionGroups.map((group, index) => {
+                    const percentage = parseInt(group.percentage)
+                    // Using only ZUS brand colors - each bar different color
+                    const colors = [
+                      'bg-[var(--zus-blue-dark)]',
+                      'bg-[var(--zus-green-primary)]',
+                      'bg-[var(--zus-yellow)]',
+                      'bg-[var(--zus-blue)]'
+                    ]
+                    
+                    return (
+                      <div
+                        key={index}
+                        className="group cursor-pointer"
+                        onMouseEnter={() => setSelectedPensionAmount(index)}
+                      >
+                        {/* Label and value row */}
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              {group.range}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              (śr. {group.average})
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl font-bold text-[var(--zus-green-primary)] transition-all duration-300 group-hover:scale-110">
+                              {group.percentage}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              emerytów
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress bar container */}
+                        <div className="relative h-7 bg-[var(--zus-gray-light)] rounded-lg overflow-hidden border border-border/50 group-hover:border-border transition-all duration-300 group-hover:shadow-md">
+                          {/* Grid lines - showing 0 to 50% */}
+                          <div className="absolute inset-0 flex pointer-events-none">
+                            {[0, 10, 20, 30, 40, 50].map((mark) => (
+                              <div
+                                key={mark}
+                                className="absolute h-full border-l border-border/20"
+                                style={{ left: `${(mark / 50) * 100}%` }}
+                              >
+                                {mark > 0 && mark % 10 === 0 && (
+                                  <span className="absolute -top-4 -translate-x-1/2 text-[10px] text-muted-foreground/40 font-medium">
+                                    {mark}%
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Animated bar - scale to 50% max */}
+                          <div
+                            className={`h-full ${colors[index]} transition-all duration-1000 ease-out group-hover:brightness-110 relative shadow-sm`}
+                            style={{
+                              width: isChartVisible ? `${(percentage / 50) * 100}%` : '0%',
+                              transitionDelay: `${index * 200}ms`
+                            }}
+                          >
+                            {/* Shine effect on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                            
+                            {/* Percentage label inside bar */}
+                            <div className="absolute inset-0 flex items-center justify-end pr-2">
+                              <span className="text-white font-bold text-sm drop-shadow-lg">
+                                {percentage}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Pie Chart */}
+              {chartType === 'pie' && (
+                <div 
+                  key={`pie-${chartKey}`} 
+                  className="mb-6 h-[320px] flex items-center justify-center" 
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => setSelectedPensionAmount(null)}
+                >
+                  {/* Pie chart SVG with labels */}
+                  <div className="relative w-full h-full mx-auto">
+                    <svg viewBox="0 0 600 340" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                        <g transform="translate(300, 180)">
+                          {/* Draw pie segments */}
+                          {pensionGroups.map((group, index) => {
+                            const percentage = parseInt(group.percentage)
+                            const colors = [
+                              'var(--zus-blue-dark)',
+                              'var(--zus-green-primary)',
+                              'var(--zus-yellow)',
+                              'var(--zus-blue)'
+                            ]
+                            
+                            // Calculate cumulative percentage for positioning
+                            const prevPercentages = pensionGroups
+                              .slice(0, index)
+                              .reduce((sum, g) => sum + parseInt(g.percentage), 0)
+                            
+                            const startAngle = (prevPercentages / 100) * 360 - 90
+                            const endAngle = ((prevPercentages + percentage) / 100) * 360 - 90
+                            const midAngle = (startAngle + endAngle) / 2
+                            const largeArc = percentage > 50 ? 1 : 0
+                            
+                            // Convert to radians
+                            const startRad = (startAngle * Math.PI) / 180
+                            const endRad = (endAngle * Math.PI) / 180
+                            const midRad = (midAngle * Math.PI) / 180
+                            
+                            // Calculate path for donut - larger size
+                            const outerRadius = 140
+                            const innerRadius = 80
+                            const x1 = outerRadius * Math.cos(startRad)
+                            const y1 = outerRadius * Math.sin(startRad)
+                            const x2 = outerRadius * Math.cos(endRad)
+                            const y2 = outerRadius * Math.sin(endRad)
+                            const x3 = innerRadius * Math.cos(endRad)
+                            const y3 = innerRadius * Math.sin(endRad)
+                            const x4 = innerRadius * Math.cos(startRad)
+                            const y4 = innerRadius * Math.sin(startRad)
+                            
+                            const pathData = `
+                              M ${x1} ${y1}
+                              A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2}
+                              L ${x3} ${y3}
+                              A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4}
+                              Z
+                            `
+                            
+                            // Line starts from outer edge of donut (exactly at the edge)
+                            const lineStartRadius = 140
+                            const lineStartX = lineStartRadius * Math.cos(midRad)
+                            const lineStartY = lineStartRadius * Math.sin(midRad)
+                            
+                            // Line middle point (further out)
+                            const lineMidRadius = 155
+                            const lineMidX = lineMidRadius * Math.cos(midRad)
+                            const lineMidY = lineMidRadius * Math.sin(midRad)
+                            
+                            // Horizontal line end position
+                            const horizontalLength = 40
+                            const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
+                            const lineEndY = lineMidY
+                            
+                            // Text position
+                            const textOffset = lineMidX > 0 ? 5 : -5
+                            const textAnchor = lineMidX > 0 ? 'start' : 'end'
+                            
+                            return (
+                              <g key={index}>
+                                {/* Pie segment */}
+                                <g
+                                  style={{
+                                    opacity: isChartVisible ? 1 : 0,
+                                    transform: isChartVisible ? 'scale(1)' : 'scale(0.3)',
+                                    transformOrigin: '0 0',
+                                    transition: `all 0.8s ease-out ${index * 150}ms`
+                                  }}
+                                >
+                                  <path
+                                    d={pathData}
+                                    fill={colors[index]}
+                                    className="cursor-pointer transition-all duration-300 hover:opacity-80"
+                                    onMouseEnter={() => setSelectedPensionAmount(index)}
+                                  />
+                                </g>
+                                
+                                {/* Label line - matching segment color */}
+                                <g style={{
+                                  opacity: isChartVisible ? 1 : 0,
+                                  transition: `opacity 0.8s ease-out ${0.8 + index * 0.15}s`
+                                }}>
+                                  {/* Diagonal line from donut edge */}
+                                  <line
+                                    x1={lineStartX}
+                                    y1={lineStartY}
+                                    x2={lineMidX}
+                                    y2={lineMidY}
+                                    stroke={colors[index]}
+                                    strokeWidth="2"
+                                  />
+                                  {/* Horizontal line */}
+                                  <line
+                                    x1={lineMidX}
+                                    y1={lineMidY}
+                                    x2={lineEndX}
+                                    y2={lineEndY}
+                                    stroke={colors[index]}
+                                    strokeWidth="2"
+                                  />
+                                  
+                                  {/* Label text */}
+                                  <text
+                                    x={lineEndX + textOffset}
+                                    y={lineEndY - 10}
+                                    textAnchor={textAnchor}
+                                    className="text-sm font-bold"
+                                    fill={colors[index]}
+                                  >
+                                    {group.range}
+                                  </text>
+                                  <text
+                                    x={lineEndX + textOffset}
+                                    y={lineEndY + 8}
+                                    textAnchor={textAnchor}
+                                    className="text-base font-bold"
+                                    fill="var(--foreground)"
+                                  >
+                                    {group.percentage}
+                                  </text>
+                                </g>
+                              </g>
+                            )
+                          })}
+                          
+                          {/* Center white circle */}
+                          <circle cx="0" cy="0" r="80" fill="white" />
+                          
+                          {/* Center text */}
+                          <text
+                            x="0"
+                            y="-10"
+                            textAnchor="middle"
+                            className="text-base font-bold fill-muted-foreground"
+                          >
+                            Rozkład
+                          </text>
+                          <text
+                            x="0"
+                            y="15"
+                            textAnchor="middle"
+                            className="text-base font-bold fill-muted-foreground"
+                          >
+                            emerytur
+                          </text>
+                        </g>
+                      </svg>
+                    </div>
+                </div>
+              )}
+
+              {/* Tooltip */}
+              {selectedPensionAmount !== null && (() => {
+                const tooltipColors = [
+                  'var(--zus-blue-dark)',
+                  'var(--zus-green-primary)',
+                  'var(--zus-yellow)',
+                  'var(--zus-blue)'
+                ]
+                const currentColor = tooltipColors[selectedPensionAmount]
+                
+                return (
+                  <div 
+                    className="fixed z-50 pointer-events-none transition-all duration-200 ease-out"
+                    style={{
+                      left: `${tooltipPosition.x + 20}px`,
+                      top: `${tooltipPosition.y - 80}px`,
+                      maxWidth: '350px'
+                    }}
+                  >
+                    <div 
+                      className="bg-white rounded-lg shadow-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-150"
+                      style={{
+                        borderWidth: '2px',
+                        borderColor: currentColor
+                      }}
+                    >
+                      <div className="flex items-start gap-2 mb-2">
+                        <div 
+                          className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
+                          style={{ backgroundColor: currentColor }}
+                        ></div>
+                        <h4 
+                          className="text-sm font-bold leading-tight"
+                          style={{ color: currentColor }}
+                        >
+                          {pensionGroups[selectedPensionAmount].range}
+                        </h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed pl-5">
+                        {pensionGroups[selectedPensionAmount].description}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()}
+            </Card>
+          </div>
+
+          {/* Fun Fact Section */}
+          {currentFact && (
+            <div className="mt-24 px-20">
+              <div className="flex items-center gap-10">
+                {/* Left side - Large spinning wheel */}
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={randomizeFact}
+                    disabled={isSpinning}
+                    className="group relative focus:outline-none"
+                  >
+                    {/* Main spinning circle */}
+                    <div className={`w-64 h-64 rounded-full bg-yellow shadow-2xl transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105 hover:shadow-3xl'}`}>
+                      {/* Inner white circle */}
+                      <div className="w-48 h-48 rounded-full bg-white flex items-center justify-center shadow-inner">
+                        <Lightbulb className="w-32 h-32 text-yellow" />
+                      </div>
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Right side - Fun fact content */}
+                <div className="flex-1 min-h-[256px] flex items-center">
+                  <div>
+                    <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                      Ciekawostki emerytalne
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Kliknij koło, aby wylosować nową ciekawostkę
+                    </p>
+                    <p className={`text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ${isSpinning ? 'opacity-30' : 'opacity-100'}`}>
+                      {currentFact}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Stats Section */}
 {/*       <section className="py-20 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto max-w-6xl">
@@ -372,7 +765,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
-          Sprawdź swoją przyszłą emeryturę zanim zrobi to czas</h3>
+          Sprawdź swoją przyszłą emeryturę - zanim zrobi to czas</h3>
 
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty">
 Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.</p>
