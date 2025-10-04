@@ -2,10 +2,17 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Calculator, TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart, Users, Award, AlertCircle, Lightbulb, BarChart3 } from "lucide-react"
+
+const funFacts = [
+  "Czy wiesz, że najwyższa emerytura w Polsce wynosi ponad 48 000 zł miesięcznie? Otrzymuje ją emerytowany górnik z województwa śląskiego, który przepracował 42 lata.",
+  "Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.",
+  "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5-7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30-35%!",
+  "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto."
+]
 
 export default function Home() {
   const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
@@ -37,14 +44,11 @@ export default function Home() {
     }
   ]
 
-  const funFacts = [
-    "Czy wiesz, że najwyższa emerytura w Polsce wynosi ponad 48 000 zł miesięcznie? Otrzymuje ją emerytowany górnik z województwa śląskiego, który przepracował 42 lata.",
-    "Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.",
-    "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5-7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30-35%!",
-    "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto."
-  ]
+  const [currentFact, setCurrentFact] = useState("")
 
-  const [currentFact] = useState(funFacts[Math.floor(Math.random() * funFacts.length)])
+  useEffect(() => {
+    setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
+  }, [])
 
   return (
     <div className="min-h-screen bg-background">
@@ -152,19 +156,21 @@ export default function Home() {
           </div>
 
           {/* Fun Fact Section */}
-          <div className="mt-8">
-            <Card className="p-6 bg-yellow/10 border-2 border-yellow">
-              <div className="flex items-start gap-4">
-                <Lightbulb className="w-8 h-8 text-yellow flex-shrink-0" />
-                <div>
-                  <h4 className="text-xl font-bold text-foreground mb-2">Ciekawostka</h4>
-                  <p className="text-lg text-foreground leading-relaxed">
-                    {currentFact}
-                  </p>
+          {currentFact && (
+            <div className="mt-8">
+              <Card className="p-6 bg-yellow/10 border-2 border-yellow">
+                <div className="flex items-start gap-4">
+                  <Lightbulb className="w-8 h-8 text-yellow flex-shrink-0" />
+                  <div>
+                    <h4 className="text-xl font-bold text-foreground mb-2">Ciekawostka</h4>
+                    <p className="text-lg text-foreground leading-relaxed">
+                      {currentFact}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </div>
+              </Card>
+            </div>
+          )}
         </div>
       </section>
 
