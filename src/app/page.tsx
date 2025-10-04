@@ -980,11 +980,11 @@ const handleMouseMove = (e: React.MouseEvent) => {
 			{/* Footer */}
 			<footer className='py-12 px-4 bg-muted'>
 				<div className='container mx-auto max-w-6xl'>
-					<div className='flex flex-col md:flex-row justify-between items-center gap-6'>
-						<Link href='/' className='flex items-center'>
+					<div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-6'>
+						<Link href='/' className='flex items-center self-start'>
 							<Image src='/logozus.svg' alt='ZUS Logo' width={100} height={28} className='h-7 w-auto' />
 						</Link>
-						<p className='text-sm text-muted-foreground text-center'>
+						<p className='text-sm text-muted-foreground text-left'>
 							Narzędzie edukacyjne Zakładu Ubezpieczeń Społecznych do prognozowania wysokości emerytury
 						</p>
 					</div>
