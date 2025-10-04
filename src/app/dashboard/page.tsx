@@ -701,6 +701,7 @@ export default function Dashboard() {
 																	<span className='truncate'>{data.grossSalary.toLocaleString('pl-PL')}</span>
 																	<button
 																		onClick={() => setEditingYear(data.year)}
+																		aria-label={`Edytuj wynagrodzenie za rok ${data.year}`}
 																		className='text-blue-600/40 hover:text-blue-700 transition-colors no-print hidden md:inline'
 																		title='Edytuj wynagrodzenie'>
 																		<Edit2 className='w-3 h-3' />
@@ -803,20 +804,22 @@ export default function Dashboard() {
 									</h3>
 									<div className='space-y-3 md:space-y-4'>
 										<div>
-											<label className='block text-xs md:text-sm font-medium text-foreground mb-2'>
+											<label id="wage-growth-label" className='block text-xs md:text-sm font-medium text-foreground mb-2'>
 												Wzrost wynagrodzeń realny (rocznie)
 											</label>
 											<div className='flex items-center gap-2 md:gap-3'>
 												<input
+													id="wage-growth-rate"
+													aria-labelledby="wage-growth-label wage-growth-value"
 													type='range'
 													min='0'
 													max='10'
 													step='0.5'
 													value={parameters.wageGrowthRate}
 													onChange={e => setParameters({ ...parameters, wageGrowthRate: parseFloat(e.target.value) })}
-													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
+													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none focus:ring-2 focus:ring-primary/50'
 												/>
-												<span className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
+												<span id="wage-growth-value" className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
 													{parameters.wageGrowthRate}%
 												</span>
 											</div>
@@ -824,20 +827,22 @@ export default function Dashboard() {
 										</div>
 
 										<div>
-											<label className='block text-xs md:text-sm font-medium text-foreground mb-2'>
+											<label id="inflation-rate-label" className='block text-xs md:text-sm font-medium text-foreground mb-2'>
 												Inflacja (rocznie)
 											</label>
 											<div className='flex items-center gap-2 md:gap-3'>
 												<input
+													id="inflation-rate"
+													aria-labelledby="inflation-rate-label inflation-rate-value"
 													type='range'
 													min='0'
 													max='10'
 													step='0.5'
 													value={parameters.inflationRate}
 													onChange={e => setParameters({ ...parameters, inflationRate: parseFloat(e.target.value) })}
-													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
+													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none focus:ring-2 focus:ring-primary/50'
 												/>
-												<span className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
+												<span id="inflation-rate-value" className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
 													{parameters.inflationRate}%
 												</span>
 											</div>
@@ -864,17 +869,21 @@ export default function Dashboard() {
 
 									{showAddSickLeave && (
 										<div className='mb-4 p-3 border-0 bg-muted/20 rounded space-y-2'>
+											<label htmlFor="sickLeaveYear" className="sr-only">Rok zwolnienia</label>
 											<input
 												type='number'
 												min='0'
 												placeholder='Rok'
+												aria-label="Rok zwolnienia"
 												className='w-full px-3 py-2 border border-gray-100 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												id='sickLeaveYear'
 											/>
+											<label htmlFor="sickLeaveDays" className="sr-only">Liczba dni zwolnienia</label>
 											<input
 												type='number'
 												min='0'
 												placeholder='Liczba dni'
+												aria-label="Liczba dni zwolnienia"
 												className='w-full px-3 py-2 border border-gray-100 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												id='sickLeaveDays'
 											/>
@@ -944,9 +953,12 @@ export default function Dashboard() {
 									<p className='text-xs text-muted-foreground mb-2 md:mb-3'>
 										Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
 									</p>
+									<label htmlFor="postal-code" className="sr-only">Kod pocztowy</label>
 									<input
+										id="postal-code"
 										type='text'
 										placeholder='00-000'
+										aria-label="Kod pocztowy"
 										value={postalCode}
 										onChange={e => {
 											let value = e.target.value.replace(/[^\d]/g, '') // Usuń wszystko oprócz cyfr
