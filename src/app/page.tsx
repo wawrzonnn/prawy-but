@@ -410,3 +410,4 @@ Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przysz�
     </div>
   )
 }
+
