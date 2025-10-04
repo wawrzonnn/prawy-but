@@ -12,9 +12,9 @@ const lato = Lato({
 })
 
 export const metadata: Metadata = {
-  title: "Bieg przez życie - Gra symulacyjna o finansach",
+  title: "ZUS - Symulator emerytalny",
   description:
-    "Naucz się, jak rezygnować dziś z części dochodu na rzecz uprawnień w przyszłości. Odkryj sposoby finansowania przyszłej konsumpcji.",
+    "Narzędzie edukacyjne do prognozowania wysokości emerytury",
   generator: "v0.app",
 }
 

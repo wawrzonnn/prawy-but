@@ -20,27 +20,27 @@ export default function Home() {
 
   const pensionGroups = [
     {
-      range: "Poniżej 2 000 zł",
+      range: "Do 2 000 zł",
       average: "1 650 zł",
-      percentage: "18%",
+      percentage: "15%",
       description: "Świadczeniobiorcy otrzymujący emeryturę poniżej minimalnej wykazywali się niską aktywnością zawodową. Nie przepracowali minimum 25 lat dla mężczyzn i 20 lat dla kobiet, w związku z tym nie nabyli prawa do gwarancji minimalnej emerytury."
     },
     {
-      range: "2 000 - 3 000 zł",
+      range: "2 001 - 3 500 zł",
       average: "2 550 zł",
-      percentage: "35%",
+      percentage: "30%",
       description: "Największa grupa emerytów w Polsce. Osoby te przepracowały wymagany okres, ale ich wynagrodzenia były na poziomie zbliżonym do średniej krajowej lub niższym."
     },
     {
-      range: "3 000 - 4 500 zł",
+      range: "3 501 - 5 000 zł",
       average: "3 700 zł",
-      percentage: "28%",
+      percentage: "40%",
       description: "Emeryci z tej grupy pracowali przez długi okres i zarabiali powyżej średniej krajowej. Regularnie odprowadzali składki emerytalne przez co najmniej 30-35 lat."
     },
     {
-      range: "Powyżej 4 500 zł",
+      range: "Powyżej 5 000 zł",
       average: "5 800 zł",
-      percentage: "19%",
+      percentage: "15%",
       description: "Najwyższe emerytury otrzymują osoby, które przez całe życie zawodowe zarabiały znacznie powyżej średniej krajowej, pracowały przez 35-40 lat bez przerw i nie korzystały często ze zwolnień lekarskich."
     }
   ]
@@ -164,7 +164,7 @@ export default function Home() {
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight">zł</span>
               </div>
               <p className="text-base text-white/70 leading-relaxed">
-                Przy stopie zastąpienia 50% - przeciętna emerytura w Polsce wynosi około 40-50% ostatniego wynagrodzenia
+                Przy stopie zastąpienia 40% - przeciętna emerytura w Polsce wynosi około 40% ostatniego wynagrodzenia.
               </p>
             </Card>
           </div>
