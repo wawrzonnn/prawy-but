@@ -86,6 +86,15 @@ export default function Dashboard() {
 		recalculateYearByYear()
 	}, [parameters, sickLeaves, customSalaries, scenario])
 
+	// Auto-save z debounce - aktualizuj rekord w bazie przy zmianach
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			saveToDatabase()
+		}, 2000) // czekaj 2 sekundy po ostatniej zmianie
+
+		return () => clearTimeout(timer)
+	}, [yearData, sickLeaves, postalCode, scenario])
+
 	const recalculateYearByYear = () => {
 		const currentYear = new Date().getFullYear()
 		const birthYear = currentYear - parameters.currentAge
@@ -127,6 +136,57 @@ export default function Dashboard() {
 		setYearData(yearByYearData)
 	}
 
+	const saveToDatabase = async () => {
+		if (yearData.length === 0) return
+
+		const recordId = localStorage.getItem('currentPensionRecordId')
+		const finalYearData = yearData[yearData.length - 1]
+
+		const dataToSave = {
+			age: parameters.currentAge,
+			gender: parameters.gender,
+			grossSalary: parameters.currentSalary,
+			workStartYear: parameters.workStartYear,
+			plannedRetirementYear: parameters.retirementYear,
+			zusAccountBalance: parameters.zusAccountBalance,
+			zusSubaccountBalance: parameters.zusSubaccountBalance,
+			includeSickLeave: sickLeaves.length > 0,
+			postalCode: postalCode || '',
+			monthlyPension: finalYearData?.monthlyPension || 0,
+			realMonthlyPension: finalYearData?.realMonthlyPension || 0,
+			replacementRate:
+				finalYearData?.monthlyPension && finalYearData?.grossSalary
+					? Math.round((finalYearData.monthlyPension / finalYearData.grossSalary) * 10000) / 100
+					: 0,
+			totalCapital: finalYearData?.totalCapital || 0,
+			lifeExpectancyMonths: finalYearData?.monthlyPension
+				? Math.round(finalYearData.totalCapital / finalYearData.monthlyPension)
+				: 0,
+			sickLeaveDaysPerYear:
+				sickLeaves.length > 0 ? Math.round(sickLeaves.reduce((sum, sl) => sum + sl.days, 0) / sickLeaves.length) : 0,
+			sickLeaveImpactPercentage: 0,
+		}
+
+		try {
+			if (recordId) {
+				// Nadpisz istniejący rekord
+				await db.pensionData.update(Number(recordId), dataToSave)
+				console.log('W9 dane zapisane w bazie')
+			} else {
+				// Stwórz nowy rekord (fallback jeśli nie przyszło z Form)
+				const newRecordId = await db.pensionData.add({
+					...dataToSave,
+					createdAt: new Date(),
+				})
+				localStorage.setItem('currentPensionRecordId', newRecordId.toString())
+				console.log('W8 utworzenie postaci')
+				console.log('W9 dane zapisane w bazie')
+			}
+		} catch (error) {
+			console.log('W10 blad zapisu do bazy')
+		}
+	}
+
 	const addSickLeave = (year: number, days: number) => {
 		setSickLeaves([
 			...sickLeaves,
@@ -149,33 +209,8 @@ export default function Dashboard() {
 	}
 
 	const handlePrintReport = async () => {
-		// Zapisz dane do bazy przed drukowaniem raportu
-		try {
-			const finalYearData = yearData[yearData.length - 1]
-			await db.pensionData.add({
-				age: parameters.currentAge,
-				gender: parameters.gender,
-				grossSalary: parameters.currentSalary,
-				workStartYear: parameters.workStartYear,
-				plannedRetirementYear: parameters.retirementYear,
-				zusAccountBalance: finalYearData?.accountBalance || 0,
-				zusSubaccountBalance: finalYearData?.subaccountBalance || 0,
-				includeSickLeave: sickLeaves.length > 0,
-				postalCode: postalCode || '',
-				monthlyPension: monthlyPension,
-				realMonthlyPension: realMonthlyPension,
-				replacementRate: 0,
-				totalCapital: totalCapital,
-				lifeExpectancyMonths: finalYearData ? Math.round(totalCapital / monthlyPension) : 0,
-				sickLeaveDaysPerYear:
-					sickLeaves.length > 0 ? Math.round(sickLeaves.reduce((sum, sl) => sum + sl.days, 0) / sickLeaves.length) : 0,
-				sickLeaveImpactPercentage: 0,
-				createdAt: new Date(),
-			})
-			console.log('W17 kalkulator emerytalny zapisany')
-		} catch (error) {
-			console.log('W18 blad zapisu kalkulatora')
-		}
+		// Zapisz finalne dane przed drukowaniem (ostatnia aktualizacja)
+		await saveToDatabase()
 
 		// Rozwiń tabelę przed drukowaniem
 		setShowAllYears(true)
@@ -185,6 +220,8 @@ export default function Dashboard() {
 
 		// Drukuj raport
 		window.print()
+
+		console.log('W17 kalkulator emerytalny zapisany')
 	}
 
 	const finalYearData = yearData.length > 0 ? yearData[yearData.length - 1] : null
@@ -308,7 +345,9 @@ export default function Dashboard() {
 								</Button>
 								<Button
 									onClick={() => {
+										// Wyczyść sesję - nowa symulacja = nowy rekord
 										localStorage.removeItem('pensionCalculatorData')
+										localStorage.removeItem('currentPensionRecordId')
 										window.location.href = '/form'
 									}}
 									variant='outline'
