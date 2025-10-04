@@ -123,17 +123,15 @@ export default function DatabasePage() {
 												<div className='space-y-2 text-sm'>
 													<p>
 														<strong>Konto główne:</strong>{' '}
-														{record.zusAccountBalance 
+														{record.zusAccountBalance
 															? `${record.zusAccountBalance.toLocaleString('pl-PL')} zł`
-															: 'Oszacowane automatycznie'
-														}
+															: 'Oszacowane automatycznie'}
 													</p>
 													<p>
 														<strong>Subkonto:</strong>{' '}
-														{record.zusSubaccountBalance 
+														{record.zusSubaccountBalance
 															? `${record.zusSubaccountBalance.toLocaleString('pl-PL')} zł`
-															: 'Brak'
-														}
+															: 'Brak'}
 													</p>
 													{record.totalCapital && (
 														<p className='font-bold text-zus-green'>
@@ -141,7 +139,8 @@ export default function DatabasePage() {
 														</p>
 													)}
 													<p>
-														<strong>Zwolnienia lekarskie:</strong> {record.includeSickLeave ? 'Uwzględnione' : 'Nieuwzględnione'}
+														<strong>Zwolnienia lekarskie:</strong>{' '}
+														{record.includeSickLeave ? 'Uwzględnione' : 'Nieuwzględnione'}
 													</p>
 													{record.sickLeaveDaysPerYear && (
 														<p>
@@ -156,7 +155,8 @@ export default function DatabasePage() {
 												<h3 className='font-bold text-zus-black mb-3'>Prognoza</h3>
 												<div className='space-y-2 text-sm'>
 													<p>
-														<strong>Lata do emerytury:</strong> {record.plannedRetirementYear - new Date().getFullYear()} lat
+														<strong>Lata do emerytury:</strong>{' '}
+														{record.plannedRetirementYear - new Date().getFullYear()} lat
 													</p>
 													<p>
 														<strong>Całkowity staż:</strong> {record.plannedRetirementYear - record.workStartYear} lat
@@ -171,9 +171,7 @@ export default function DatabasePage() {
 															<strong>Wpływ zwolnień:</strong> -{record.sickLeaveImpactPercentage}%
 														</p>
 													)}
-													<p className='text-xs text-zus-dark-green'>
-														Wzrost wynagrodzeń: 3% rocznie
-													</p>
+													<p className='text-xs text-zus-dark-green'>Wzrost wynagrodzeń: 3% rocznie</p>
 												</div>
 											</div>
 
@@ -198,7 +196,8 @@ export default function DatabasePage() {
 															<strong>Różnica miesięczna:</strong>
 														</p>
 														<p>
-															{(record.currentGrossSalary - (record.monthlyPension || 0)).toLocaleString('pl-PL')} zł
+															{(record.currentGrossSalary || 0 - (record.monthlyPension || 0)).toLocaleString('pl-PL')}{' '}
+															zł
 														</p>
 													</div>
 												</div>

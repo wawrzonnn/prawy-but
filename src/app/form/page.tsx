@@ -18,6 +18,7 @@ export default function Form() {
 		zusAccountBalance?: number
 		zusSubaccountBalance?: number
 		includeSickLeave: boolean
+		postalCode?: string
 		monthlyPension?: number
 		realMonthlyPension?: number
 		monthlyPensionWithoutSickLeave?: number
@@ -202,7 +203,9 @@ export default function Form() {
 				zusAccountBalance: formData.zusAccountBalance || 0,
 				zusSubaccountBalance: formData.zusSubaccountBalance || 0,
 				includeSickLeave: formData.includeSickLeave,
+				postalCode: formData.postalCode || '',
 				monthlyPension: formData.monthlyPension,
+				realMonthlyPension: formData.realMonthlyPension,
 				replacementRate: formData.replacementRate,
 				totalCapital: formData.totalCapital,
 				lifeExpectancyMonths: formData.lifeExpectancyMonths,
@@ -693,18 +696,55 @@ export default function Form() {
 
 									{/* Główny CTA - Dashboard */}
 									<div className='space-y-3'>
-										<Link href='/dashboard' className='block'>
-											<Button
-												size='lg'
-												className='w-full bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold py-6 text-xl rounded-[0.25rem] transition-all duration-150'>
-												Zobacz szczegółową analizę rok po roku
-												<TrendingUp className='ml-2 w-6 h-6' />
-											</Button>
-										</Link>
+										<Button
+											onClick={() => {
+												// Zapisz dane do localStorage przed przejściem
+												localStorage.setItem(
+													'pensionCalculatorData',
+													JSON.stringify({
+														age: formData.age,
+														gender: formData.gender,
+														grossSalary: formData.grossSalary,
+														workStartYear: formData.workStartYear,
+														plannedRetirementYear: formData.plannedRetirementYear,
+														zusAccountBalance: formData.zusAccountBalance,
+														zusSubaccountBalance: formData.zusSubaccountBalance,
+														includeSickLeave: formData.includeSickLeave,
+													})
+												)
+												window.location.href = '/dashboard'
+											}}
+											size='lg'
+											className='w-full bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold py-6 text-xl rounded-[0.25rem] transition-all duration-150'>
+											Zobacz szczegółową analizę rok po roku
+											<TrendingUp className='ml-2 w-6 h-6' />
+										</Button>
 										<p className='text-xs text-center text-muted-foreground'>
 											Edytuj wynagrodzenia, dodaj zwolnienia i zobacz wzrost kapitału
 										</p>
 									</div>
+
+									{/* Kod pocztowy (opcjonalny) */}
+									<Card className='p-6 bg-muted/50 border-dashed'>
+										<h4 className='text-sm font-bold text-foreground mb-3'>📮 Kod pocztowy (opcjonalnie)</h4>
+										<p className='text-xs text-muted-foreground mb-3'>
+											Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
+										</p>
+										<input
+											type='text'
+											placeholder='00-000'
+											value={formData.postalCode || ''}
+											onChange={e => {
+												const value = e.target.value.replace(/[^\d-]/g, '')
+												if (value.length <= 6) {
+													setFormData(prev => ({ ...prev, postalCode: value }))
+												}
+											}}
+											className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'
+											maxLength={6}
+										/>
+										<p className='text-xs text-muted-foreground mt-2'>Format: 00-000 (np. 00-950 dla Warszawy)</p>
+									</Card>
 
 									{/* Opcjonalne akcje */}
 									<div className='space-y-2 pt-4 border-t'>

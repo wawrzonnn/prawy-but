@@ -2,7 +2,7 @@ import Dexie, { Table } from 'dexie'
 
 export interface PensionData {
 	id?: number
-
+	currentGrossSalary?: number
 	// OBOWIĄZKOWE dane podstawowe
 	age: number // Wiek w latach
 	gender: 'male' | 'female' // Płeć
@@ -17,8 +17,12 @@ export interface PensionData {
 	// FAKULTATYWNE - opcja zwolnień lekarskich
 	includeSickLeave: boolean // Uwzględniaj możliwość zwolnień lekarskich
 
+	// FAKULTATYWNE - kod pocztowy
+	postalCode?: string // Kod pocztowy użytkownika (00-000)
+
 	// Wyniki kalkulacji
-	monthlyPension?: number // Przewidywana miesięczna emerytura
+	monthlyPension?: number // Przewidywana miesięczna emerytura (nominalna)
+	realMonthlyPension?: number // Emerytura urealniona (dzisiejsza siła nabywcza)
 	replacementRate?: number // Stopa zastąpienia w %
 	totalCapital?: number // Całkowity kapitał emerytalny
 	lifeExpectancyMonths?: number // Średnie dalsze trwanie życia w miesiącach
@@ -33,9 +37,9 @@ export class MyDatabase extends Dexie {
 
 	constructor() {
 		super('ZUSCalculatorDB')
-		this.version(4).stores({
+		this.version(5).stores({
 			pensionData:
-				'++id, age, gender, grossSalary, workStartYear, plannedRetirementYear, zusAccountBalance, zusSubaccountBalance, includeSickLeave, monthlyPension, replacementRate, totalCapital, lifeExpectancyMonths, sickLeaveDaysPerYear, sickLeaveImpactPercentage, createdAt',
+				'++id, age, gender, grossSalary, workStartYear, plannedRetirementYear, zusAccountBalance, zusSubaccountBalance, includeSickLeave, postalCode, monthlyPension, realMonthlyPension, replacementRate, totalCapital, lifeExpectancyMonths, sickLeaveDaysPerYear, sickLeaveImpactPercentage, createdAt',
 		})
 	}
 }
