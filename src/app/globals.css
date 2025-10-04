@@ -135,6 +135,15 @@
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes shine {
   0% {
     transform: translateX(-100%) skewX(-15deg);

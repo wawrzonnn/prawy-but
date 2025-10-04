@@ -38,176 +38,184 @@ const funFacts = [
 ]
 
 export default function Home() {
-	const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
-	const [desiredPension, setDesiredPension] = useState<string>('5000')
-	const [desiredPensionDisplay, setDesiredPensionDisplay] = useState<string>('5 000')
-	const [isChartVisible, setIsChartVisible] = useState(false)
-	const [isClient, setIsClient] = useState(false)
-	const [chartType, setChartType] = useState<'bar' | 'pie'>('pie')
-	const [chartKey, setChartKey] = useState(0)
-	const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
-	const [isSpinning, setIsSpinning] = useState(false)
-	const [currentFact, setCurrentFact] = useState('')
-	const chartSectionRef = useRef<HTMLDivElement>(null)
-	const realityCheckRef = useRef<HTMLDivElement>(null)
-	const howItWorksRef = useRef<HTMLDivElement>(null)
-	const featuresRef = useRef<HTMLDivElement>(null)
-	const ctaRef = useRef<HTMLDivElement>(null)
-	const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
+  const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
+  const [desiredPension, setDesiredPension] = useState<string>("5000")
+  const [desiredPensionDisplay, setDesiredPensionDisplay] = useState<string>("5 000")
+  const [isChartVisible, setIsChartVisible] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+  const [chartType, setChartType] = useState<'bar' | 'pie'>('pie')
+  const [chartKey, setChartKey] = useState(0)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const [isSpinning, setIsSpinning] = useState(false)
+  const [currentFact, setCurrentFact] = useState("")
+  const chartSectionRef = useRef<HTMLDivElement>(null)
+  const realityCheckRef = useRef<HTMLDivElement>(null)
+  const howItWorksRef = useRef<HTMLDivElement>(null)
+  const featuresRef = useRef<HTMLDivElement>(null)
+  const ctaRef = useRef<HTMLDivElement>(null)
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
 
-	const pensionGroups = [
-		{
-			range: 'Do 2 000 zł',
-			average: '1 650 zł',
-			percentage: '15%',
-			description:
-				'Świadczeniobiorcy otrzymujący emeryturę poniżej minimalnej wykazywali się niską aktywnością zawodową. Nie przepracowali minimum 25 lat dla mężczyzn i 20 lat dla kobiet, w związku z tym nie nabyli prawa do gwarancji minimalnej emerytury.',
-		},
-		{
-			range: '2 001 - 3 500 zł',
-			average: '2 550 zł',
-			percentage: '30%',
-			description:
-				'Największa grupa emerytów w Polsce. Osoby te przepracowały wymagany okres, ale ich wynagrodzenia były na poziomie zbliżonym do średniej krajowej lub niższym.',
-		},
-		{
-			range: '3 501 - 5 000 zł',
-			average: '3 700 zł',
-			percentage: '40%',
-			description:
-				'Emeryci z tej grupy pracowali przez długi okres i zarabiali powyżej średniej krajowej. Regularnie odprowadzali składki emerytalne przez co najmniej 30-35 lat.',
-		},
-		{
-			range: 'Powyżej 5 000 zł',
-			average: '5 800 zł',
-			percentage: '15%',
-			description:
-				'Najwyższe emerytury otrzymują osoby, które przez całe życie zawodowe zarabiały znacznie powyżej średniej krajowej, pracowały przez 35-40 lat bez przerw i nie korzystały często ze zwolnień lekarskich.',
-		},
-	]
+  const pensionGroups = [
+    {
+      range: "Do 2 000 zł",
+      average: "1 650 zł",
+      percentage: "15%",
+      description: "Świadczeniobiorcy otrzymujący emeryturę poniżej minimalnej wykazywali się niską aktywnością zawodową. Nie przepracowali minimum 25 lat dla mężczyzn i 20 lat dla kobiet, w związku z tym nie nabyli prawa do gwarancji minimalnej emerytury."
+    },
+    {
+      range: "2 001 - 3 500 zł",
+      average: "2 550 zł",
+      percentage: "30%",
+      description: "Największa grupa emerytów w Polsce. Osoby te przepracowały wymagany okres, ale ich wynagrodzenia były na poziomie zbliżonym do średniej krajowej lub niższym."
+    },
+    {
+      range: "3 501 - 5 000 zł",
+      average: "3 700 zł",
+      percentage: "40%",
+      description: "Emeryci z tej grupy pracowali przez długi okres i zarabiali powyżej średniej krajowej. Regularnie odprowadzali składki emerytalne przez co najmniej 30-35 lat."
+    },
+    {
+      range: "Powyżej 5 000 zł",
+      average: "5 800 zł",
+      percentage: "15%",
+      description: "Najwyższe emerytury otrzymują osoby, które przez całe życie zawodowe zarabiały znacznie powyżej średniej krajowej, pracowały przez 35-40 lat bez przerw i nie korzystały często ze zwolnień lekarskich."
+    }
+  ]
 
-	useEffect(() => {
-		setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
-	}, [])
+  useEffect(() => {
+    setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
+  }, [])
 
-	// Strip the hash and reset scroll on hard refresh of /#reality-check
-	useEffect(() => {
-		if (typeof window !== 'undefined' && window.location.hash === '#reality-check') {
-			history.replaceState(null, '', window.location.pathname + window.location.search)
-			window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-		}
-	}, [])
+  // Strip the hash and reset scroll on hard refresh of /#reality-check
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#reality-check') {
+      history.replaceState(null, '', window.location.pathname + window.location.search)
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    }
+  }, [])
 
-	// Function to randomize fact with spinning animation (avoid repeating same fact)
-	const randomizeFact = () => {
-		setIsSpinning(true)
-		setTimeout(() => {
-			const availableFacts = funFacts.filter(fact => fact !== currentFact)
-			const newFact = availableFacts[Math.floor(Math.random() * availableFacts.length)]
-			setCurrentFact(newFact)
-			setIsSpinning(false)
-		}, 800)
-	}
+  // Function to randomize fact with spinning animation (avoid repeating same fact)
+  const randomizeFact = () => {
+    setIsSpinning(true)
+    setTimeout(() => {
+      const availableFacts = funFacts.filter(fact => fact !== currentFact)
+      const newFact = availableFacts[Math.floor(Math.random() * availableFacts.length)]
+      setCurrentFact(newFact)
+      setIsSpinning(false)
+    }, 800)
+  }
 
-	// Reset and trigger animation when chart type changes
-	useEffect(() => {
-		setChartKey(prev => prev + 1)
-		setIsChartVisible(false)
-		const timer = setTimeout(() => setIsChartVisible(true), 100)
-		return () => clearTimeout(timer)
-	}, [chartType])
+  // Reset and trigger animation when chart type changes
+  useEffect(() => {
+    setChartKey(prev => prev + 1)
+    setIsChartVisible(false)
+    const timer = setTimeout(() => setIsChartVisible(true), 100)
+    return () => clearTimeout(timer)
+  }, [chartType])
+  
+  // Set isClient to true on component mount
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
-	// Track mouse position for tooltip
-	// Track mouse position for tooltip
-	const handleMouseMove = (e: React.MouseEvent) => {
-		// Uwzględnij przewijanie strony
-		const scrollX = window.scrollX || document.documentElement.scrollLeft
-		const scrollY = window.scrollY || document.documentElement.scrollTop
+  // Track mouse position for tooltip
+// Track mouse position for tooltip
+const handleMouseMove = (e: React.MouseEvent) => {
+  // Uwzględnij przewijanie strony
+  const scrollX = window.scrollX || document.documentElement.scrollLeft
+  const scrollY = window.scrollY || document.documentElement.scrollTop
+  
+  setTooltipPosition({ 
+    x: e.clientX, 
+    y: e.clientY
+  })
+}
 
-		setTooltipPosition({
-			x: e.clientX,
-			y: e.clientY,
-		})
-	}
+  // Intersection Observer for all sections
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const sectionName = entry.target.getAttribute('data-section')
+            if (sectionName) {
+              setVisibleSections(prev => new Set(prev).add(sectionName))
+            }
+            // Special handling for chart section
+            if (sectionName === 'charts' && !isChartVisible) {
+              setIsChartVisible(true)
+            }
+          }
+        })
+      },
+      {
+        threshold: 0.15,
+        rootMargin: '0px'
+      }
+    )
 
-	// Intersection Observer for all sections
-	useEffect(() => {
-		const observer = new IntersectionObserver(
-			entries => {
-				entries.forEach(entry => {
-					if (entry.isIntersecting) {
-						const sectionName = entry.target.getAttribute('data-section')
-						if (sectionName) {
-							setVisibleSections(prev => new Set(prev).add(sectionName))
-						}
-						// Special handling for chart section
-						if (sectionName === 'charts' && !isChartVisible) {
-							setIsChartVisible(true)
-						}
-					}
-				})
-			},
-			{
-				threshold: 0.15,
-				rootMargin: '0px',
-			}
-		)
+    const refs = [realityCheckRef, howItWorksRef, featuresRef, chartSectionRef, ctaRef]
+    refs.forEach(ref => {
+      if (ref.current) {
+        observer.observe(ref.current)
+      }
+    })
 
-		const refs = [realityCheckRef, howItWorksRef, featuresRef, chartSectionRef, ctaRef]
-		refs.forEach(ref => {
-			if (ref.current) {
-				observer.observe(ref.current)
-			}
-		})
+    return () => {
+      refs.forEach(ref => {
+        if (ref.current) {
+          observer.unobserve(ref.current)
+        }
+      })
+    }
+  }, [isChartVisible])
 
-		return () => {
-			refs.forEach(ref => {
-				if (ref.current) {
-					observer.unobserve(ref.current)
-				}
-			})
-		}
-	}, [isChartVisible])
+  // Format number with spaces as thousand separator
+  const formatNumber = (num: number | string): string => {
+    const str = num.toString()
+    if (str.length <= 3) return str
+    return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  }
 
-	// Format number with spaces as thousand separator
-	const formatNumber = (num: number | string): string => {
-		const str = num.toString()
-		if (str.length <= 3) return str
-		return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-	}
+  // Chart calculations to prevent hydration mismatch
+  const chartCalculations = useMemo(() => {
+    return pensionGroups.map((group, index) => {
+      const percentage = parseInt(group.percentage)
+      const colors = [
+        'var(--zus-blue-dark)',
+        'var(--zus-green-primary)',
+        'var(--zus-yellow)',
+        'var(--zus-blue)'
+      ]
 
-	// Chart calculations to prevent hydration mismatch
-	const chartCalculations = useMemo(() => {
-		return pensionGroups.map((group, index) => {
-			const percentage = parseInt(group.percentage)
-			const colors = ['var(--zus-blue-dark)', 'var(--zus-green-primary)', 'var(--zus-yellow)', 'var(--zus-blue)']
+      // Calculate cumulative percentage for positioning
+      const prevPercentages = pensionGroups
+        .slice(0, index)
+        .reduce((sum, g) => sum + parseInt(g.percentage), 0)
 
-			// Calculate cumulative percentage for positioning
-			const prevPercentages = pensionGroups.slice(0, index).reduce((sum, g) => sum + parseInt(g.percentage), 0)
+      const startAngle = (prevPercentages / 100) * 360 - 90
+      const endAngle = ((prevPercentages + percentage) / 100) * 360 - 90
+      const midAngle = (startAngle + endAngle) / 2
+      const largeArc = percentage > 50 ? 1 : 0
 
-			const startAngle = (prevPercentages / 100) * 360 - 90
-			const endAngle = ((prevPercentages + percentage) / 100) * 360 - 90
-			const midAngle = (startAngle + endAngle) / 2
-			const largeArc = percentage > 50 ? 1 : 0
+      // Convert to radians
+      const startRad = (startAngle * Math.PI) / 180
+      const endRad = (endAngle * Math.PI) / 180
+      const midRad = (midAngle * Math.PI) / 180
 
-			// Convert to radians
-			const startRad = (startAngle * Math.PI) / 180
-			const endRad = (endAngle * Math.PI) / 180
-			const midRad = (midAngle * Math.PI) / 180
+      // Calculate path for donut - larger size
+      const outerRadius = 140
+      const innerRadius = 80
+      const x1 = outerRadius * Math.cos(startRad)
+      const y1 = outerRadius * Math.sin(startRad)
+      const x2 = outerRadius * Math.cos(endRad)
+      const y2 = outerRadius * Math.sin(endRad)
+      const x3 = innerRadius * Math.cos(endRad)
+      const y3 = innerRadius * Math.sin(endRad)
+      const x4 = innerRadius * Math.cos(startRad)
+      const y4 = innerRadius * Math.sin(startRad)
 
-			// Calculate path for donut - larger size
-			const outerRadius = 140
-			const innerRadius = 80
-			const x1 = outerRadius * Math.cos(startRad)
-			const y1 = outerRadius * Math.sin(startRad)
-			const x2 = outerRadius * Math.cos(endRad)
-			const y2 = outerRadius * Math.sin(endRad)
-			const x3 = innerRadius * Math.cos(endRad)
-			const y3 = innerRadius * Math.sin(endRad)
-			const x4 = innerRadius * Math.cos(startRad)
-			const y4 = innerRadius * Math.sin(startRad)
-
-			const pathData = `
+      const pathData = `
         M ${x1} ${y1}
         A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2}
         L ${x3} ${y3}
@@ -215,506 +223,526 @@ export default function Home() {
         Z
       `
 
-			// Line starts from outer edge of donut (exactly at the edge)
-			const lineStartRadius = 140
-			const lineStartX = lineStartRadius * Math.cos(midRad)
-			const lineStartY = lineStartRadius * Math.sin(midRad)
+      // Line starts from outer edge of donut (exactly at the edge)
+      const lineStartRadius = 140
+      const lineStartX = lineStartRadius * Math.cos(midRad)
+      const lineStartY = lineStartRadius * Math.sin(midRad)
 
-			// Line middle point (further out)
-			const lineMidRadius = 155
-			const lineMidX = lineMidRadius * Math.cos(midRad)
-			const lineMidY = lineMidRadius * Math.sin(midRad)
+      // Line middle point (further out)
+      const lineMidRadius = 155
+      const lineMidX = lineMidRadius * Math.cos(midRad)
+      const lineMidY = lineMidRadius * Math.sin(midRad)
 
-			// Horizontal line end position
-			const horizontalLength = 40
-			const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
-			const lineEndY = lineMidY
+      // Horizontal line end position
+      const horizontalLength = 40
+      const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
+      const lineEndY = lineMidY
 
-			// Text position
-			const textOffset = lineMidX > 0 ? 5 : -5
-			const textAnchor = lineMidX > 0 ? 'start' : 'end'
+      // Text position
+      const textOffset = lineMidX > 0 ? 5 : -5
+      const textAnchor = lineMidX > 0 ? 'start' : 'end'
 
-			return {
-				percentage,
-				color: colors[index],
-				prevPercentages,
-				startAngle,
-				endAngle,
-				midAngle,
-				largeArc,
-				startRad,
-				endRad,
-				midRad,
-				pathData,
-				lineStartX,
-				lineStartY,
-				lineMidX,
-				lineMidY,
-				lineEndX,
-				lineEndY,
-				textOffset,
-				textAnchor,
-			}
-		})
-	}, [pensionGroups])
+      return {
+        percentage,
+        color: colors[index],
+        prevPercentages,
+        startAngle,
+        endAngle,
+        midAngle,
+        largeArc,
+        startRad,
+        endRad,
+        midRad,
+        pathData,
+        lineStartX,
+        lineStartY,
+        lineMidX,
+        lineMidY,
+        lineEndX,
+        lineEndY,
+        textOffset,
+        textAnchor
+      }
+    })
+  }, [pensionGroups])
 
-	// Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
-	const calculateRealPension = () => {
-		const desired = parseFloat(desiredPension)
-		if (!desired || desired <= 0) return 0
-		const replacementRate = 0.4 // 35% stopa zastąpienia
-		return Math.round(desired * replacementRate)
-	}
+  // Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
+  const calculateRealPension = () => {
+    const desired = parseFloat(desiredPension)
+    if (!desired || desired <= 0) return 0
+    const replacementRate = 0.4 // 35% stopa zastąpienia
+    return Math.round(desired * replacementRate)
+  }
 
-	return (
-		<div className='min-h-screen bg-background overflow-x-hidden'>
-			{/* Header */}
-			<header className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200'>
-				<div className='container mx-auto px-4 py-3 md:py-4 flex items-center justify-between'>
-					<Link href='/' className='flex items-center gap-3'>
-						<Image src='/logozus.svg' alt='ZUS Logo' width={120} height={32} className='h-6 md:h-8 w-auto' />
-					</Link>
-					<a href='#reality-check' className='scroll-smooth'>
-						<Button
-							size='lg'
-							className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer text-xs md:text-base px-3 md:px-6 py-2 md:py-3 h-auto'>
-							Oblicz emeryturę
-						</Button>
-					</a>
-				</div>
-			</header>
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <Image 
+              src="/logozus.svg" 
+              alt="ZUS Logo" 
+              width={120} 
+              height={32}
+              className="h-8 w-auto"
+            />
+          </Link>
+          <a href="#reality-check" className="scroll-smooth">
+            <Button
+              size="lg"
+              className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+            >
+              Oblicz swoją emeryturę
+            </Button>
+          </a>
+        </div>
+      </header>
 
-			{/* Hero Section - Question about expected pension */}
-			<section className='h-[90dvh] flex items-center px-4 overflow-x-hidden'>
-				<div className='container mx-auto max-w-6xl w-full'>
-					<div className='flex flex-col md:flex-row w-full gap-4 md:gap-8'>
-						{/* Lewa część: tekst + guzik */}
-						<div className='flex-1 flex flex-col justify-center items-start space-y-4 md:space-y-6'>
-							<h2 className='text-3xl sm:text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]'>
-								Jaką chcesz mieć emeryturę?
-							</h2>
+      {/* Hero Section - Question about expected pension */}
+      <section className="min-h-[90dvh] py-32 md:py-0 md:h-[90dvh] flex items-center px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row w-full gap-12 md:gap-8">
+            {/* Lewa część: tekst + guzik */}
+            <div className="w-full md:w-[40%] flex flex-col justify-center items-start space-y-6">
+              <h2 className="text-4xl md:text-6xl font-bold text-foreground text-balance leading-tight opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_forwards]">
+              Sprawdź na jaką emeryturę dziś pracujesz
+              </h2>
 
-							<p className='text-base sm:text-xl md:text-2xl text-muted-foreground text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]'>
-								Twoja przyszła emerytura nie musi być zagadką! Zrozum system, poznaj liczby i przejmij kontrolę nad
-								swoją finansową przyszłością.
-							</p>
+              <p className="text-lg md:text-xl text-muted-foreground text-pretty leading-relaxed opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
+                Twoja przyszła emerytura nie musi być zagadką!
+                Zrozum system, poznaj liczby i przejmij kontrolę nad swoją finansową przyszłością.
+              </p>
 
-							<div className='flex flex-col sm:flex-row gap-4 justify-start items-start pt-4 md:pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]'>
-								<a href='#reality-check' className='scroll-smooth'>
-									<Button
-										size='lg'
-										className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-base md:text-lg px-6 md:px-8 py-4 md:py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
-										Oblicz swoją emeryturę
-										<Calculator className='ml-2 w-4 md:w-5 h-4 md:h-5' />
-									</Button>
-								</a>
-							</div>
-						</div>
+              <div className="flex flex-col sm:flex-row gap-4 justify-start items-start pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
+                <a href="#reality-check" className="scroll-smooth">
+                  <Button
+                    size="lg"
+                    className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+                  >
+                    Oblicz swoją emeryturę
+                    <Calculator className="ml-2 w-5 h-5" />
+                  </Button>
+                </a>
+              </div>
+            </div>
+            
+            {/* Prawa część: obrazy z kalkulatorem */}
+            <div className="w-full md:w-[60%] relative flex justify-center items-center mt-12 md:mt-0">
+              <div className="relative w-full max-w-xl h-[300px] md:h-[450px]">
+                {/* Efekt tła - koło */}
+                <div className="absolute z-0 w-56 h-56 md:w-80 md:h-80 bg-yellow/20 rounded-full blur-3xl animate-pulse" 
+                     style={{ left: '30%', top: '25%' }}></div>
+                     
+                {/* Symulacja (teraz z tyłu) */}
+                <div 
+                  className="absolute z-10 shadow-xl rounded-xl overflow-hidden border-4 border-white transition-all duration-1000 hover:-translate-y-2 opacity-0 animate-[fadeIn_1s_ease-out_0.3s_forwards]" 
+                  style={{ width: '85%', left: '5%', top: '20%' }}
+                >
+                  <Image
+                    src="/symulacja_emerytalna_demo.png"
+                    alt="Symulacja emerytalna"
+                    width={500}
+                    height={300}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </div>
+                
+                {/* Kalkulator (teraz z przodu) */}
+                <div 
+                  className="absolute z-20 shadow-xl rounded-xl overflow-hidden border-4 border-white transition-all duration-1000 hover:translate-y-2 opacity-0 animate-[fadeIn_1s_ease-out_0.6s_forwards]" 
+                  style={{ width: '80%', right: '5%', top: '50%' }}
+                >
+                  <Image
+                    src="/kalkulator_emerytalny_demo.png"
+                    alt="Kalkulator emerytalny"
+                    width={500}
+                    height={300}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-						{/* Prawa część: na razie pusta - ukrywamy na mobile */}
-						<div className='hidden md:block flex-1'></div>
-					</div>
-				</div>
-			</section>
+      {/* Reality Check Section */}
+      <section id="reality-check" className="pt-24 pb-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-12" ref={realityCheckRef} data-section="reality">
+        <div className="container mx-auto max-w-5xl">
+          <div className={`text-center mb-12 transition-all duration-700 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
+            <p className="text-xl text-white/90">
+              Większość ludzi nie zdaje sobie sprawy, jak duża jest różnica między ich oczekiwaniami a rzeczywistością
+            </p>
+          </div>
 
-			{/* Reality Check Section */}
-			<section
-				id='reality-check'
-				className='pt-24 pb-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-12'
-				ref={realityCheckRef}
-				data-section='reality'>
-				<div className='container mx-auto max-w-5xl'>
-					<div
-						className={`text-center mb-12 transition-all duration-700 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<h3 className='text-3xl md:text-4xl font-bold mb-4'>Oczekiwania vs. Rzeczywistość</h3>
-						<p className='text-xl text-white/90'>
-							Większość ludzi nie zdaje sobie sprawy, jak duża jest różnica między ich oczekiwaniami a rzeczywistością
-						</p>
-					</div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className={`p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all duration-700 delay-150 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <Target className="w-8 h-8 text-yellow flex-shrink-0" />
+                <label htmlFor="desired-pension-input" className="text-xl font-bold text-white">Chciałbym otrzymać:</label>
+              </div>
+              <div className="flex items-baseline gap-4 mb-6">
+                <input
+                  id="desired-pension-input"
+                  type="text"
+                  inputMode="numeric"
+                  value={desiredPensionDisplay}
+                  onChange={(e) => {
+                    // Remove all non-digit characters and spaces
+                    const rawValue = e.target.value.replace(/\D/g, '')
+                    
+                    if (rawValue === '') {
+                      setDesiredPension("")
+                      setDesiredPensionDisplay("")
+                      return
+                    }
+                    
+                    const numValue = parseInt(rawValue)
+                    
+                    // Apply limits
+                    if (numValue > 100000) {
+                      setDesiredPension("100000")
+                      setDesiredPensionDisplay(formatNumber(100000))
+                    } else {
+                      setDesiredPension(rawValue)
+                      // Format with spaces for thousands
+                      setDesiredPensionDisplay(formatNumber(numValue))
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
+                      e.preventDefault()
+                    }
+                  }}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight"
+                  placeholder="5 000"
+                  aria-label="Oczekiwana kwota emerytury w złotych"
+                />
+                <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight" aria-hidden="true">zł</span>
+              </div>
+              <p className="text-base text-white/70 leading-relaxed">
+                Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie (max. 100 000 zł).
+              </p>
+            </Card>
 
-					<div className='grid md:grid-cols-2 gap-8'>
-						<Card
-							className={`p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all duration-700 delay-150 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-							<div className='flex items-center gap-3 mb-6'>
-								<Target className='w-8 h-8 text-yellow flex-shrink-0' />
-								<label htmlFor='desired-pension-input' className='text-xl font-bold text-white'>
-									Chciałbym otrzymać:
-								</label>
-							</div>
-							<div className='flex items-baseline gap-4 mb-6'>
-								<input
-									id='desired-pension-input'
-									type='text'
-									inputMode='numeric'
-									value={desiredPensionDisplay}
-									onChange={e => {
-										// Remove all non-digit characters and spaces
-										const rawValue = e.target.value.replace(/\D/g, '')
+            <Card className={`p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all duration-700 delay-300 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <AlertCircle className="w-8 h-8 text-yellow flex-shrink-0" />
+                <h4 className="text-xl font-bold text-white">Rzeczywiście otrzymam:</h4>
+              </div>
+              <div className="flex items-baseline gap-4 mb-6">
+                <div className="text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40 leading-tight">
+                  ~{formatNumber(calculateRealPension())}
+                </div>
+                <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight">zł</span>
+              </div>
+              <p className="text-base text-white/70 leading-relaxed">
+                Przy stopie zastąpienia 40% - przeciętna emerytura w Polsce wynosi około 40-45% ostatniego wynagrodzenia
+              </p>
+            </Card>
+          </div>
 
-										if (rawValue === '') {
-											setDesiredPension('')
-											setDesiredPensionDisplay('')
-											return
-										}
+          <div className={`mt-12 text-center transition-all duration-700 delay-500 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <Link href="/form">
+              <Button
+                size="lg"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
+              >
+                Przejdź do kalkulatora emerytury
+                <Calculator className="ml-2 w-6 h-6" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
-										const numValue = parseInt(rawValue)
+      {/* How it Works Section */}
+      <section className="py-40 px-4" ref={howItWorksRef} data-section="howItWorks">
+        <div className="container mx-auto max-w-6xl">
+          <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Trzy proste kroki do poznania swojej przyszłej emerytury
+            </p>
+          </div>
 
-										// Apply limits
-										if (numValue > 100000) {
-											setDesiredPension('100000')
-											setDesiredPensionDisplay(formatNumber(100000))
-										} else {
-											setDesiredPension(rawValue)
-											// Format with spaces for thousands
-											setDesiredPensionDisplay(formatNumber(numValue))
-										}
-									}}
-									onKeyDown={e => {
-										if (
-											e.key === 'ArrowUp' ||
-											e.key === 'ArrowDown' ||
-											e.key === 'e' ||
-											e.key === 'E' ||
-											e.key === '+' ||
-											e.key === '-'
-										) {
-											e.preventDefault()
-										}
-									}}
-									onWheel={e => e.currentTarget.blur()}
-									className='text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight'
-									placeholder='5 000'
-									aria-label='Oczekiwana kwota emerytury w złotych'
-								/>
-								<span className='text-5xl font-bold text-white/80 whitespace-nowrap leading-tight' aria-hidden='true'>
-									zł
-								</span>
-							</div>
-							<p className='text-base text-white/70 leading-relaxed'>
-								Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie (max. 100 000 zł).
-							</p>
-						</Card>
+          <div className="grid md:grid-cols-3 gap-10 md:gap-14">
+            {[
+              {
+                step: "01",
+                title: "Wprowadź dane do formularza",
+                description: "Podaj podstawowe informacje: wiek, płeć, wynagrodzenie, planowany wiek emerytury oraz opcjonalnie dane z konta ZUS",
+              },
+              {
+                step: "02",
+                title: "Dostosuj parametry",
+                description: "Uwzględnij zwolnienia lekarskie, różne scenariusze wynagrodzeń i zobacz wpływ odroczenia emerytury",
+              },
+              {
+                step: "03",
+                title: "Poznaj wynik",
+                description: "Otrzymaj szczegółową prognozę: emeryturę rzeczywistą, urealnioną, stopę zastąpienia i porównanie ze średnią",
+              },
+            ].map((item, index) => (
+              <div key={index} className={`relative transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${200 + index * 150}ms` }}>
+                <div className="text-6xl font-medium text-[#c4e8d8] mb-5">{item.step}</div>
+                <h4 className="text-2xl font-bold text-foreground mb-3">{item.title}</h4>
+                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-						<Card
-							className={`p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all duration-700 delay-300 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-							<div className='flex items-center gap-3 mb-6'>
-								<AlertCircle className='w-8 h-8 text-yellow flex-shrink-0' />
-								<h4 className='text-xl font-bold text-white'>Rzeczywiście otrzymam:</h4>
-							</div>
-							<div className='flex items-baseline gap-4 mb-6'>
-								<div className='text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40 leading-tight'>
-									~{formatNumber(calculateRealPension())}
-								</div>
-								<span className='text-5xl font-bold text-white/80 whitespace-nowrap leading-tight'>zł</span>
-							</div>
-							<p className='text-base text-white/70 leading-relaxed'>
-								Przy stopie zastąpienia 40% - przeciętna emerytura w Polsce wynosi około 40-45% ostatniego wynagrodzenia
-							</p>
-						</Card>
-					</div>
+      {/* Features Section */}
+      <section className="py-20 px-4 bg-muted" ref={featuresRef} data-section="features">
+        <div className="container mx-auto max-w-6xl">
+          <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Wszystko, czego potrzebujesz w jednym miejscu</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Zaawansowany kalkulator, który pomoże Ci zrozumieć i zaplanować Twoją emeryturę
+            </p>
+          </div>
 
-					<div
-						className={`mt-12 text-center transition-all duration-700 delay-500 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<Link href='/form'>
-							<Button
-								size='lg'
-								className='bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-base md:text-xl px-6 md:px-12 py-4 md:py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
-								Przejdź do kalkulatora emerytury
-								<Calculator className='ml-2 w-6 h-6' />
-							</Button>
-						</Link>
-					</div>
-				</div>
-			</section>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Calculator,
+                title: "Wysokość emerytury",
+                description: "Oblicz przewidywaną wysokość świadczenia emerytalnego w wartości rzeczywistej i urealnionej",
+              },
+              {
+                icon: LineChart,
+                title: "Stopa zastąpienia",
+                description: "Zobacz, jaki procent Twojego wynagrodzenia będzie stanowić Twoja emerytura",
+              },
+              {
+                icon: Calendar,
+                title: "Scenariusze przejścia",
+                description: "Symuluj różne warianty wieku przejścia na emeryturę i zobacz wpływ na wysokość świadczenia",
+              },
+              {
+                icon: TrendingUp,
+                title: "Wzrost kapitału",
+                description: "Śledź, jak zwiększa się kwota zgromadzona na Twoim koncie i subkoncie w ZUS",
+              },
+              {
+                icon: Users,
+                title: "Wpływ zwolnień lekarskich",
+                description: "Uwzględnij średnią długość zwolnień i zobacz, jak wpływają na wysokość emerytury",
+              },
+              {
+                icon: Target,
+                title: "Porównanie ze średnią",
+                description: "Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia",
+              },
+            ].map((feature, index) => (
+              <Card key={index} className={`p-6 hover:scale-[1.02] bg-card border ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ 
+                transitionDelay: visibleSections.has('features') ? `${200 + index * 100}ms` : '0ms',
+                transition: 'opacity 700ms, transform 700ms, scale 250ms ease-out'
+              }}>
+                <div className="w-12 h-12 bg-primary/10 rounded flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h4 className="text-xl font-bold text-foreground mb-2">{feature.title}</h4>
+                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
 
-			{/* How it Works Section */}
-			<section className='py-40 px-4' ref={howItWorksRef} data-section='howItWorks'>
-				<div className='container mx-auto max-w-6xl'>
-					<div
-						className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<h3 className='text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance'>Jak to działa?</h3>
-						<p className='text-lg text-muted-foreground max-w-2xl mx-auto text-pretty'>
-							Trzy proste kroki do poznania swojej przyszłej emerytury
-						</p>
-					</div>
+      {/* Pension Groups Comparison Section */}
+      <section className="py-40 px-4" ref={chartSectionRef} data-section="charts">
+        <div className="container mx-auto max-w-6xl">
+          {/* Pension Groups Comparison - Interactive Section */}
+          <div className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">ZUS w liczbach i ciekawostkach</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Sprawdź, co naprawdę kryje się za emeryturą
+            </p>
+          </div>
+          <div className={`transition-all duration-700 delay-200 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <Card className="p-5 md:p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
+              <div className="text-center mb-6">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1.5">
+                Jak kształtują się emerytury w Polsce
+                </h3>
+                <p className="text-xs md:text-sm text-muted-foreground mb-3">
+                  Najedź na pasek, aby zobaczyć szczegóły
+                </p>
+                
+                {/* Chart type toggle */}
+                <div className="flex items-center justify-center gap-2">
+                <button
+                    onClick={() => setChartType('pie')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      chartType === 'pie'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <PiggyBank className="w-3 h-3 inline mr-1" />
+                    Kołowy
+                  </button>
+                  <button
+                    onClick={() => setChartType('bar')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      chartType === 'bar'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    <BarChart3 className="w-3 h-3 inline mr-1" />
+                    Słupkowy
+                  </button>
+     
+                </div>
+              </div>
 
-					<div className='grid md:grid-cols-3 gap-8'>
-						{[
-							{
-								step: '01',
-								title: 'Wprowadź dane do formularza',
-								description:
-									'Podaj podstawowe informacje: wiek, płeć, wynagrodzenie, planowany wiek emerytury oraz opcjonalnie dane z konta ZUS',
-							},
-							{
-								step: '02',
-								title: 'Dostosuj parametry',
-								description:
-									'Uwzględnij zwolnienia lekarskie, różne scenariusze wynagrodzeń i zobacz wpływ odroczenia emerytury',
-							},
-							{
-								step: '03',
-								title: 'Poznaj wynik',
-								description:
-									'Otrzymaj szczegółową prognozę: emeryturę rzeczywistą, urealnioną, stopę zastąpienia i porównanie ze średnią',
-							},
-						].map((item, index) => (
-							<div
-								key={index}
-								className={`relative transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-								style={{ transitionDelay: `${200 + index * 150}ms` }}>
-								<div className='text-6xl font-bold text-primary/20 mb-4'>{item.step}</div>
-								<h4 className='text-2xl font-bold text-foreground mb-3'>{item.title}</h4>
-								<p className='text-muted-foreground leading-relaxed'>{item.description}</p>
-								{index < 2 && <div className='hidden md:block absolute top-12 -right-4 w-8 h-0.5 bg-primary/30'></div>}
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+              {/* Horizontal Bar Chart */}
+              {chartType === 'bar' && (
+                <div 
+                  key={`bar-${chartKey}`} 
+                  className="mb-6 space-y-3 h-[320px]" 
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => setSelectedPensionAmount(null)}
+                >
+                  {pensionGroups.map((group, index) => {
+                    const percentage = parseInt(group.percentage)
+                    // Using only ZUS brand colors - each bar different color
+                    const colors = [
+                      'bg-[var(--zus-blue-dark)]',
+                      'bg-[var(--zus-green-primary)]',
+                      'bg-[var(--zus-yellow)]',
+                      'bg-[var(--zus-blue)]'
+                    ]
+                    
+                    return (
+                      <div
+                        key={index}
+                        className="group cursor-pointer"
+                        onMouseEnter={() => setSelectedPensionAmount(index)}
+                      >
+                        {/* Label and value row */}
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              {group.range}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              (śr. {group.average})
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl font-bold text-[var(--zus-green-primary)] transition-all duration-300 group-hover:scale-110">
+                              {group.percentage}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              emerytów
+                            </span>
+                          </div>
+                        </div>
 
-			{/* Features Section */}
-			<section className='py-20 px-4 bg-muted' ref={featuresRef} data-section='features'>
-				<div className='container mx-auto max-w-6xl'>
-					<div
-						className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<h3 className='text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance'>
-							Wszystko, czego potrzebujesz w jednym miejscu
-						</h3>
-						<p className='text-lg text-muted-foreground max-w-2xl mx-auto text-pretty'>
-							Zaawansowany kalkulator, który pomoże Ci zrozumieć i zaplanować Twoją emeryturę
-						</p>
-					</div>
+                        {/* Progress bar container */}
+                        <div className="relative h-7 bg-[var(--zus-gray-light)] rounded-lg overflow-hidden border border-border/50 group-hover:border-border transition-all duration-300 group-hover:shadow-md">
+                          {/* Grid lines - showing 0 to 50% */}
+                          <div className="absolute inset-0 flex pointer-events-none">
+                            {[0, 10, 20, 30, 40, 50].map((mark) => (
+                              <div
+                                key={mark}
+                                className="absolute h-full border-l border-border/20"
+                                style={{ left: `${(mark / 50) * 100}%` }}
+                              >
+                                {mark > 0 && mark % 10 === 0 && (
+                                  <span className="absolute -top-4 -translate-x-1/2 text-[10px] text-muted-foreground/40 font-medium">
+                                    {mark}%
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
 
-					<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-6'>
-						{[
-							{
-								icon: Calculator,
-								title: 'Wysokość emerytury',
-								description:
-									'Oblicz przewidywaną wysokość świadczenia emerytalnego w wartości rzeczywistej i urealnionej',
-							},
-							{
-								icon: LineChart,
-								title: 'Stopa zastąpienia',
-								description: 'Zobacz, jaki procent Twojego wynagrodzenia będzie stanowić Twoja emerytura',
-							},
-							{
-								icon: Calendar,
-								title: 'Scenariusze przejścia',
-								description:
-									'Symuluj różne warianty wieku przejścia na emeryturę i zobacz wpływ na wysokość świadczenia',
-							},
-							{
-								icon: TrendingUp,
-								title: 'Wzrost kapitału',
-								description: 'Śledź, jak zwiększa się kwota zgromadzona na Twoim koncie i subkoncie w ZUS',
-							},
-							{
-								icon: Users,
-								title: 'Wpływ zwolnień lekarskich',
-								description: 'Uwzględnij średnią długość zwolnień i zobacz, jak wpływają na wysokość emerytury',
-							},
-							{
-								icon: Target,
-								title: 'Porównanie ze średnią',
-								description: 'Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia',
-							},
-						].map((feature, index) => (
-							<Card
-								key={index}
-								className={`p-6 hover:scale-[1.02] bg-card border ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-								style={{
-									transitionDelay: visibleSections.has('features') ? `${200 + index * 100}ms` : '0ms',
-									transition: 'opacity 700ms, transform 700ms, scale 250ms ease-out',
-								}}>
-								<div className='w-12 h-12 bg-primary/10 rounded flex items-center justify-center mb-4'>
-									<feature.icon className='w-6 h-6 text-primary' />
-								</div>
-								<h4 className='text-xl font-bold text-foreground mb-2'>{feature.title}</h4>
-								<p className='text-muted-foreground leading-relaxed'>{feature.description}</p>
-							</Card>
-						))}
-					</div>
-				</div>
-			</section>
+                          {/* Animated bar - scale to 50% max */}
+                          <div
+                            className={`h-full ${colors[index]} transition-all duration-1000 ease-out group-hover:brightness-110 relative shadow-sm`}
+                            style={{
+                              width: isChartVisible ? `${(percentage / 50) * 100}%` : '0%',
+                              transitionDelay: `${index * 200}ms`
+                            }}
+                          >
+                            {/* Shine effect on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                            
+                            {/* Percentage label inside bar */}
+                            <div className="absolute inset-0 flex items-center justify-end pr-2">
+                              <span className="text-white font-bold text-sm drop-shadow-lg">
+                                {percentage}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
 
-			{/* Pension Groups Comparison Section */}
-			<section className='py-40 px-4' ref={chartSectionRef} data-section='charts'>
-				<div className='container mx-auto max-w-6xl'>
-					{/* Pension Groups Comparison - Interactive Section */}
-					<div
-						className={`text-center mb-16 transition-all duration-700 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<h3 className='text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance'>
-							ZUS w liczbach i ciekawostkach
-						</h3>
-						<p className='text-lg text-muted-foreground max-w-2xl mx-auto text-pretty'>
-							Sprawdź, co naprawdę kryje się za emeryturą
-						</p>
-					</div>
-					<div
-						className={`transition-all duration-700 delay-200 ${visibleSections.has('charts') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<Card className='p-5 md:p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-2'>
-							<div className='text-center mb-6'>
-								<h3 className='text-xl md:text-2xl font-bold text-foreground mb-1.5'>
-									Jak kształtują się emerytury w Polsce
-								</h3>
-								<p className='text-xs md:text-sm text-muted-foreground mb-3'>Najedź na pasek, aby zobaczyć szczegóły</p>
-
-								{/* Chart type toggle */}
-								<div className='flex items-center justify-center gap-2'>
-									<button
-										onClick={() => setChartType('pie')}
-										className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-											chartType === 'pie'
-												? 'bg-primary text-primary-foreground shadow-sm'
-												: 'bg-muted text-muted-foreground hover:bg-muted/80'
-										}`}>
-										<PiggyBank className='w-3 h-3 inline mr-1' />
-										Kołowy
-									</button>
-									<button
-										onClick={() => setChartType('bar')}
-										className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-											chartType === 'bar'
-												? 'bg-primary text-primary-foreground shadow-sm'
-												: 'bg-muted text-muted-foreground hover:bg-muted/80'
-										}`}>
-										<BarChart3 className='w-3 h-3 inline mr-1' />
-										Słupkowy
-									</button>
-								</div>
-							</div>
-
-							{/* Horizontal Bar Chart */}
-							{chartType === 'bar' && (
-								<div
-									key={`bar-${chartKey}`}
-									className='mb-6 space-y-3 h-[320px]'
-									onMouseMove={handleMouseMove}
-									onMouseLeave={() => setSelectedPensionAmount(null)}>
-									{pensionGroups.map((group, index) => {
-										const percentage = parseInt(group.percentage)
-										// Using only ZUS brand colors - each bar different color
-										const colors = [
-											'bg-[var(--zus-blue-dark)]',
-											'bg-[var(--zus-green-primary)]',
-											'bg-[var(--zus-yellow)]',
-											'bg-[var(--zus-blue)]',
-										]
-
-										return (
-											<div
-												key={index}
-												className='group cursor-pointer'
-												onMouseEnter={() => setSelectedPensionAmount(index)}>
-												{/* Label and value row */}
-												<div className='flex items-center justify-between mb-1.5'>
-													<div className='flex items-baseline gap-2'>
-														<span className='text-sm font-bold text-foreground'>{group.range}</span>
-														<span className='text-xs text-muted-foreground'>(śr. {group.average})</span>
-													</div>
-													<div className='flex items-center gap-2'>
-														<span className='text-xl font-bold text-[var(--zus-green-primary)] transition-all duration-300 group-hover:scale-110'>
-															{group.percentage}
-														</span>
-														<span className='text-xs text-muted-foreground'>emerytów</span>
-													</div>
-												</div>
-
-												{/* Progress bar container */}
-												<div className='relative h-7 bg-[var(--zus-gray-light)] rounded-lg overflow-hidden border border-border/50 group-hover:border-border transition-all duration-300 group-hover:shadow-md'>
-													{/* Grid lines - showing 0 to 50% */}
-													<div className='absolute inset-0 flex pointer-events-none'>
-														{[0, 10, 20, 30, 40, 50].map(mark => (
-															<div
-																key={mark}
-																className='absolute h-full border-l border-border/20'
-																style={{ left: `${(mark / 50) * 100}%` }}>
-																{mark > 0 && mark % 10 === 0 && (
-																	<span className='absolute -top-4 -translate-x-1/2 text-[10px] text-muted-foreground/40 font-medium'>
-																		{mark}%
-																	</span>
-																)}
-															</div>
-														))}
-													</div>
-
-													{/* Animated bar - scale to 50% max */}
-													<div
-														className={`h-full ${colors[index]} transition-all duration-1000 ease-out group-hover:brightness-110 relative shadow-sm`}
-														style={{
-															width: isChartVisible ? `${(percentage / 50) * 100}%` : '0%',
-															transitionDelay: `${index * 200}ms`,
-														}}>
-														{/* Shine effect on hover */}
-														<div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700'></div>
-
-														{/* Percentage label inside bar */}
-														<div className='absolute inset-0 flex items-center justify-end pr-2'>
-															<span className='text-white font-bold text-sm drop-shadow-lg'>{percentage}%</span>
-														</div>
-													</div>
-												</div>
-											</div>
-										)
-									})}
-								</div>
-							)}
-
-							{/* Pie Chart */}
-							{chartType === 'pie' && (
-								<div
-									key={`pie-${chartKey}`}
-									className='mb-6 h-[320px] flex items-center justify-center'
-									onMouseMove={handleMouseMove}
-									onMouseLeave={() => setSelectedPensionAmount(null)}>
-									{/* Pie chart SVG with labels */}
-									<div className='relative w-full h-full mx-auto'>
-										<svg
-											viewBox='0 0 600 340'
-											className='w-full h-full'
-											preserveAspectRatio='xMidYMid meet'
-											suppressHydrationWarning>
-											<g transform='translate(300, 180)'>
-												{/* Draw pie segments */}
-												{pensionGroups.map((group, index) => {
-													const percentage = parseInt(group.percentage)
-													const colors = [
-														'var(--zus-blue-dark)',
-														'var(--zus-green-primary)',
-														'var(--zus-yellow)',
-														'var(--zus-blue)',
-													]
-
-													// Calculate cumulative percentage for positioning
-													const prevPercentages = pensionGroups
-														.slice(0, index)
-														.reduce((sum, g) => sum + parseInt(g.percentage), 0)
-
-													const startAngle = (prevPercentages / 100) * 360 - 90
-													const endAngle = ((prevPercentages + percentage) / 100) * 360 - 90
-													const midAngle = (startAngle + endAngle) / 2
-													const largeArc = percentage > 50 ? 1 : 0
-
-													// Convert to radians
-													const startRad = (startAngle * Math.PI) / 180
-													const endRad = (endAngle * Math.PI) / 180
-													const midRad = (midAngle * Math.PI) / 180
-
-													// Calculate path for donut - larger size
-													const outerRadius = 140
-													const innerRadius = 80
-													const x1 = outerRadius * Math.cos(startRad)
-													const y1 = outerRadius * Math.sin(startRad)
-													const x2 = outerRadius * Math.cos(endRad)
-													const y2 = outerRadius * Math.sin(endRad)
-													const x3 = innerRadius * Math.cos(endRad)
-													const y3 = innerRadius * Math.sin(endRad)
-													const x4 = innerRadius * Math.cos(startRad)
-													const y4 = innerRadius * Math.sin(startRad)
-
-													const pathData = `
+              {/* Pie Chart */}
+              {chartType === 'pie' && (
+                <div 
+                  key={`pie-${chartKey}`} 
+                  className="mb-6 h-[320px] flex items-center justify-center" 
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={() => setSelectedPensionAmount(null)}
+                >
+                  {/* Pie chart SVG with labels */}
+                  <div className="relative w-full h-full mx-auto">
+                  <svg viewBox="0 0 600 340" className="w-full h-full" preserveAspectRatio="xMidYMid meet" suppressHydrationWarning>
+                        <g transform="translate(300, 180)">
+                          {/* Draw pie segments */}
+                          {pensionGroups.map((group, index) => {
+                            const percentage = parseInt(group.percentage)
+                            const colors = [
+                              'var(--zus-blue-dark)',
+                              'var(--zus-green-primary)',
+                              'var(--zus-yellow)',
+                              'var(--zus-blue)'
+                            ]
+                            
+                            // Calculate cumulative percentage for positioning
+                            const prevPercentages = pensionGroups
+                              .slice(0, index)
+                              .reduce((sum, g) => sum + parseInt(g.percentage), 0)
+                            
+                            const startAngle = (prevPercentages / 100) * 360 - 90
+                            const endAngle = ((prevPercentages + percentage) / 100) * 360 - 90
+                            const midAngle = (startAngle + endAngle) / 2
+                            const largeArc = percentage > 50 ? 1 : 0
+                            
+                            // Convert to radians
+                            const startRad = (startAngle * Math.PI) / 180
+                            const endRad = (endAngle * Math.PI) / 180
+                            const midRad = (midAngle * Math.PI) / 180
+                            
+                            // Calculate path for donut - larger size
+                            const outerRadius = 140
+                            const innerRadius = 80
+                            const x1 = outerRadius * Math.cos(startRad)
+                            const y1 = outerRadius * Math.sin(startRad)
+                            const x2 = outerRadius * Math.cos(endRad)
+                            const y2 = outerRadius * Math.sin(endRad)
+                            const x3 = innerRadius * Math.cos(endRad)
+                            const y3 = innerRadius * Math.sin(endRad)
+                            const x4 = innerRadius * Math.cos(startRad)
+                            const y4 = innerRadius * Math.sin(startRad)
+                            
+                            const pathData = `
                               M ${x1} ${y1}
                               A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2}
                               L ${x3} ${y3}
