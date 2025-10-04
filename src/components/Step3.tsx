@@ -187,33 +187,33 @@ export default function Step3({ formData, onInputChange, calculatePension }: Ste
 
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
 						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
-							<h4 className='font-bold text-lg mb-2'>Miesięczna emerytura</h4>
-							<p className='text-3xl font-bold'>{formData.monthlyPension.toLocaleString('pl-PL')} zł</p>
+							<h4 className='font-bold text-lg mb-2 text-zus-black'>Miesięczna emerytura</h4>
+							<p className='text-3xl font-bold text-zus-black'>{formData.monthlyPension.toLocaleString('pl-PL')} zł</p>
 						</div>
 
 						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
-							<h4 className='font-bold text-lg mb-2'>Stopa zastąpienia</h4>
-							<p className='text-3xl font-bold'>{formData.replacementRate}%</p>
-							<p className='text-sm opacity-90'>obecnego wynagrodzenia</p>
+							<h4 className='font-bold text-lg mb-2 text-zus-black'>Stopa zastąpienia</h4>
+							<p className='text-3xl font-bold text-zus-black'>{formData.replacementRate}%</p>
+							<p className='text-sm opacity-90 text-zus-black'>obecnego wynagrodzenia</p>
 						</div>
 					</div>
 
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
 						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
-							<h4 className='font-bold text-lg mb-2'>Całkowity kapitał</h4>
-							<p className='text-2xl font-bold'>{formData.totalCapital?.toLocaleString('pl-PL')} zł</p>
+							<h4 className='font-bold text-lg mb-2 text-zus-black'>Całkowity kapitał</h4>
+							<p className='text-2xl font-bold text-zus-black'>{formData.totalCapital?.toLocaleString('pl-PL')} zł</p>
 						</div>
 
 						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
-							<h4 className='font-bold text-lg mb-2'>Czas pobierania</h4>
-							<p className='text-2xl font-bold'>
+							<h4 className='font-bold text-lg mb-2 text-zus-black'>Czas pobierania</h4>
+							<p className='text-2xl font-bold text-zus-black'>
 								{formData.lifeExpectancyMonths ? Math.round(formData.lifeExpectancyMonths / 12) : 0} lat
 							</p>
-							<p className='text-sm opacity-90'>średnie dalsze trwanie życia</p>
+							<p className='text-sm opacity-90 text-zus-black'>średnie dalsze trwanie życia</p>
 						</div>
 					</div>
 
-					<div className='space-y-2 text-sm opacity-90'>
+					<div className='space-y-2 text-sm opacity-90 text-zus-black'>
 						<div className='flex justify-between'>
 							<span>Obecne wynagrodzenie brutto:</span>
 							<span>{Number(formData.currentGrossSalary).toLocaleString('pl-PL')} zł</span>
@@ -239,7 +239,7 @@ export default function Step3({ formData, onInputChange, calculatePension }: Ste
 					</div>
 
 					{/* Rekomendacje */}
-					<div className='mt-4 p-4 bg-white bg-opacity-10 rounded-lg'>
+					<div className='mt-4 p-4 bg-white bg-opacity-10 rounded-lg text-zus-black'>
 						<h4 className='font-bold mb-2'>💡 Rekomendacje ZUS:</h4>
 						<ul className='text-sm space-y-1'>
 							{formData.replacementRate < 40 && <li>• Rozważ dodatkowe oszczędzanie na emeryturę (III filar)</li>}
