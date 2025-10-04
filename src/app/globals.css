@@ -92,7 +92,6 @@
   --sidebar-accent: oklch(0.3 0.01 250);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.3 0.01 250);
-  --sidebar-ring: oklch(0.55 0.12 155);
   /* Added blue color tokens for dark theme */
   --blue: oklch(0.35 0.12 240);
   --blue-dark: oklch(0.25 0.1 240);
@@ -101,6 +100,9 @@
 @layer base {
   * {
     outline: none;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;

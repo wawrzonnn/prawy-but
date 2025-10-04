@@ -55,7 +55,7 @@ export default function Home() {
   const calculateRealPension = () => {
     const desired = parseFloat(desiredPension)
     if (!desired || desired <= 0) return 0
-    const replacementRate = 0.5 // 50% stopa zastąpienia
+    const replacementRate = 0.4 // 35% stopa zastąpienia
     return Math.round(desired * replacementRate)
   }
 
@@ -73,14 +73,14 @@ export default function Home() {
               className="h-8 w-auto"
             />
           </Link>
-          <Link href="/form">
+          <a href="#reality-check" className="scroll-smooth">
             <Button
               size="lg"
               className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
             >
-              Sprawdź swoją emeryturę
+              Oblicz swoją emeryturę
             </Button>
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -98,8 +98,8 @@ export default function Home() {
             </h2>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
-              Większość osób wkraczających na rynek pracy nie ma świadomości, jaką będzie mieć emeryturę. 
-              Poznaj rzeczywistość i zaplanuj swoją przyszłość finansową.
+            Twoja przyszła emerytura nie musi być zagadką!
+            Zrozum system, poznaj liczby i przejmij kontrolę nad swoją finansową przyszłością.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
@@ -118,7 +118,7 @@ export default function Home() {
       </section>
 
       {/* Reality Check Section */}
-      <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white">
+      <section id="reality-check" className="py-20 px-4 bg-[var(--zus-green-primary)] text-white scroll-mt-20">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
@@ -131,7 +131,7 @@ export default function Home() {
             <Card className="p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all">
               <div className="flex items-center gap-3 mb-6">
                 <Target className="w-8 h-8 text-yellow flex-shrink-0" />
-                <label htmlFor="desired-pension-input" className="text-xl font-bold">Chciałbym otrzymać:</label>
+                <label htmlFor="desired-pension-input" className="text-xl font-bold text-white">Chciałbym otrzymać:</label>
               </div>
               <div className="flex items-baseline gap-4 mb-6">
                 <input
@@ -155,7 +155,7 @@ export default function Home() {
             <Card className="p-8 bg-white/5 backdrop-blur-sm border-2 border-white/30 hover:border-white/50 transition-all">
               <div className="flex items-center gap-3 mb-6">
                 <AlertCircle className="w-8 h-8 text-yellow flex-shrink-0" />
-                <h4 className="text-xl font-bold">Rzeczywiście otrzymam:</h4>
+                <h4 className="text-xl font-bold text-white">Rzeczywiście otrzymam:</h4>
               </div>
               <div className="flex items-baseline gap-4 mb-6">
                 <div className="text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40 leading-tight">
