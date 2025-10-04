@@ -176,7 +176,7 @@ export default function Form() {
 	const yearsToRetirement = formData.plannedRetirementYear - currentYear
 
 	return (
-		<div className='min-h-screen bg-background'>
+		<div className='min-h-screen bg-background overflow-x-hidden'>
 			{/* Header */}
 			<header className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200'>
 				<div className='container mx-auto px-4 py-4 flex items-center justify-between'>
@@ -192,16 +192,16 @@ export default function Form() {
 			</header>
 
 			{/* Main Content */}
-			<div className='pt-20 pb-16 px-4'>
-				<div className='container mx-auto max-w-7xl'>
+			<div className='pt-20 pb-16'>
+				<div className='container mx-auto max-w-7xl px-4 md:px-6'>
 					<div className='text-center mb-6'>
 						<h1 className='text-2xl md:text-3xl font-bold text-foreground mb-2'>Kalkulator Emerytury ZUS</h1>
 						<p className='text-sm text-muted-foreground'>Poznaj swoją przyszłą emeryturę w czasie rzeczywistym</p>
 					</div>
 
-					<div className='grid lg:grid-cols-2 gap-8'>
+					<div className='grid lg:grid-cols-2 gap-4 md:gap-8'>
 						{/* Formularz - lewa strona */}
-						<div className='space-y-4'>
+						<div className='space-y-4 min-w-0'>
 							{/* Wybór płci */}
 							<Card className='p-4 border-0'>
 								<h3 className='text-sm font-semibold text-foreground mb-3 flex items-center gap-2'>
@@ -425,7 +425,7 @@ export default function Form() {
 						</div>
 
 						{/* Wyniki - prawa strona */}
-						<div className='space-y-3 lg:sticky lg:top-24 lg:self-start'>
+						<div className='space-y-3 lg:sticky lg:top-24 lg:self-start min-w-0'>
 							{formData.gender && formData.monthlyPension ? (
 								<>
 									{/* Główny wynik - zielony akcent */}
