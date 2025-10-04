@@ -1,22 +1,19 @@
 interface Step3Props {
 	formData: {
+		age: number | ''
 		gender: 'male' | 'female' | ''
-		birthYear: number | ''
-		retirementAgeYears: number | ''
-		retirementAgeMonths: number | ''
+		grossSalary: number | ''
 		workStartYear: number | ''
-		currentGrossSalary: number | ''
-		currentSalaryPercentage?: number
-		isOfeMember: boolean
-		futureSalaryPercentage: number | ''
-		valorisedContributions: number | ''
-		valorisedInitialCapital: number | ''
-		valorisedSubaccountTotal: number | ''
-		contributions12Months: number | ''
+		plannedRetirementYear: number | ''
+		zusAccountBalance?: number | ''
+		zusSubaccountBalance?: number | ''
+		includeSickLeave: boolean
 		monthlyPension?: number
 		replacementRate?: number
 		totalCapital?: number
 		lifeExpectancyMonths?: number
+		sickLeaveDaysPerYear?: number
+		sickLeaveImpactPercentage?: number
 	}
 	onInputChange: (field: string, value: string | number | boolean) => void
 	calculatePension: () => void
@@ -24,247 +21,285 @@ interface Step3Props {
 
 export default function Step3({ formData, onInputChange, calculatePension }: Step3Props) {
 	const currentYear = new Date().getFullYear()
-	const currentAge = formData.birthYear ? currentYear - Number(formData.birthYear) : 0
-	const totalRetirementAge = formData.retirementAgeYears
-		? Number(formData.retirementAgeYears) + Number(formData.retirementAgeMonths || 0) / 12
-		: 0
-	const yearsToRetirement = totalRetirementAge > 0 ? totalRetirementAge - currentAge : 0
+	const yearsToRetirement = formData.plannedRetirementYear ? Number(formData.plannedRetirementYear) - currentYear : 0
+	const workingYears =
+		formData.plannedRetirementYear && formData.workStartYear
+			? Number(formData.plannedRetirementYear) - Number(formData.workStartYear)
+			: 0
+
+	// Sprawdź czy wszystkie wymagane dane są wypełnione
+	const allRequiredDataFilled = !!(
+		formData.age &&
+		formData.gender &&
+		formData.grossSalary &&
+		formData.workStartYear &&
+		formData.plannedRetirementYear
+	)
 
 	return (
 		<div className='space-y-6'>
-			<h2 className='text-xl font-bold text-zus-black mb-4'>Krok 3: Wynagrodzenie i prognoza</h2>
+			<h2 className='text-xl font-bold text-zus-black mb-4'>Krok 3: Prognoza emerytury</h2>
 
-			{/* Rok rozpoczęcia / wznowienia pracy */}
-			<div>
-				<label htmlFor='workStartYear' className='block text-sm font-medium text-zus-black mb-2'>
-					Rok rozpoczęcia / wznowienia pracy:
-				</label>
-				<select
-					id='workStartYear'
-					value={formData.workStartYear}
-					onChange={e => onInputChange('workStartYear', e.target.value ? parseInt(e.target.value) : '')}
-					className='w-full px-4 py-3 border-2 border-zus-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-zus-green focus:border-transparent text-zus-black'>
-					<option value=''>Wybierz rok</option>
-					{Array.from({ length: currentYear - 1960 + 1 }, (_, i) => 1960 + i)
-						.reverse()
-						.map(year => (
-							<option key={year} value={year}>
-								{year}
-							</option>
-						))}
-				</select>
-				{formData.workStartYear && (
-					<p className='text-xs text-zus-dark-green mt-1'>
-						Staż pracy: {currentYear - Number(formData.workStartYear)} lat
-					</p>
-				)}
-			</div>
-
-			{/* Miesięczne obecne wynagrodzenie brutto */}
-			<div>
-				<label htmlFor='currentGrossSalary' className='block text-sm font-medium text-zus-black mb-2'>
-					Miesięczne obecne wynagrodzenie brutto: <span className='text-red-500'>*</span>
-				</label>
-				<div className='relative'>
-					<input
-						type='number'
-						id='currentGrossSalary'
-						min='0'
-						step='0.01'
-						value={formData.currentGrossSalary}
-						onChange={e => onInputChange('currentGrossSalary', e.target.value ? parseFloat(e.target.value) : '')}
-						className='w-full px-4 py-3 pr-12 border-2 border-zus-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-zus-green focus:border-transparent text-zus-black text-lg'
-						placeholder='0.00'
-					/>
-					<span className='absolute right-4 top-1/2 transform -translate-y-1/2 text-zus-dark-green font-medium'>
-						zł
-					</span>
-				</div>
-				<div className='mt-2 space-y-1 text-xs text-zus-dark-green'>
-					{formData.currentGrossSalary && (
-						<>
-							<p>Składka emerytalna miesięcznie: {(Number(formData.currentGrossSalary) * 0.1952).toFixed(2)} zł</p>
-							{formData.currentSalaryPercentage && (
-								<p>
-									Twoje wynagrodzenie stanowi <strong>{formData.currentSalaryPercentage}%</strong> przeciętnego
-									wynagrodzenia
-								</p>
-							)}
-						</>
-					)}
-				</div>
-			</div>
-
-			{/* Członkostwo OFE */}
-			<div>
-				<label className='flex items-center space-x-3 p-4 border-2 border-zus-light-gray rounded-lg cursor-pointer hover:border-zus-green transition-colors'>
-					<input
-						type='checkbox'
-						checked={formData.isOfeMember}
-						onChange={e => onInputChange('isOfeMember', e.target.checked)}
-						className='w-5 h-5 text-zus-green focus:ring-zus-green border-2 border-zus-light-gray rounded'
-					/>
-					<div>
-						<span className='text-zus-black font-medium'>Jestem członkiem OFE lub mam subkonto</span>
-						<p className='text-xs text-zus-dark-green'>
-							Zaznacz, jeśli byłeś członkiem Otwartego Funduszu Emerytalnego
-						</p>
+			{/* Podsumowanie wprowadzonych danych */}
+			<div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+				<h3 className='font-bold text-blue-800 mb-3'>📋 Podsumowanie wprowadzonych danych:</h3>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
+					<div className='space-y-2'>
+						<div className='flex justify-between'>
+							<span>Wiek:</span>
+							<span className='font-medium'>{formData.age || '—'} lat</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>Płeć:</span>
+							<span className='font-medium'>
+								{formData.gender === 'male' ? 'Mężczyzna' : formData.gender === 'female' ? 'Kobieta' : '—'}
+							</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>Wynagrodzenie brutto:</span>
+							<span className='font-medium'>
+								{formData.grossSalary ? `${Number(formData.grossSalary).toLocaleString('pl-PL')} zł` : '—'}
+							</span>
+						</div>
 					</div>
-				</label>
-			</div>
-
-			{/* Procent przeciętnego wynagrodzenia w przyszłości */}
-			<div>
-				<label htmlFor='futureSalaryPercentage' className='block text-sm font-medium text-zus-black mb-2'>
-					Procent przeciętnego wynagrodzenia w przyszłości:
-				</label>
-				<div className='relative'>
-					<input
-						type='number'
-						id='futureSalaryPercentage'
-						min='0'
-						max='1000'
-						step='1'
-						value={formData.futureSalaryPercentage}
-						onChange={e => onInputChange('futureSalaryPercentage', e.target.value ? parseFloat(e.target.value) : 100)}
-						className='w-full px-4 py-3 pr-12 border-2 border-zus-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-zus-green focus:border-transparent text-zus-black text-lg'
-						placeholder='100'
-					/>
-					<span className='absolute right-4 top-1/2 transform -translate-y-1/2 text-zus-dark-green font-medium'>%</span>
-				</div>
-				<p className='text-xs text-zus-dark-green mt-1'>
-					Prognoza przyszłych zarobków względem przeciętnego wynagrodzenia w gospodarce (domyślnie 100%)
-				</p>
-			</div>
-
-			{/* Prognoza składek */}
-			{formData.currentGrossSalary && yearsToRetirement > 0 && (
-				<div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
-					<h3 className='font-bold text-blue-800 mb-2'>📈 Prognoza przyszłych składek:</h3>
-					<div className='space-y-1 text-sm text-blue-700'>
+					<div className='space-y-2'>
+						<div className='flex justify-between'>
+							<span>Rok rozpoczęcia pracy:</span>
+							<span className='font-medium'>{formData.workStartYear || '—'}</span>
+						</div>
+						<div className='flex justify-between'>
+							<span>Planowana emerytura:</span>
+							<span className='font-medium'>{formData.plannedRetirementYear || '—'}</span>
+						</div>
 						<div className='flex justify-between'>
 							<span>Lata do emerytury:</span>
-							<span className='font-medium'>
-								{Math.floor(yearsToRetirement)} lat {Math.round((yearsToRetirement % 1) * 12)} miesięcy
-							</span>
-						</div>
-						<div className='flex justify-between'>
-							<span>Obecna składka miesięczna:</span>
-							<span className='font-medium'>{(Number(formData.currentGrossSalary) * 0.1952).toFixed(2)} zł</span>
-						</div>
-						<div className='flex justify-between'>
-							<span>Prognozowana składka miesięczna:</span>
-							<span className='font-medium'>
-								{(
-									Number(formData.currentGrossSalary) *
-									0.1952 *
-									(Number(formData.futureSalaryPercentage || 100) / 100)
-								).toFixed(2)}{' '}
-								zł
-							</span>
-						</div>
-						<div className='flex justify-between'>
-							<span>Przyszłe składki razem:</span>
-							<span className='font-medium'>
-								{(
-									Number(formData.currentGrossSalary) *
-									0.1952 *
-									(Number(formData.futureSalaryPercentage || 100) / 100) *
-									yearsToRetirement *
-									12
-								).toLocaleString('pl-PL')}{' '}
-								zł
-							</span>
+							<span className='font-medium'>{yearsToRetirement > 0 ? `${yearsToRetirement} lat` : '—'}</span>
 						</div>
 					</div>
+				</div>
+
+				{/* Dane fakultatywne */}
+				<div className='mt-4 pt-3 border-t border-blue-200'>
+					<h4 className='font-medium text-blue-800 mb-2'>Dane fakultatywne:</h4>
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
+						<div className='space-y-1'>
+							<div className='flex justify-between'>
+								<span>Środki na koncie ZUS:</span>
+								<span className='font-medium'>
+									{formData.zusAccountBalance
+										? `${Number(formData.zusAccountBalance).toLocaleString('pl-PL')} zł`
+										: 'Oszacowane automatycznie'}
+								</span>
+							</div>
+							<div className='flex justify-between'>
+								<span>Środki na subkoncie:</span>
+								<span className='font-medium'>
+									{formData.zusSubaccountBalance
+										? `${Number(formData.zusSubaccountBalance).toLocaleString('pl-PL')} zł`
+										: 'Brak'}
+								</span>
+							</div>
+						</div>
+						<div className='space-y-1'>
+							<div className='flex justify-between'>
+								<span>Zwolnienia lekarskie:</span>
+								<span className='font-medium'>{formData.includeSickLeave ? 'Uwzględnione' : 'Nieuwzględnione'}</span>
+							</div>
+							{formData.includeSickLeave && formData.sickLeaveDaysPerYear && (
+								<div className='flex justify-between text-xs text-blue-600'>
+									<span>Średnio dni rocznie:</span>
+									<span>{formData.sickLeaveDaysPerYear} dni</span>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Przycisk do prognozowania */}
+			{allRequiredDataFilled && !formData.monthlyPension && (
+				<div className='text-center'>
+					<button
+						type='button'
+						onClick={calculatePension}
+						className='px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg transition-colors shadow-lg'>
+						🔮 Zaprognozuj moją przyszłą emeryturę
+					</button>
+					<p className='text-sm text-zus-dark-green mt-2'>
+						Kliknij, aby obliczyć prognozę emerytury na podstawie wprowadzonych danych
+					</p>
 				</div>
 			)}
 
-			{/* Wyniki kalkulacji */}
-			{formData.monthlyPension && formData.replacementRate && (
-				<div className='bg-zus-green text-white p-6 rounded-lg'>
-					<h3 className='text-xl font-bold mb-4'>🎯 Wyniki kalkulacji emerytury ZUS</h3>
+			{/* Wyniki prognozy */}
+			{formData.monthlyPension && formData.replacementRate && allRequiredDataFilled && (
+				<div className='bg-green-600 text-black p-6 rounded-lg shadow-xl'>
+					<h3 className='text-2xl font-bold mb-6 text-center'>🎯 Prognoza Twojej przyszłej emerytury</h3>
 
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
+					{/* Główne wyniki */}
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
+						<div className='bg-white bg-opacity-20 rounded-lg p-6 text-center'>
 							<h4 className='font-bold text-lg mb-2'>Miesięczna emerytura</h4>
-							<p className='text-3xl font-bold'>{formData.monthlyPension.toLocaleString('pl-PL')} zł</p>
+							<p className='text-4xl font-bold mb-2'>{formData.monthlyPension.toLocaleString('pl-PL')} zł</p>
+							<p className='text-sm opacity-90'>Przewidywana wysokość emerytury</p>
 						</div>
 
-						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
+						<div className='bg-white bg-opacity-20 rounded-lg p-6 text-center'>
 							<h4 className='font-bold text-lg mb-2'>Stopa zastąpienia</h4>
-							<p className='text-3xl font-bold'>{formData.replacementRate}%</p>
+							<p className='text-4xl font-bold mb-2'>{formData.replacementRate}%</p>
 							<p className='text-sm opacity-90'>obecnego wynagrodzenia</p>
 						</div>
 					</div>
 
-					<div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
-							<h4 className='font-bold text-lg mb-2'>Całkowity kapitał</h4>
-							<p className='text-2xl font-bold'>{formData.totalCapital?.toLocaleString('pl-PL')} zł</p>
+					{/* Dodatkowe szczegóły */}
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+						<div className='bg-white bg-opacity-15 rounded-lg p-4 text-center'>
+							<h4 className='font-bold mb-2'>Całkowity kapitał</h4>
+							<p className='text-xl font-bold'>{formData.totalCapital?.toLocaleString('pl-PL')} zł</p>
 						</div>
 
-						<div className='bg-white bg-opacity-20 rounded-lg p-4'>
-							<h4 className='font-bold text-lg mb-2'>Czas pobierania</h4>
-							<p className='text-2xl font-bold'>
+						<div className='bg-white bg-opacity-15 rounded-lg p-4 text-center'>
+							<h4 className='font-bold mb-2'>Czas pobierania</h4>
+							<p className='text-xl font-bold'>
 								{formData.lifeExpectancyMonths ? Math.round(formData.lifeExpectancyMonths / 12) : 0} lat
 							</p>
-							<p className='text-sm opacity-90'>średnie dalsze trwanie życia</p>
+						</div>
+
+						<div className='bg-white bg-opacity-15 rounded-lg p-4 text-center'>
+							<h4 className='font-bold mb-2'>Staż pracy</h4>
+							<p className='text-xl font-bold'>{workingYears} lat</p>
 						</div>
 					</div>
 
-					<div className='space-y-2 text-sm opacity-90'>
-						<div className='flex justify-between'>
-							<span>Obecne wynagrodzenie brutto:</span>
-							<span>{Number(formData.currentGrossSalary).toLocaleString('pl-PL')} zł</span>
-						</div>
-						<div className='flex justify-between'>
-							<span>Różnica miesięczna:</span>
-							<span>{(Number(formData.currentGrossSalary) - formData.monthlyPension).toLocaleString('pl-PL')} zł</span>
-						</div>
-						<div className='flex justify-between'>
-							<span>Przewidywany wiek przejścia:</span>
-							<span>
-								{formData.retirementAgeYears} lat {formData.retirementAgeMonths} miesięcy
-							</span>
-						</div>
-						{formData.currentSalaryPercentage && (
-							<div className='flex justify-between'>
-								<span>% przeciętnego wynagrodzenia:</span>
-								<span>
-									{formData.currentSalaryPercentage}% → {formData.futureSalaryPercentage}%
-								</span>
+					{/* Szczegółowe informacje */}
+					<div className='bg-white bg-opacity-10 rounded-lg p-4 mb-4'>
+						<h4 className='font-bold mb-3 text-black'>📊 Szczegółowe informacje:</h4>
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-black'>
+							<div className='space-y-2'>
+								<div className='flex justify-between'>
+									<span>Obecne wynagrodzenie:</span>
+									<span>{Number(formData.grossSalary).toLocaleString('pl-PL')} zł</span>
+								</div>
+								<div className='flex justify-between'>
+									<span>Różnica miesięczna:</span>
+									<span
+										className={
+											formData.monthlyPension < Number(formData.grossSalary) ? 'text-red-200' : 'text-green-200'
+										}>
+										{(Number(formData.grossSalary) - formData.monthlyPension).toLocaleString('pl-PL')} zł
+									</span>
+								</div>
+								<div className='flex justify-between'>
+									<span>Wiek przejścia na emeryturę:</span>
+									<span>{formData.gender === 'female' ? '60' : '65'} lat</span>
+								</div>
 							</div>
-						)}
+							<div className='space-y-2'>
+								<div className='flex justify-between'>
+									<span>Lata składkowe:</span>
+									<span>{workingYears} lat</span>
+								</div>
+								<div className='flex justify-between'>
+									<span>Średni wzrost wynagrodzeń:</span>
+									<span>3% rocznie</span>
+								</div>
+								{formData.includeSickLeave && formData.sickLeaveImpactPercentage && (
+									<div className='flex justify-between'>
+										<span>Wpływ zwolnień lekarskich:</span>
+										<span className='text-yellow-200'>-{formData.sickLeaveImpactPercentage}%</span>
+									</div>
+								)}
+							</div>
+						</div>
 					</div>
 
-					{/* Rekomendacje */}
-					<div className='mt-4 p-4 bg-white bg-opacity-10 rounded-lg'>
-						<h4 className='font-bold mb-2'>💡 Rekomendacje ZUS:</h4>
-						<ul className='text-sm space-y-1'>
-							{formData.replacementRate < 40 && <li>• Rozważ dodatkowe oszczędzanie na emeryturę (III filar)</li>}
-							{formData.replacementRate < 50 && yearsToRetirement > 5 && (
-								<li>• Możesz rozważyć późniejsze przejście na emeryturę</li>
+					{/* Rekomendacje i ostrzeżenia */}
+					<div className='bg-white bg-opacity-10 rounded-lg p-4'>
+						<h4 className='font-bold mb-3 text-black'>💡 Rekomendacje i uwagi:</h4>
+						<ul className='text-sm space-y-2 text-black'>
+							{formData.replacementRate < 40 && (
+								<li className='flex items-start space-x-2'>
+									<span className='text-red-300'>⚠️</span>
+									<span>Niska stopa zastąpienia - rozważ dodatkowe oszczędzanie na emeryturę (III filar)</span>
+								</li>
 							)}
-							{formData.replacementRate > 60 && <li>• Dobra sytuacja emerytalna - kontynuuj obecną strategię</li>}
-							{formData.isOfeMember && <li>• Uwzględniono środki z OFE/subkonta w kalkulacji</li>}
-							{Number(formData.futureSalaryPercentage || 100) > 100 && (
-								<li>• Prognoza zakłada wzrost zarobków względem przeciętnej</li>
+							{formData.replacementRate >= 40 && formData.replacementRate < 60 && (
+								<li className='flex items-start space-x-2'>
+									<span className='text-yellow-300'>⚡</span>
+									<span>Przeciętna stopa zastąpienia - warto rozważyć dodatkowe zabezpieczenie emerytalne</span>
+								</li>
 							)}
+							{formData.replacementRate >= 60 && (
+								<li className='flex items-start space-x-2'>
+									<span className='text-green-300'>✅</span>
+									<span>Dobra stopa zastąpienia - kontynuuj obecną strategię oszczędzania</span>
+								</li>
+							)}
+							{yearsToRetirement > 10 && (
+								<li className='flex items-start space-x-2'>
+									<span className='text-blue-300'>🕐</span>
+									<span>Masz jeszcze czas na optymalizację - rozważ różne scenariusze</span>
+								</li>
+							)}
+							{formData.includeSickLeave && (
+								<li className='flex items-start space-x-2'>
+									<span className='text-orange-300'>🏥</span>
+									<span>Uwzględniono wpływ zwolnień lekarskich na wysokość emerytury</span>
+								</li>
+							)}
+							<li className='flex items-start space-x-2'>
+								<span className='text-gray-300'>📈</span>
+								<span>Prognoza uwzględnia średni wzrost wynagrodzeń w Polsce (3% rocznie)</span>
+							</li>
 						</ul>
+					</div>
+
+					{/* Przycisk do ponownego obliczenia */}
+					<div className='text-center mt-6'>
+						<button
+							type='button'
+							onClick={calculatePension}
+							className='px-6 py-3 bg-white bg-opacity-20 hover:bg-opacity-30 text-black font-medium rounded-lg transition-colors'>
+							🔄 Przelicz ponownie
+						</button>
 					</div>
 				</div>
 			)}
 
-			{/* Przycisk do przeliczenia */}
-			{!formData.monthlyPension && formData.currentGrossSalary && formData.retirementAgeYears && (
-				<button
-					type='button'
-					onClick={calculatePension}
-					className='w-full px-6 py-4 bg-zus-dark-green hover:bg-green-800 text-white font-bold rounded-lg transition-colors'>
-					🧮 Oblicz emeryturę według metodologii ZUS
-				</button>
+			{/* Komunikat o brakujących danych */}
+			{!allRequiredDataFilled && (
+				<div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+					<h4 className='font-bold text-red-800 mb-2'>⚠️ Brakujące dane</h4>
+					<p className='text-sm text-red-700 mb-3'>
+						Aby wygenerować prognozę emerytury, uzupełnij wszystkie obowiązkowe dane w pierwszym kroku:
+					</p>
+					<ul className='text-sm text-red-600 space-y-1'>
+						{!formData.age && <li>• Wiek</li>}
+						{!formData.gender && <li>• Płeć</li>}
+						{!formData.grossSalary && <li>• Wynagrodzenie brutto</li>}
+						{!formData.workStartYear && <li>• Rok rozpoczęcia pracy</li>}
+						{!formData.plannedRetirementYear && <li>• Planowany rok zakończenia pracy</li>}
+					</ul>
+				</div>
 			)}
+
+			{/* Informacja o metodologii */}
+			<div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+				<h4 className='font-bold text-gray-800 mb-2'>📚 Metodologia obliczeń</h4>
+				<p className='text-sm text-gray-700 mb-2'>
+					Prognoza oparta jest na aktualnych zasadach systemu emerytalnego w Polsce:
+				</p>
+				<ul className='text-xs text-gray-600 space-y-1 list-disc list-inside'>
+					<li>Składka emerytalna: 19,52% wynagrodzenia brutto</li>
+					<li>Średni wzrost wynagrodzeń: 3% rocznie (dane NBP/GUS)</li>
+					<li>Tabele średniego dalszego trwania życia wg GUS</li>
+					<li>Wiek emerytalny: 60 lat (kobiety), 65 lat (mężczyźni)</li>
+					<li>Zwolnienia lekarskie: średnio 9-12 dni rocznie wg statystyk GUS</li>
+				</ul>
+				<p className='text-xs text-gray-500 mt-2'>
+					* Prognoza ma charakter szacunkowy i nie stanowi gwarancji przyszłej wysokości emerytury.
+				</p>
+			</div>
 		</div>
 	)
 }

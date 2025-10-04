@@ -6,7 +6,7 @@ export default function Home() {
 				<p className='text-zus-dark-green mb-6'>Witaj w kalkulatorze emerytalnym ZUS</p>
 				<a
 					href='/form'
-					className='inline-block px-6 py-3 bg-zus-green hover:bg-zus-dark-green text-white font-medium rounded-lg transition-colors'>
+					className='inline-block px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors'>
 					Przejdź do formularza →
 				</a>
 			</div>

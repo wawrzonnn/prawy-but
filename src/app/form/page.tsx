@@ -10,56 +10,41 @@ import ProgressSteps from '@/components/ProgressSteps'
 export default function Form() {
 	const [currentStep, setCurrentStep] = useState(1)
 	const [formData, setFormData] = useState<{
-		// Podstawowe dane (zgodne z oficjalnym kalkulatorem ZUS)
-		lastZusInfoYear: number | ''
+		// OBOWIĄZKOWE dane podstawowe
+		age: number | ''
 		gender: 'male' | 'female' | ''
-		birthMonth: number | ''
-		birthYear: number | ''
-
-		// Kapitał emerytalny (obecny stan)
-		valorisedContributions: number | ''
-		valorisedInitialCapital: number | ''
-		valorisedSubaccountTotal: number | ''
-		contributions12Months: number | ''
-
-		// Planowanie emerytalne
-		retirementAgeYears: number | ''
-		retirementAgeMonths: number | ''
+		grossSalary: number | ''
 		workStartYear: number | ''
-		currentGrossSalary: number | ''
+		plannedRetirementYear: number | ''
 
-		// Dodatkowe parametry
-		currentSalaryPercentage?: number
-		isOfeMember: boolean
-		futureSalaryPercentage: number | ''
+		// FAKULTATYWNE - środki w ZUS
+		zusAccountBalance?: number | ''
+		zusSubaccountBalance?: number | ''
+
+		// FAKULTATYWNE - opcja zwolnień lekarskich
+		includeSickLeave: boolean
 
 		// Wyniki kalkulacji
 		monthlyPension?: number
 		replacementRate?: number
 		totalCapital?: number
 		lifeExpectancyMonths?: number
+		sickLeaveDaysPerYear?: number
+		sickLeaveImpactPercentage?: number
 	}>({
-		// Podstawowe dane
-		lastZusInfoYear: new Date().getFullYear(),
+		// Podstawowe dane obowiązkowe
+		age: '',
 		gender: '',
-		birthMonth: '',
-		birthYear: '',
-
-		// Kapitał emerytalny
-		valorisedContributions: '',
-		valorisedInitialCapital: 0,
-		valorisedSubaccountTotal: 0,
-		contributions12Months: '',
-
-		// Planowanie emerytalne
-		retirementAgeYears: '',
-		retirementAgeMonths: 0,
+		grossSalary: '',
 		workStartYear: '',
-		currentGrossSalary: '',
+		plannedRetirementYear: '',
 
-		// Dodatkowe parametry
-		isOfeMember: false,
-		futureSalaryPercentage: 100, // domyślnie 100% obecnego poziomu
+		// Fakultatywne dane ZUS
+		zusAccountBalance: '',
+		zusSubaccountBalance: '',
+
+		// Opcja zwolnień lekarskich
+		includeSickLeave: false,
 	})
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -70,49 +55,73 @@ export default function Form() {
 		return Math.round((salary / averageSalary) * 100)
 	}
 
-	// Funkcja kalkulacji emerytury (rozszerzona zgodnie z ZUS)
+	// Funkcja kalkulacji emerytury z uwzględnieniem nowych wymagań
 	const calculatePension = () => {
-		if (!formData.gender || !formData.birthYear || !formData.currentGrossSalary || !formData.retirementAgeYears) {
+		if (!formData.gender || !formData.age || !formData.grossSalary || !formData.workStartYear || !formData.plannedRetirementYear) {
 			return
 		}
 
-		const currentAge = new Date().getFullYear() - Number(formData.birthYear)
-		const totalRetirementAge = Number(formData.retirementAgeYears) + Number(formData.retirementAgeMonths || 0) / 12
-		const yearsToRetirement = totalRetirementAge - currentAge
+		const currentYear = new Date().getFullYear()
+		const retirementAge = formData.gender === 'female' ? 60 : 65
+		const yearsToRetirement = Number(formData.plannedRetirementYear) - currentYear
 		const monthsToRetirement = yearsToRetirement * 12
+		const workingYears = Number(formData.plannedRetirementYear) - Number(formData.workStartYear)
 
+		// Średni wzrost wynagrodzeń w Polsce (założenie: 3% rocznie)
+		const averageWageGrowth = 0.03
+		
 		// Składka emerytalna - 19.52% wynagrodzenia brutto
-		const monthlyContribution = Number(formData.currentGrossSalary) * 0.1952
+		const currentMonthlyContribution = Number(formData.grossSalary) * 0.1952
+		
+		// Prognoza przyszłych składek z uwzględnieniem wzrostu wynagrodzeń
+		let totalFutureContributions = 0
+		for (let year = 0; year < yearsToRetirement; year++) {
+			const yearlyGrowthMultiplier = Math.pow(1 + averageWageGrowth, year)
+			const adjustedMonthlyContribution = currentMonthlyContribution * yearlyGrowthMultiplier
+			totalFutureContributions += adjustedMonthlyContribution * 12
+		}
 
-		// Prognoza przyszłych składek z uwzględnieniem procentu przeciętnego wynagrodzenia
-		const futureSalaryMultiplier = Number(formData.futureSalaryPercentage || 100) / 100
-		const adjustedMonthlyContribution = monthlyContribution * futureSalaryMultiplier
-		const futureContributions = adjustedMonthlyContribution * monthsToRetirement
+		// Oszacowanie obecnych środków jeśli nie podano
+		let estimatedCurrentCapital = 0
+		if (formData.zusAccountBalance && formData.zusSubaccountBalance) {
+			estimatedCurrentCapital = Number(formData.zusAccountBalance) + Number(formData.zusSubaccountBalance)
+		} else {
+			// Oszacowanie na podstawie lat pracy i obecnego wynagrodzenia
+			const yearsWorked = currentYear - Number(formData.workStartYear)
+			const averageContributionPerYear = currentMonthlyContribution * 12
+			estimatedCurrentCapital = averageContributionPerYear * yearsWorked * 0.7 // uwzględnienie wzrostu wynagrodzeń w przeszłości
+		}
 
 		// Całkowity kapitał emerytalny
-		const totalCapital =
-			Number(formData.valorisedContributions || 0) +
-			Number(formData.valorisedInitialCapital || 0) +
-			Number(formData.valorisedSubaccountTotal || 0) +
-			futureContributions
+		let totalCapital = estimatedCurrentCapital + totalFutureContributions
 
-		// Tabele średniego dalszego trwania życia (bardziej precyzyjne)
-		// Uwzględniamy wiek przejścia na emeryturę
+		// Uwzględnienie zwolnień lekarskich
+		let sickLeaveDaysPerYear = 0
+		let sickLeaveImpactPercentage = 0
+		
+		if (formData.includeSickLeave) {
+			// Średnie zwolnienia lekarskie w Polsce
+			sickLeaveDaysPerYear = formData.gender === 'female' ? 12 : 9 // dni rocznie
+			sickLeaveImpactPercentage = (sickLeaveDaysPerYear / 365) * 100
+			
+			// Redukcja kapitału o wpływ zwolnień lekarskich
+			const sickLeaveReduction = sickLeaveDaysPerYear / 365
+			totalCapital = totalCapital * (1 - sickLeaveReduction)
+		}
+
+		// Tabele średniego dalszego trwania życia przy przejściu na emeryturę
 		let lifeExpectancyYears: number
 		if (formData.gender === 'female') {
-			lifeExpectancyYears = totalRetirementAge <= 60 ? 24 : totalRetirementAge <= 65 ? 22 : 20
+			lifeExpectancyYears = retirementAge <= 60 ? 24 : retirementAge <= 65 ? 22 : 20
 		} else {
-			lifeExpectancyYears = totalRetirementAge <= 65 ? 20 : totalRetirementAge <= 67 ? 18 : 16
+			lifeExpectancyYears = retirementAge <= 65 ? 20 : retirementAge <= 67 ? 18 : 16
 		}
 
 		const lifeExpectancyMonths = lifeExpectancyYears * 12
 
 		// Miesięczna emerytura
 		const monthlyPension = totalCapital / lifeExpectancyMonths
-		const replacementRate = (monthlyPension / Number(formData.currentGrossSalary)) * 100
-
-		// Oblicz procent przeciętnego wynagrodzenia
-		const currentSalaryPercentage = calculateCurrentSalaryPercentage(Number(formData.currentGrossSalary))
+		const replacementRate = (monthlyPension / Number(formData.grossSalary)) * 100
 
 		setFormData(prev => ({
 			...prev,
@@ -120,7 +129,8 @@ export default function Form() {
 			replacementRate: Math.round(replacementRate * 100) / 100,
 			totalCapital: Math.round(totalCapital),
 			lifeExpectancyMonths,
-			currentSalaryPercentage,
+			sickLeaveDaysPerYear,
+			sickLeaveImpactPercentage: Math.round(sickLeaveImpactPercentage * 100) / 100,
 		}))
 	}
 
@@ -147,32 +157,27 @@ export default function Form() {
 	}
 
 	const handleSubmit = async () => {
-		if (formData.gender && formData.birthYear && formData.currentGrossSalary && formData.retirementAgeYears) {
+		if (formData.gender && formData.age && formData.grossSalary && formData.workStartYear && formData.plannedRetirementYear) {
 			setIsSubmitting(true)
 			try {
 				// Oblicz emeryturę przed zapisem
 				calculatePension()
 
 				await db.pensionData.add({
-					lastZusInfoYear: Number(formData.lastZusInfoYear),
+					age: Number(formData.age),
 					gender: formData.gender,
-					birthMonth: Number(formData.birthMonth) || 1,
-					birthYear: Number(formData.birthYear),
-					valorisedContributions: Number(formData.valorisedContributions) || 0,
-					valorisedInitialCapital: Number(formData.valorisedInitialCapital) || 0,
-					valorisedSubaccountTotal: Number(formData.valorisedSubaccountTotal) || 0,
-					contributions12Months: Number(formData.contributions12Months) || 0,
-					retirementAgeYears: Number(formData.retirementAgeYears),
-					retirementAgeMonths: Number(formData.retirementAgeMonths) || 0,
-					workStartYear: Number(formData.workStartYear) || new Date().getFullYear() - 20,
-					currentGrossSalary: Number(formData.currentGrossSalary),
-					currentSalaryPercentage: formData.currentSalaryPercentage,
-					isOfeMember: formData.isOfeMember,
-					futureSalaryPercentage: Number(formData.futureSalaryPercentage) || 100,
+					grossSalary: Number(formData.grossSalary),
+					workStartYear: Number(formData.workStartYear),
+					plannedRetirementYear: Number(formData.plannedRetirementYear),
+					zusAccountBalance: Number(formData.zusAccountBalance) || 0,
+					zusSubaccountBalance: Number(formData.zusSubaccountBalance) || 0,
+					includeSickLeave: formData.includeSickLeave,
 					monthlyPension: formData.monthlyPension,
 					replacementRate: formData.replacementRate,
 					totalCapital: formData.totalCapital,
 					lifeExpectancyMonths: formData.lifeExpectancyMonths,
+					sickLeaveDaysPerYear: formData.sickLeaveDaysPerYear,
+					sickLeaveImpactPercentage: formData.sickLeaveImpactPercentage,
 					createdAt: new Date(),
 				})
 
@@ -180,20 +185,14 @@ export default function Form() {
 
 				// Reset formularza
 				setFormData({
-					lastZusInfoYear: new Date().getFullYear(),
+					age: '',
 					gender: '',
-					birthMonth: '',
-					birthYear: '',
-					valorisedContributions: '',
-					valorisedInitialCapital: 0,
-					valorisedSubaccountTotal: 0,
-					contributions12Months: '',
-					retirementAgeYears: '',
-					retirementAgeMonths: 0,
+					grossSalary: '',
 					workStartYear: '',
-					currentGrossSalary: '',
-					isOfeMember: false,
-					futureSalaryPercentage: 100,
+					plannedRetirementYear: '',
+					zusAccountBalance: '',
+					zusSubaccountBalance: '',
+					includeSickLeave: false,
 				})
 				setCurrentStep(1)
 			} catch (error) {
@@ -207,24 +206,11 @@ export default function Form() {
 	const isStepValid = (step: number) => {
 		switch (step) {
 			case 1:
-				return !!(formData.lastZusInfoYear && formData.gender && formData.birthYear && formData.retirementAgeYears)
+				return !!(formData.age && formData.gender && formData.grossSalary && formData.workStartYear && formData.plannedRetirementYear)
 			case 2:
-				return !!(
-					formData.lastZusInfoYear &&
-					formData.gender &&
-					formData.birthYear &&
-					formData.retirementAgeYears &&
-					formData.valorisedContributions !== ''
-				)
+				return !!(formData.age && formData.gender && formData.grossSalary && formData.workStartYear && formData.plannedRetirementYear)
 			case 3:
-				return !!(
-					formData.lastZusInfoYear &&
-					formData.gender &&
-					formData.birthYear &&
-					formData.retirementAgeYears &&
-					formData.valorisedContributions !== '' &&
-					formData.currentGrossSalary
-				)
+				return !!(formData.age && formData.gender && formData.grossSalary && formData.workStartYear && formData.plannedRetirementYear)
 			default:
 				return false
 		}
@@ -248,8 +234,8 @@ export default function Form() {
 			<div className='bg-zus-white border-2 border-zus-green rounded-lg shadow-xl p-8 w-full max-w-4xl'>
 				{/* Header */}
 				<div className='text-center mb-8'>
-					<h1 className='text-3xl font-bold text-zus-black mb-2'>Kalkulator Emerytalny ZUS</h1>
-					<p className='text-zus-dark-green'>Emerytura na nowych zasadach - wersja uproszczona</p>
+					<h1 className='text-3xl font-bold text-zus-black mb-2'>Symulator Emerytury ZUS</h1>
+					<p className='text-zus-dark-green'>Prognoza przyszłej emerytury z uwzględnieniem wzrostu wynagrodzeń</p>
 				</div>
 
 				{/* Progress Steps */}
@@ -279,7 +265,7 @@ export default function Form() {
 								type='button'
 								onClick={nextStep}
 								disabled={!isStepValid(currentStep)}
-								className='px-6 py-3 bg-zus-green hover:bg-zus-dark-green disabled:bg-zus-light-gray disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'>
+								className='px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-zus-light-gray disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'>
 								Następny →
 							</button>
 						) : (
@@ -288,14 +274,14 @@ export default function Form() {
 								onClick={handleSubmit}
 								disabled={
 									!formData.gender ||
-									!formData.birthYear ||
-									!formData.retirementAgeYears ||
-									!formData.valorisedContributions ||
-									!formData.currentGrossSalary ||
+									!formData.age ||
+									!formData.grossSalary ||
+									!formData.workStartYear ||
+									!formData.plannedRetirementYear ||
 									isSubmitting
 								}
-								className='px-6 py-3 bg-zus-green hover:bg-zus-dark-green disabled:bg-zus-light-gray disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'>
-								{isSubmitting ? 'Zapisywanie...' : 'Oblicz emeryturę'}
+								className='px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-zus-light-gray disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors'>
+								{isSubmitting ? 'Zapisywanie...' : 'Zaprognozuj moją przyszłą emeryturę'}
 							</button>
 						)}
 					</div>

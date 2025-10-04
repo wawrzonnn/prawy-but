@@ -16,13 +16,13 @@ export default function ProgressSteps({ currentStep, totalSteps, onStepClick, is
 							<div
 								onClick={isClickable ? () => onStepClick(step) : undefined}
 								className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold transition-colors ${
-									currentStep >= step ? 'bg-zus-green' : 'bg-zus-light-gray text-zus-black'
+									currentStep >= step ? 'bg-green-600' : 'bg-zus-light-gray text-zus-black'
 								} ${isClickable ? 'cursor-pointer hover:bg-opacity-80' : 'cursor-not-allowed'}`}
 								title={isClickable ? `Przejdź do kroku ${step}` : `Najpierw wypełnij poprzednie kroki`}>
 								{step}
 							</div>
 							{step < totalSteps && (
-								<div className={`w-16 h-1 mx-2 ${currentStep > step ? 'bg-zus-green' : 'bg-zus-light-gray'}`} />
+								<div className={`w-16 h-1 mx-2 ${currentStep > step ? 'bg-green-600' : 'bg-zus-light-gray'}`} />
 							)}
 						</div>
 					)

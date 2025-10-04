@@ -3,34 +3,27 @@ import Dexie, { Table } from 'dexie'
 export interface PensionData {
 	id?: number
 
-	// Podstawowe dane (zgodne z oficjalnym kalkulatorem ZUS)
-	lastZusInfoYear: number // Ostatnia Informacja o stanie konta w ZUS za rok
-	gender: 'male' | 'female'
-	birthMonth: number // 1-12
-	birthYear: number
+	// OBOWIĄZKOWE dane podstawowe
+	age: number // Wiek w latach
+	gender: 'male' | 'female' // Płeć
+	grossSalary: number // Wysokość wynagrodzenia brutto miesięcznie
+	workStartYear: number // Rok rozpoczęcia pracy (styczeń)
+	plannedRetirementYear: number // Planowany rok zakończenia aktywności zawodowej (styczeń)
 
-	// Kapitał emerytalny (obecny stan)
-	valorisedContributions: number // Kwota zwaloryzowanych składek
-	valorisedInitialCapital: number // Kwota zwaloryzowanego kapitału początkowego
-	valorisedSubaccountTotal: number // Zwaloryzowana kwota ogółem na subkoncie
-	contributions12Months: number // Kwota składek za 12 miesięcy kalendarzowych
+	// FAKULTATYWNE - środki w ZUS
+	zusAccountBalance?: number // Wysokość zgromadzonych środków na koncie w ZUS
+	zusSubaccountBalance?: number // Wysokość zgromadzonych środków na subkoncie w ZUS
 
-	// Planowanie emerytalne
-	retirementAgeYears: number // Deklarowany wiek przejścia na emeryturę w latach
-	retirementAgeMonths: number // Deklarowany wiek przejścia na emeryturę w miesiącach (0-11)
-	workStartYear: number // Rok rozpoczęcia / wznowienia pracy
-	currentGrossSalary: number // Miesięczne obecne wynagrodzenie brutto
-
-	// Dodatkowe parametry
-	currentSalaryPercentage?: number // Obecne wynagrodzenie jako % przeciętnego (automatyczne)
-	isOfeMember: boolean // Jestem członkiem OFE lub mam subkonto
-	futureSalaryPercentage: number // Procent przeciętnego wynagrodzenia w przyszłości
+	// FAKULTATYWNE - opcja zwolnień lekarskich
+	includeSickLeave: boolean // Uwzględniaj możliwość zwolnień lekarskich
 
 	// Wyniki kalkulacji
 	monthlyPension?: number // Przewidywana miesięczna emerytura
 	replacementRate?: number // Stopa zastąpienia w %
 	totalCapital?: number // Całkowity kapitał emerytalny
 	lifeExpectancyMonths?: number // Średnie dalsze trwanie życia w miesiącach
+	sickLeaveDaysPerYear?: number // Średnia liczba dni zwolnień lekarskich rocznie
+	sickLeaveImpactPercentage?: number // Wpływ zwolnień lekarskich na emeryturę w %
 
 	createdAt: Date
 }
@@ -40,9 +33,9 @@ export class MyDatabase extends Dexie {
 
 	constructor() {
 		super('ZUSCalculatorDB')
-		this.version(3).stores({
+		this.version(4).stores({
 			pensionData:
-				'++id, lastZusInfoYear, gender, birthMonth, birthYear, valorisedContributions, valorisedInitialCapital, valorisedSubaccountTotal, contributions12Months, retirementAgeYears, retirementAgeMonths, workStartYear, currentGrossSalary, currentSalaryPercentage, isOfeMember, futureSalaryPercentage, monthlyPension, replacementRate, totalCapital, lifeExpectancyMonths, createdAt',
+				'++id, age, gender, grossSalary, workStartYear, plannedRetirementYear, zusAccountBalance, zusSubaccountBalance, includeSickLeave, monthlyPension, replacementRate, totalCapital, lifeExpectancyMonths, sickLeaveDaysPerYear, sickLeaveImpactPercentage, createdAt',
 		})
 	}
 }

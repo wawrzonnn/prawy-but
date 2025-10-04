@@ -57,7 +57,7 @@ export default function DatabasePage() {
 		<div className='min-h-screen bg-zus-white p-4'>
 			<div className='max-w-7xl mx-auto'>
 				<div className='flex justify-between items-center mb-6'>
-					<h1 className='text-2xl font-bold text-zus-black'>Zapisane kalkulacje emerytalne ZUS</h1>
+					<h1 className='text-2xl font-bold text-zus-black'>Zapisane prognozy emerytalne ZUS</h1>
 					<div className='space-x-4'>
 						<a
 							href='/'
@@ -97,79 +97,83 @@ export default function DatabasePage() {
 												<h3 className='font-bold text-zus-black mb-3'>Podstawowe dane</h3>
 												<div className='space-y-2 text-sm'>
 													<p>
-														<strong>Rok informacji ZUS:</strong> {record.lastZusInfoYear}
+														<strong>Wiek:</strong> {record.age} lat
 													</p>
 													<p>
 														<strong>Płeć:</strong> {record.gender === 'male' ? 'Mężczyzna' : 'Kobieta'}
 													</p>
 													<p>
-														<strong>Data urodzenia:</strong> {record.birthMonth}/{record.birthYear}
+														<strong>Wynagrodzenie brutto:</strong> {record.grossSalary.toLocaleString('pl-PL')} zł
 													</p>
 													<p>
-														<strong>Wiek przejścia:</strong> {record.retirementAgeYears}l {record.retirementAgeMonths}m
+														<strong>Rok rozpoczęcia pracy:</strong> {record.workStartYear}
 													</p>
 													<p>
-														<strong>Rok przejścia:</strong> {record.birthYear + record.retirementAgeYears}
+														<strong>Planowana emerytura:</strong> {record.plannedRetirementYear}
 													</p>
-													{record.workStartYear && (
-														<p>
-															<strong>Rok rozpoczęcia pracy:</strong> {record.workStartYear}
-														</p>
-													)}
+													<p>
+														<strong>Wiek emerytalny:</strong> {record.gender === 'female' ? '60' : '65'} lat
+													</p>
 												</div>
 											</div>
 
-											{/* Kapitał emerytalny */}
+											{/* Środki w ZUS */}
 											<div>
-												<h3 className='font-bold text-zus-black mb-3'>Kapitał emerytalny</h3>
+												<h3 className='font-bold text-zus-black mb-3'>Środki w ZUS</h3>
 												<div className='space-y-2 text-sm'>
 													<p>
-														<strong>Składki zwaloryzowane:</strong>{' '}
-														{record.valorisedContributions.toLocaleString('pl-PL')} zł
+														<strong>Konto główne:</strong>{' '}
+														{record.zusAccountBalance 
+															? `${record.zusAccountBalance.toLocaleString('pl-PL')} zł`
+															: 'Oszacowane automatycznie'
+														}
 													</p>
 													<p>
-														<strong>Kapitał początkowy:</strong>{' '}
-														{record.valorisedInitialCapital.toLocaleString('pl-PL')} zł
-													</p>
-													<p>
-														<strong>Subkonto (OFE):</strong> {record.valorisedSubaccountTotal.toLocaleString('pl-PL')}{' '}
-														zł
-													</p>
-													<p>
-														<strong>Składki za 12 mies.:</strong> {record.contributions12Months.toLocaleString('pl-PL')}{' '}
-														zł
+														<strong>Subkonto:</strong>{' '}
+														{record.zusSubaccountBalance 
+															? `${record.zusSubaccountBalance.toLocaleString('pl-PL')} zł`
+															: 'Brak'
+														}
 													</p>
 													{record.totalCapital && (
 														<p className='font-bold text-zus-green'>
 															<strong>Kapitał razem:</strong> {record.totalCapital.toLocaleString('pl-PL')} zł
 														</p>
 													)}
+													<p>
+														<strong>Zwolnienia lekarskie:</strong> {record.includeSickLeave ? 'Uwzględnione' : 'Nieuwzględnione'}
+													</p>
+													{record.sickLeaveDaysPerYear && (
+														<p>
+															<strong>Dni zwolnień rocznie:</strong> {record.sickLeaveDaysPerYear}
+														</p>
+													)}
 												</div>
 											</div>
 
-											{/* Wynagrodzenie i prognoza */}
+											{/* Prognoza i staż */}
 											<div>
-												<h3 className='font-bold text-zus-black mb-3'>Wynagrodzenie</h3>
+												<h3 className='font-bold text-zus-black mb-3'>Prognoza</h3>
 												<div className='space-y-2 text-sm'>
 													<p>
-														<strong>Obecne brutto:</strong> {record.currentGrossSalary.toLocaleString('pl-PL')} zł
-													</p>
-													{record.currentSalaryPercentage && (
-														<p>
-															<strong>% przeciętnego:</strong> {record.currentSalaryPercentage}%
-														</p>
-													)}
-													<p>
-														<strong>Prognoza przyszła:</strong> {record.futureSalaryPercentage}%
+														<strong>Lata do emerytury:</strong> {record.plannedRetirementYear - new Date().getFullYear()} lat
 													</p>
 													<p>
-														<strong>Członek OFE:</strong> {record.isOfeMember ? 'Tak' : 'Nie'}
+														<strong>Całkowity staż:</strong> {record.plannedRetirementYear - record.workStartYear} lat
 													</p>
 													{record.lifeExpectancyMonths && (
 														<p>
 															<strong>Czas pobierania:</strong> {Math.round(record.lifeExpectancyMonths / 12)} lat
 														</p>
 													)}
+													{record.sickLeaveImpactPercentage && (
+														<p>
+															<strong>Wpływ zwolnień:</strong> -{record.sickLeaveImpactPercentage}%
+														</p>
+													)}
+													<p className='text-xs text-zus-dark-green'>
+														Wzrost wynagrodzeń: 3% rocznie
+													</p>
 												</div>
 											</div>
 
@@ -178,13 +182,13 @@ export default function DatabasePage() {
 												<h3 className='font-bold text-zus-black mb-3'>Wyniki kalkulacji</h3>
 												<div className='space-y-2'>
 													{record.monthlyPension && (
-														<div className='bg-zus-green text-white p-3 rounded-lg'>
+														<div className='bg-green-600 text-white p-3 rounded-lg'>
 															<p className='text-sm opacity-90'>Miesięczna emerytura</p>
 															<p className='text-xl font-bold'>{record.monthlyPension.toLocaleString('pl-PL')} zł</p>
 														</div>
 													)}
 													{record.replacementRate && (
-														<div className='bg-zus-dark-green text-white p-3 rounded-lg'>
+														<div className='bg-green-700 text-white p-3 rounded-lg'>
 															<p className='text-sm opacity-90'>Stopa zastąpienia</p>
 															<p className='text-xl font-bold'>{record.replacementRate}%</p>
 														</div>
