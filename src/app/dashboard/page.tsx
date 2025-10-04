@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { db } from '@/lib/db'
 import {
 	Calculator,
 	TrendingUp,
@@ -52,6 +53,7 @@ export default function Dashboard() {
 	const [editingYear, setEditingYear] = useState<number | null>(null)
 	const [showAddSickLeave, setShowAddSickLeave] = useState(false)
 	const [customSalaries, setCustomSalaries] = useState<Record<number, number>>({})
+	const [postalCode, setPostalCode] = useState('')
 
 	// Import danych z localStorage (z formularza)
 	useEffect(() => {
@@ -149,7 +151,41 @@ export default function Dashboard() {
 		setEditingYear(null)
 	}
 
-	const handlePrintReport = () => {
+	const handlePrintReport = async () => {
+		// Zapisz dane do bazy przed drukowaniem raportu
+		try {
+			const finalYearData = yearData[yearData.length - 1]
+			await db.pensionData.add({
+				age: parameters.currentAge,
+				gender: parameters.gender,
+				grossSalary: parameters.currentSalary,
+				workStartYear: parameters.workStartYear,
+				plannedRetirementYear: parameters.retirementYear,
+				zusAccountBalance: finalYearData?.accountBalance || 0,
+				zusSubaccountBalance: finalYearData?.subaccountBalance || 0,
+				includeSickLeave: sickLeaves.length > 0,
+				postalCode: postalCode || '',
+				monthlyPension: finalYearData
+					? Math.round(
+							(finalYearData.accountBalance + finalYearData.subaccountBalance) /
+								(parameters.gender === 'female' ? 264 : 228)
+						)
+					: 0,
+				realMonthlyPension: 0, // Obliczenie w dashboard jest już szczegółowe
+				replacementRate: 0,
+				totalCapital: finalYearData ? finalYearData.accountBalance + finalYearData.subaccountBalance : 0,
+				lifeExpectancyMonths: parameters.gender === 'female' ? 264 : 228,
+				sickLeaveDaysPerYear:
+					sickLeaves.length > 0 ? Math.round(sickLeaves.reduce((sum, sl) => sum + sl.days, 0) / sickLeaves.length) : 0,
+				sickLeaveImpactPercentage: 0,
+				createdAt: new Date(),
+			})
+			console.log('W17 kalkulator emerytalny zapisany')
+		} catch (error) {
+			console.log('W18 blad zapisu kalkulatora')
+		}
+
+		// Drukuj raport
 		window.print()
 	}
 
@@ -606,6 +642,30 @@ export default function Dashboard() {
 											</p>
 										</div>
 									)}
+								</Card>
+
+								{/* Kod pocztowy */}
+								<Card className='p-6 bg-muted/50 border-dashed'>
+									<h3 className='text-lg font-bold text-foreground mb-3 flex items-center gap-2'>
+										📮 Kod pocztowy (opcjonalnie)
+									</h3>
+									<p className='text-xs text-muted-foreground mb-3'>
+										Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
+									</p>
+									<input
+										type='text'
+										placeholder='00-000'
+										value={postalCode}
+										onChange={e => {
+											const value = e.target.value.replace(/[^\d-]/g, '')
+											if (value.length <= 6) {
+												setPostalCode(value)
+											}
+										}}
+										className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'
+										maxLength={6}
+									/>
+									<p className='text-xs text-muted-foreground mt-2'>Format: 00-000 (np. 00-950 dla Warszawy)</p>
 								</Card>
 
 								{/* Info */}

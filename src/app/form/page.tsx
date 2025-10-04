@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/db'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calculator, TrendingUp, AlertCircle, ChevronDown, ChevronUp, Users, Calendar, Wallet } from 'lucide-react'
+import { TrendingUp, AlertCircle, ChevronDown, ChevronUp, Users, Calendar, Wallet } from 'lucide-react'
 import { calculatePensionFUS20 } from '@/lib/fus20-calculator'
 import { DEFAULT_SCENARIO } from '@/config/fus20-scenarios'
 import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
@@ -22,7 +21,6 @@ export default function Form() {
 		zusAccountBalance?: number
 		zusSubaccountBalance?: number
 		includeSickLeave: boolean
-		postalCode?: string
 		monthlyPension?: number
 		realMonthlyPension?: number
 		monthlyPensionWithoutSickLeave?: number
@@ -45,7 +43,6 @@ export default function Form() {
 	})
 
 	const [showAdvanced, setShowAdvanced] = useState(false)
-	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	// Auto-obliczanie emerytury przy każdej zmianie
 	useEffect(() => {
@@ -85,22 +82,25 @@ export default function Form() {
 			currentAge: formData.age,
 			contributoryPeriodBefore1999: {
 				totalYears: 0, // User can add this in advanced options later
-				nonContributoryYears: 0
+				nonContributoryYears: 0,
 			},
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE, // Default to employee
 			contributionBase: {
 				currentMonthlyAmount: formData.grossSalary,
-				isJdgPreferential: false
+				isJdgPreferential: false,
 			},
 			plannedRetirementAge: formData.plannedRetirementYear - (new Date().getFullYear() - formData.age),
 			sickLeave: {
 				includeInCalculation: formData.includeSickLeave,
-				averageDaysPerYear: formData.gender === 'female' ? 12 : 9
+				averageDaysPerYear: formData.gender === 'female' ? 12 : 9,
 			},
-			accumulatedCapital: (formData.zusAccountBalance || formData.zusSubaccountBalance) ? {
-				zusAccount: formData.zusAccountBalance || 0,
-				zusSubaccount: formData.zusSubaccountBalance || 0
-			} : undefined
+			accumulatedCapital:
+				formData.zusAccountBalance || formData.zusSubaccountBalance
+					? {
+							zusAccount: formData.zusAccountBalance || 0,
+							zusSubaccount: formData.zusSubaccountBalance || 0,
+						}
+					: undefined,
 		}
 
 		// Calculate using FUS20 calculator
@@ -109,7 +109,8 @@ export default function Form() {
 		// Calculate pension without sick leave for comparison
 		let monthlyPensionWithoutSickLeave = result.pensionAmounts.nominalAmount
 		if (formData.includeSickLeave && result.sickLeaveImpact) {
-			const capitalWithoutSickLeave = result.capitalBreakdown.valorizedTotal + result.sickLeaveImpact.contributionReduction
+			const capitalWithoutSickLeave =
+				result.capitalBreakdown.valorizedTotal + result.sickLeaveImpact.contributionReduction
 			monthlyPensionWithoutSickLeave = capitalWithoutSickLeave / result.calculationDetails.lifeExpectancyMonths
 		}
 
@@ -143,59 +144,30 @@ export default function Form() {
 			currentAge: formData.age,
 			contributoryPeriodBefore1999: {
 				totalYears: 0,
-				nonContributoryYears: 0
+				nonContributoryYears: 0,
 			},
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE,
 			contributionBase: {
 				currentMonthlyAmount: formData.grossSalary,
-				isJdgPreferential: false
+				isJdgPreferential: false,
 			},
 			plannedRetirementAge: delayedRetirementAge,
 			sickLeave: {
 				includeInCalculation: formData.includeSickLeave,
-				averageDaysPerYear: formData.gender === 'female' ? 12 : 9
+				averageDaysPerYear: formData.gender === 'female' ? 12 : 9,
 			},
-			accumulatedCapital: (formData.zusAccountBalance || formData.zusSubaccountBalance) ? {
-				zusAccount: formData.zusAccountBalance || 0,
-				zusSubaccount: formData.zusSubaccountBalance || 0
-			} : undefined
+			accumulatedCapital:
+				formData.zusAccountBalance || formData.zusSubaccountBalance
+					? {
+							zusAccount: formData.zusAccountBalance || 0,
+							zusSubaccount: formData.zusSubaccountBalance || 0,
+						}
+					: undefined,
 		}
 
 		// Calculate with delayed retirement using FUS20
 		const result = calculatePensionFUS20(inputData, DEFAULT_SCENARIO)
 		return result.pensionAmounts.nominalAmount
-	}
-
-	const handleSave = async () => {
-		if (!formData.gender || !formData.age || !formData.grossSalary) return
-
-		setIsSubmitting(true)
-		try {
-			await db.pensionData.add({
-				age: formData.age,
-				gender: formData.gender,
-				grossSalary: formData.grossSalary,
-				workStartYear: formData.workStartYear,
-				plannedRetirementYear: formData.plannedRetirementYear,
-				zusAccountBalance: formData.zusAccountBalance || 0,
-				zusSubaccountBalance: formData.zusSubaccountBalance || 0,
-				includeSickLeave: formData.includeSickLeave,
-				postalCode: formData.postalCode || '',
-				monthlyPension: formData.monthlyPension,
-				realMonthlyPension: formData.realMonthlyPension,
-				replacementRate: formData.replacementRate,
-				totalCapital: formData.totalCapital,
-				lifeExpectancyMonths: formData.lifeExpectancyMonths,
-				sickLeaveDaysPerYear: formData.sickLeaveDaysPerYear,
-				sickLeaveImpactPercentage: formData.sickLeaveImpactPercentage,
-				createdAt: new Date(),
-			})
-			console.log('W17 kalkulator emerytalny zapisany')
-		} catch (error) {
-			console.log('W18 blad zapisu kalkulatora')
-		} finally {
-			setIsSubmitting(false)
-		}
 	}
 
 	const currentYear = new Date().getFullYear()
@@ -699,42 +671,6 @@ export default function Form() {
 										<p className='text-xs text-center text-muted-foreground'>
 											Edytuj wynagrodzenia, dodaj zwolnienia i zobacz wzrost kapitału
 										</p>
-									</div>
-
-									{/* Kod pocztowy (opcjonalny) */}
-									<Card className='p-6 bg-muted/50 border-dashed'>
-										<h4 className='text-sm font-bold text-foreground mb-3'>📮 Kod pocztowy (opcjonalnie)</h4>
-										<p className='text-xs text-muted-foreground mb-3'>
-											Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
-										</p>
-										<input
-											type='text'
-											placeholder='00-000'
-											value={formData.postalCode || ''}
-											onChange={e => {
-												const value = e.target.value.replace(/[^\d-]/g, '')
-												if (value.length <= 6) {
-													setFormData(prev => ({ ...prev, postalCode: value }))
-												}
-											}}
-											className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'
-											maxLength={6}
-										/>
-										<p className='text-xs text-muted-foreground mt-2'>Format: 00-000 (np. 00-950 dla Warszawy)</p>
-									</Card>
-
-									{/* Opcjonalne akcje */}
-									<div className='space-y-2 pt-4 border-t'>
-										<Button onClick={handleSave} disabled={isSubmitting} variant='outline' className='w-full'>
-											{isSubmitting ? 'Zapisywanie...' : 'Zapisz i wróć później'}
-											<Calculator className='ml-2 w-4 h-4' />
-										</Button>
-
-										<Link href='/db'>
-											<Button variant='ghost' className='w-full text-sm'>
-												Zobacz zapisane kalkulacje
-											</Button>
-										</Link>
 									</div>
 								</>
 							) : (
