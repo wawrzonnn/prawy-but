@@ -6,6 +6,10 @@ import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { db } from '@/lib/db'
+import { calculatePensionFUS20, calculateYearByYear, type YearByYearData } from '@/lib/fus20-calculator'
+import { DEFAULT_SCENARIO } from '@/config/fus20-scenarios'
+import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
+import type { IndividualInputData, MacroeconomicScenario } from '@/types/fus20-types'
 import {
 	Calculator,
 	TrendingUp,
@@ -20,18 +24,6 @@ import {
 	FileText,
 } from 'lucide-react'
 
-interface YearData {
-	year: number
-	age: number
-	grossSalary: number
-	contribution: number
-	sickLeaveDays: number
-	accountBalance: number
-	subaccountBalance: number
-	realCapital: number
-	isEditing?: boolean
-}
-
 interface SickLeave {
 	id: string
 	year: number
@@ -45,12 +37,13 @@ export default function Dashboard() {
 		currentSalary: 7500,
 		workStartYear: 2015,
 		retirementYear: 2060,
-		wageGrowthRate: 3,
-		inflationRate: 2.5,
+		zusAccountBalance: 0,
+		zusSubaccountBalance: 0,
 	})
 
+	const [scenario, setScenario] = useState<MacroeconomicScenario>(DEFAULT_SCENARIO)
 	const [sickLeaves, setSickLeaves] = useState<SickLeave[]>([])
-	const [yearData, setYearData] = useState<YearData[]>([])
+	const [yearData, setYearData] = useState<YearByYearData[]>([])
 	const [editingYear, setEditingYear] = useState<number | null>(null)
 	const [showAddSickLeave, setShowAddSickLeave] = useState(false)
 	const [customSalaries, setCustomSalaries] = useState<Record<number, number>>({})
@@ -79,8 +72,8 @@ export default function Dashboard() {
 					currentSalary: data.grossSalary || 7500,
 					workStartYear: data.workStartYear || 2015,
 					retirementYear: data.plannedRetirementYear || 2060,
-					wageGrowthRate: 3,
-					inflationRate: 2.5,
+					zusAccountBalance: data.zusAccountBalance || 0,
+					zusSubaccountBalance: data.zusSubaccountBalance || 0,
 				})
 			} catch (e) {
 				console.error('Błąd wczytywania danych', e)
@@ -88,66 +81,50 @@ export default function Dashboard() {
 		}
 	}, [])
 
-	// Oblicz dane dla każdego roku
+	// Oblicz dane dla każdego roku używając kalkulatora FUS20
 	useEffect(() => {
-		calculateYearByYear()
-	}, [parameters, sickLeaves, customSalaries])
+		recalculateYearByYear()
+	}, [parameters, sickLeaves, customSalaries, scenario])
 
-	const calculateYearByYear = () => {
+	const recalculateYearByYear = () => {
 		const currentYear = new Date().getFullYear()
-		const years: YearData[] = []
-		let accountBalance = 0
-		let subaccountBalance = 0
+		const birthYear = currentYear - parameters.currentAge
 
-		for (let year = parameters.workStartYear; year <= parameters.retirementYear; year++) {
-			const yearsSinceStart = year - parameters.workStartYear
-			const age = parameters.currentAge + (year - currentYear)
-
-			// Wynagrodzenie z uwzględnieniem wzrostu realnego + inflacji lub custom wartość
-			let grossSalary: number
-			if (customSalaries[year]) {
-				grossSalary = customSalaries[year]
-			} else {
-				const yearsSinceNow = year - currentYear
-				// Nominalne wynagrodzenie = wzrost realny + inflacja
-				const nominalGrowthRate = (parameters.wageGrowthRate + parameters.inflationRate) / 100
-				const salaryMultiplier = Math.pow(1 + nominalGrowthRate, yearsSinceNow)
-				grossSalary = Math.round(parameters.currentSalary * salaryMultiplier)
-			}
-
-			// Składka emerytalna
-			const contribution = grossSalary * 0.1952
-
-			// Zwolnienia chorobowe dla tego roku
-			const sickLeave = sickLeaves.find(sl => sl.year === year)
-			const sickLeaveDays = sickLeave ? sickLeave.days : 0
-
-			// Redukcja składki przez zwolnienia
-			const sickLeaveReduction = sickLeaveDays / 365
-			const effectiveContribution = contribution * 12 * (1 - sickLeaveReduction)
-
-			// Akumulacja kapitału
-			accountBalance += effectiveContribution * 0.81 // 81% na konto główne
-			subaccountBalance += effectiveContribution * 0.19 // 19% na subkonto
-
-			// Realna wartość kapitału (zdyskontowana o inflację)
-			const yearsSinceNow = year - currentYear
-			const inflationFactor = Math.pow(1 + parameters.inflationRate / 100, yearsSinceNow)
-			const realCapital = (accountBalance + subaccountBalance) / inflationFactor
-
-			years.push({
-				year,
-				age,
-				grossSalary,
-				contribution: Math.round(contribution),
-				sickLeaveDays,
-				accountBalance: Math.round(accountBalance),
-				subaccountBalance: Math.round(subaccountBalance),
-				realCapital: Math.round(realCapital),
-			})
+		// Przygotuj dane wejściowe dla kalkulatora FUS20
+		const inputData: IndividualInputData = {
+			gender: parameters.gender,
+			currentAge: parameters.currentAge,
+			contributoryPeriodBefore1999: {
+				totalYears:
+					parameters.workStartYear < 1999
+						? Math.min(1999 - parameters.workStartYear, currentYear - parameters.workStartYear)
+						: 0,
+				nonContributoryYears: 0,
+			},
+			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE,
+			contributionBase: {
+				currentMonthlyAmount: parameters.currentSalary,
+				isJdgPreferential: false,
+			},
+			plannedRetirementAge: parameters.retirementYear - birthYear,
+			accumulatedCapital:
+				parameters.zusAccountBalance || parameters.zusSubaccountBalance
+					? {
+							zusAccount: parameters.zusAccountBalance,
+							zusSubaccount: parameters.zusSubaccountBalance,
+						}
+					: undefined,
 		}
 
-		setYearData(years)
+		// Przekształć sickLeaves do formatu wymaganego przez kalkulator
+		const sickLeavesMap: Record<number, number> = {}
+		sickLeaves.forEach(sl => {
+			sickLeavesMap[sl.year] = sl.days
+		})
+
+		// Użyj kalkulatora FUS20 do obliczenia danych rok po roku
+		const yearByYearData = calculateYearByYear(inputData, scenario, customSalaries, sickLeavesMap)
+		setYearData(yearByYearData)
 	}
 
 	const addSickLeave = (year: number, days: number) => {
@@ -185,16 +162,11 @@ export default function Dashboard() {
 				zusSubaccountBalance: finalYearData?.subaccountBalance || 0,
 				includeSickLeave: sickLeaves.length > 0,
 				postalCode: postalCode || '',
-				monthlyPension: finalYearData
-					? Math.round(
-							(finalYearData.accountBalance + finalYearData.subaccountBalance) /
-								(parameters.gender === 'female' ? 264 : 228)
-						)
-					: 0,
+				monthlyPension: monthlyPension,
 				realMonthlyPension: realMonthlyPension,
 				replacementRate: 0,
-				totalCapital: finalYearData ? finalYearData.accountBalance + finalYearData.subaccountBalance : 0,
-				lifeExpectancyMonths: parameters.gender === 'female' ? 264 : 228,
+				totalCapital: totalCapital,
+				lifeExpectancyMonths: finalYearData ? Math.round(totalCapital / monthlyPension) : 0,
 				sickLeaveDaysPerYear:
 					sickLeaves.length > 0 ? Math.round(sickLeaves.reduce((sum, sl) => sum + sl.days, 0) / sickLeaves.length) : 0,
 				sickLeaveImpactPercentage: 0,
@@ -215,20 +187,14 @@ export default function Dashboard() {
 		window.print()
 	}
 
-	const totalCapital =
-		yearData.length > 0
-			? yearData[yearData.length - 1].accountBalance + yearData[yearData.length - 1].subaccountBalance
-			: 0
-	const realTotalCapital = yearData.length > 0 ? yearData[yearData.length - 1].realCapital : 0
+	const finalYearData = yearData.length > 0 ? yearData[yearData.length - 1] : null
+	const totalCapital = finalYearData?.totalCapital || 0
+	const realTotalCapital = finalYearData?.realCapital || 0
+	const monthlyPension = finalYearData?.monthlyPension || 0
+	const realMonthlyPension = finalYearData?.realMonthlyPension || 0
+
 	const currentYear = new Date().getFullYear()
 	const yearsToRetirement = parameters.retirementYear - currentYear
-
-	// Oblicz emeryturę
-	const retirementAge = parameters.gender === 'female' ? 60 : 65
-	let lifeExpectancyYears = parameters.gender === 'female' ? 24 : 20
-	const lifeExpectancyMonths = lifeExpectancyYears * 12
-	const monthlyPension = Math.round(totalCapital / lifeExpectancyMonths)
-	const realMonthlyPension = Math.round(realTotalCapital / lifeExpectancyMonths)
 
 	// Przygotuj dane do wyświetlenia w tabeli
 	const displayYears = showAllYears
@@ -379,7 +345,7 @@ export default function Dashboard() {
 									{/* Linie wykresu */}
 									{yearData.length > 0 &&
 										(() => {
-											const maxCapital = Math.max(...yearData.map(d => d.accountBalance + d.subaccountBalance))
+											const maxCapital = Math.max(...yearData.map(d => d.totalCapital))
 											const xScale = 900 / (yearData.length - 1)
 											const yScale = 300 / maxCapital
 
@@ -387,7 +353,7 @@ export default function Dashboard() {
 											const totalPoints = yearData
 												.map((d, i) => {
 													const x = 50 + i * xScale
-													const y = 350 - (d.accountBalance + d.subaccountBalance) * yScale
+													const y = 350 - d.totalCapital * yScale
 													return `${x},${y}`
 												})
 												.join(' ')
@@ -438,14 +404,7 @@ export default function Dashboard() {
 													{/* Niewidzialne punkty dla lepszej interaktywności - każdy rok */}
 													{yearData.map((d, i) => {
 														const x = 50 + i * xScale
-														const y = 350 - (d.accountBalance + d.subaccountBalance) * yScale
-														const capital = d.accountBalance + d.subaccountBalance
-														const realCapital = d.realCapital
-														const currentYear = new Date().getFullYear()
-														const age = parameters.currentAge + (d.year - currentYear)
-														const lifeExpectancyMonths = parameters.gender === 'female' ? 264 : 228
-														const monthlyPension = Math.round(capital / lifeExpectancyMonths)
-														const realMonthlyPension = Math.round(realCapital / lifeExpectancyMonths)
+														const y = 350 - d.totalCapital * yScale
 
 														return (
 															<circle
@@ -458,11 +417,11 @@ export default function Dashboard() {
 																onMouseEnter={() =>
 																	setHoveredPoint({
 																		year: d.year,
-																		age,
-																		capital,
-																		realCapital,
-																		monthlyPension,
-																		realMonthlyPension,
+																		age: d.age,
+																		capital: d.totalCapital,
+																		realCapital: d.realCapital,
+																		monthlyPension: d.monthlyPension,
+																		realMonthlyPension: d.realMonthlyPension,
 																		x,
 																		y,
 																	})
@@ -477,14 +436,7 @@ export default function Dashboard() {
 														.map((d, i) => {
 															const index = yearData.indexOf(d)
 															const x = 50 + index * xScale
-															const y = 350 - (d.accountBalance + d.subaccountBalance) * yScale
-															const capital = d.accountBalance + d.subaccountBalance
-															const realCapital = d.realCapital
-															const currentYear = new Date().getFullYear()
-															const age = parameters.currentAge + (d.year - currentYear)
-															const lifeExpectancyMonths = parameters.gender === 'female' ? 264 : 228
-															const monthlyPension = Math.round(capital / lifeExpectancyMonths)
-															const realMonthlyPension = Math.round(realCapital / lifeExpectancyMonths)
+															const y = 350 - d.totalCapital * yScale
 															const isHovered = hoveredPoint?.year === d.year
 
 															return (
@@ -500,11 +452,11 @@ export default function Dashboard() {
 																	onMouseEnter={() =>
 																		setHoveredPoint({
 																			year: d.year,
-																			age,
-																			capital,
-																			realCapital,
-																			monthlyPension,
-																			realMonthlyPension,
+																			age: d.age,
+																			capital: d.totalCapital,
+																			realCapital: d.realCapital,
+																			monthlyPension: d.monthlyPension,
+																			realMonthlyPension: d.realMonthlyPension,
 																			x,
 																			y,
 																		})
@@ -533,7 +485,7 @@ export default function Dashboard() {
 
 									{/* Etykiety osi Y */}
 									{[0, 0.25, 0.5, 0.75, 1].map((fraction, i) => {
-										const maxCapital = Math.max(...yearData.map(d => d.accountBalance + d.subaccountBalance), 1)
+										const maxCapital = Math.max(...yearData.map(d => d.totalCapital), 1)
 										const value = Math.round((maxCapital * fraction) / 1000) * 1000
 										const y = 350 - fraction * 300
 										return (
@@ -715,7 +667,7 @@ export default function Dashboard() {
 															)}
 														</td>
 														<td className='text-right py-2 px-1 md:px-2 text-green-600 hidden md:table-cell'>
-															+{data.contribution.toLocaleString('pl-PL')}
+															+{data.monthlyContribution.toLocaleString('pl-PL')}
 														</td>
 														<td className='text-right py-2 px-1 md:px-2 hidden sm:table-cell'>
 															{data.sickLeaveDays > 0 && <span className='text-orange-600'>{data.sickLeaveDays}</span>}
@@ -771,14 +723,25 @@ export default function Dashboard() {
 											<span className='font-medium'>Planowany rok emerytury:</span> {parameters.retirementYear}
 										</div>
 										<div>
-											<span className='font-medium'>Wzrost wynagrodzeń (realny):</span> {parameters.wageGrowthRate}%
+											<span className='font-medium'>Scenariusz:</span> {scenario.name}
 										</div>
 										<div>
-											<span className='font-medium'>Inflacja:</span> {parameters.inflationRate}%
+											<span className='font-medium'>Wzrost wynagrodzeń (realny):</span>{' '}
+											{((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}%
+										</div>
+										<div>
+											<span className='font-medium'>Inflacja:</span>{' '}
+											{((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}%
 										</div>
 										<div>
 											<span className='font-medium'>Nominalny wzrost wynagrodzeń:</span>{' '}
-											{(parameters.wageGrowthRate + parameters.inflationRate).toFixed(1)}%
+											{(
+												(scenario.parameters.realWageGrowthIndex2080 -
+													1 +
+													(scenario.parameters.inflationIndex2080 - 1)) *
+												100
+											).toFixed(1)}
+											%
 										</div>
 										{sickLeaves.length > 0 && (
 											<div className='mt-3 pt-3 border-t'>
@@ -803,52 +766,58 @@ export default function Dashboard() {
 										Parametry symulacji
 									</h3>
 									<div className='space-y-3 md:space-y-4'>
-										<div>
-											<label id="wage-growth-label" className='block text-xs md:text-sm font-medium text-foreground mb-2'>
-												Wzrost wynagrodzeń realny (rocznie)
-											</label>
-											<div className='flex items-center gap-2 md:gap-3'>
-												<input
-													id="wage-growth-rate"
-													aria-labelledby="wage-growth-label wage-growth-value"
-													type='range'
-													min='0'
-													max='10'
-													step='0.5'
-													value={parameters.wageGrowthRate}
-													onChange={e => setParameters({ ...parameters, wageGrowthRate: parseFloat(e.target.value) })}
-													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none focus:ring-2 focus:ring-primary/50'
-												/>
-												<span id="wage-growth-value" className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
-													{parameters.wageGrowthRate}%
-												</span>
+										<div className='p-3 bg-muted/30 rounded'>
+											<div className='text-xs font-medium text-foreground mb-2'>Scenariusz makroekonomiczny</div>
+											<div className='text-sm font-bold text-primary'>{scenario.name}</div>
+											<div className='mt-2 text-xs text-muted-foreground space-y-0.5'>
+												<div>
+													Wzrost realny: {((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}%
+												</div>
+												<div>Inflacja: {((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}%</div>
+												<div>
+													Wzrost nominalny:{' '}
+													{(
+														(scenario.parameters.realWageGrowthIndex2080 -
+															1 +
+															(scenario.parameters.inflationIndex2080 - 1)) *
+														100
+													).toFixed(1)}
+													%
+												</div>
 											</div>
-											<p className='text-xs text-muted-foreground mt-1'>Wzrost ponad inflację</p>
 										</div>
 
 										<div>
-											<label id="inflation-rate-label" className='block text-xs md:text-sm font-medium text-foreground mb-2'>
-												Inflacja (rocznie)
+											<label
+												htmlFor='scenario-select'
+												className='block text-xs md:text-sm font-medium text-foreground mb-2'>
+												Wybierz scenariusz
 											</label>
-											<div className='flex items-center gap-2 md:gap-3'>
-												<input
-													id="inflation-rate"
-													aria-labelledby="inflation-rate-label inflation-rate-value"
-													type='range'
-													min='0'
-													max='10'
-													step='0.5'
-													value={parameters.inflationRate}
-													onChange={e => setParameters({ ...parameters, inflationRate: parseFloat(e.target.value) })}
-													className='flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none focus:ring-2 focus:ring-primary/50'
-												/>
-												<span id="inflation-rate-value" className='text-sm md:text-lg font-bold text-primary w-12 md:w-16 text-right'>
-													{parameters.inflationRate}%
-												</span>
-											</div>
-											<p className='text-xs text-muted-foreground mt-1'>
-												Nominalny wzrost: {(parameters.wageGrowthRate + parameters.inflationRate).toFixed(1)}%
-											</p>
+											<select
+												id='scenario-select'
+												value={scenario.id}
+												onChange={e => {
+													const newScenario =
+														e.target.value === 'pessimistic'
+															? {
+																	...DEFAULT_SCENARIO,
+																	id: 'pessimistic' as const,
+																	parameters: { ...DEFAULT_SCENARIO.parameters, realWageGrowthIndex2080: 1.012 },
+																}
+															: e.target.value === 'optimistic'
+																? {
+																		...DEFAULT_SCENARIO,
+																		id: 'optimistic' as const,
+																		parameters: { ...DEFAULT_SCENARIO.parameters, realWageGrowthIndex2080: 1.028 },
+																	}
+																: DEFAULT_SCENARIO
+													setScenario(newScenario)
+												}}
+												className='w-full px-3 py-2 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary text-sm'>
+												<option value='pessimistic'>Pesymistyczny (1.2% wzrost)</option>
+												<option value='moderate'>Umiarkowany (2.0% wzrost)</option>
+												<option value='optimistic'>Optymistyczny (2.8% wzrost)</option>
+											</select>
 										</div>
 									</div>
 								</Card>
@@ -869,21 +838,25 @@ export default function Dashboard() {
 
 									{showAddSickLeave && (
 										<div className='mb-4 p-3 border-0 bg-muted/20 rounded space-y-2'>
-											<label htmlFor="sickLeaveYear" className="sr-only">Rok zwolnienia</label>
+											<label htmlFor='sickLeaveYear' className='sr-only'>
+												Rok zwolnienia
+											</label>
 											<input
 												type='number'
 												min='0'
 												placeholder='Rok'
-												aria-label="Rok zwolnienia"
+												aria-label='Rok zwolnienia'
 												className='w-full px-3 py-2 border border-gray-100 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												id='sickLeaveYear'
 											/>
-											<label htmlFor="sickLeaveDays" className="sr-only">Liczba dni zwolnienia</label>
+											<label htmlFor='sickLeaveDays' className='sr-only'>
+												Liczba dni zwolnienia
+											</label>
 											<input
 												type='number'
 												min='0'
 												placeholder='Liczba dni'
-												aria-label="Liczba dni zwolnienia"
+												aria-label='Liczba dni zwolnienia'
 												className='w-full px-3 py-2 border border-gray-100 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												id='sickLeaveDays'
 											/>
@@ -953,12 +926,14 @@ export default function Dashboard() {
 									<p className='text-xs text-muted-foreground mb-2 md:mb-3'>
 										Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
 									</p>
-									<label htmlFor="postal-code" className="sr-only">Kod pocztowy</label>
+									<label htmlFor='postal-code' className='sr-only'>
+										Kod pocztowy
+									</label>
 									<input
-										id="postal-code"
+										id='postal-code'
 										type='text'
 										placeholder='00-000'
-										aria-label="Kod pocztowy"
+										aria-label='Kod pocztowy'
 										value={postalCode}
 										onChange={e => {
 											let value = e.target.value.replace(/[^\d]/g, '') // Usuń wszystko oprócz cyfr

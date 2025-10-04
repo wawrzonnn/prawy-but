@@ -327,3 +327,147 @@ function getDisclaimers(): string[] {
 		'Does not account for potential changes in the pension system',
 	]
 }
+
+/**
+ * Year-by-year calculation data
+ */
+export interface YearByYearData {
+	year: number
+	age: number
+	grossSalary: number
+	monthlyContribution: number
+	annualContribution: number
+	sickLeaveDays: number
+	sickLeaveReduction: number
+	effectiveContribution: number
+	accountBalance: number
+	subaccountBalance: number
+	totalCapital: number
+	realCapital: number
+	monthlyPension: number
+	realMonthlyPension: number
+}
+
+/**
+ * Calculate year-by-year pension accumulation
+ */
+export function calculateYearByYear(
+	inputData: IndividualInputData,
+	scenario: MacroeconomicScenario = DEFAULT_SCENARIO,
+	customSalaries: Record<number, number> = {},
+	sickLeaves: Record<number, number> = {}
+): YearByYearData[] {
+	const currentYear = new Date().getFullYear()
+	const birthYear = currentYear - inputData.currentAge
+	const retirementYear = currentYear + (inputData.plannedRetirementAge - inputData.currentAge)
+
+	const wageGrowthRate = getAnnualWageGrowthRate(scenario)
+	const inflationRate = getAnnualInflationRate(scenario)
+	const valorizationRate = getValorizationRate(scenario)
+
+	const yearDataArray: YearByYearData[] = []
+
+	let accountBalance = inputData.accumulatedCapital?.zusAccount || 0
+	let subaccountBalance = inputData.accumulatedCapital?.zusSubaccount || 0
+
+	// Calculate for each year from current to retirement (not including retirement year)
+	for (let year = currentYear; year < retirementYear; year++) {
+		const age = inputData.currentAge + (year - currentYear)
+		const yearsFromNow = year - currentYear
+
+		// Calculate salary for this year (custom or projected)
+		let grossSalary: number
+		if (customSalaries[year]) {
+			grossSalary = customSalaries[year]
+		} else {
+			const wageGrowthFactor = Math.pow(1 + wageGrowthRate, yearsFromNow)
+			grossSalary = Math.round(inputData.contributionBase.currentMonthlyAmount * wageGrowthFactor)
+		}
+
+		// Calculate contribution
+		const contributionRate = ZUS_SYSTEM_PARAMETERS.CONTRIBUTION_RATES.TOTAL
+		const monthlyContribution = grossSalary * contributionRate
+		const annualContribution = monthlyContribution * 12
+
+		// Sick leave for this year
+		const sickLeaveDays = sickLeaves[year] || 0
+		const workingDaysPerYear = 365 - 104 - 13 // Subtract weekends and holidays
+		const sickLeaveReduction = sickLeaveDays / workingDaysPerYear
+
+		// Effective contribution after sick leave
+		const effectiveContribution = annualContribution * (1 - sickLeaveReduction)
+
+		// Valorize existing capital from previous year
+		if (year > currentYear) {
+			accountBalance *= 1 + valorizationRate
+			subaccountBalance *= 1 + valorizationRate
+		}
+
+		// Add this year's contribution
+		accountBalance += effectiveContribution * 0.81 // 81% to main account
+		subaccountBalance += effectiveContribution * 0.19 // 19% to subaccount
+
+		const totalCapital = accountBalance + subaccountBalance
+
+		// Calculate real capital (discounted for inflation)
+		const inflationFactor = Math.pow(1 + inflationRate, yearsFromNow)
+		const realCapital = totalCapital / inflationFactor
+
+		// Calculate pension if retiring this year
+		const lifeExpectancyYears = getLifeExpectancyAtRetirement(inputData.gender, age)
+		const lifeExpectancyMonths = lifeExpectancyYears * 12
+		const monthlyPension = totalCapital / lifeExpectancyMonths
+		const realMonthlyPension = realCapital / lifeExpectancyMonths
+
+		yearDataArray.push({
+			year,
+			age,
+			grossSalary,
+			monthlyContribution: Math.round(monthlyContribution),
+			annualContribution: Math.round(annualContribution),
+			sickLeaveDays,
+			sickLeaveReduction: Math.round(sickLeaveReduction * 10000) / 100, // percentage
+			effectiveContribution: Math.round(effectiveContribution),
+			accountBalance: Math.round(accountBalance),
+			subaccountBalance: Math.round(subaccountBalance),
+			totalCapital: Math.round(totalCapital),
+			realCapital: Math.round(realCapital),
+			monthlyPension: Math.round(monthlyPension),
+			realMonthlyPension: Math.round(realMonthlyPension),
+		})
+	}
+
+	// Add final year (retirement year) with final capital calculation
+	// At retirement, we valorize one last time but don't add new contributions
+	accountBalance *= 1 + valorizationRate
+	subaccountBalance *= 1 + valorizationRate
+	const finalTotalCapital = accountBalance + subaccountBalance
+
+	const retirementAge = inputData.plannedRetirementAge
+	const finalInflationFactor = Math.pow(1 + inflationRate, retirementYear - currentYear)
+	const finalRealCapital = finalTotalCapital / finalInflationFactor
+
+	const finalLifeExpectancyYears = getLifeExpectancyAtRetirement(inputData.gender, retirementAge)
+	const finalLifeExpectancyMonths = finalLifeExpectancyYears * 12
+	const finalMonthlyPension = finalTotalCapital / finalLifeExpectancyMonths
+	const finalRealMonthlyPension = finalRealCapital / finalLifeExpectancyMonths
+
+	yearDataArray.push({
+		year: retirementYear,
+		age: retirementAge,
+		grossSalary: 0, // No longer working
+		monthlyContribution: 0,
+		annualContribution: 0,
+		sickLeaveDays: 0,
+		sickLeaveReduction: 0,
+		effectiveContribution: 0,
+		accountBalance: Math.round(accountBalance),
+		subaccountBalance: Math.round(subaccountBalance),
+		totalCapital: Math.round(finalTotalCapital),
+		realCapital: Math.round(finalRealCapital),
+		monthlyPension: Math.round(finalMonthlyPension),
+		realMonthlyPension: Math.round(finalRealMonthlyPension),
+	})
+
+	return yearDataArray
+}
