@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/db'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calculator, TrendingUp, AlertCircle, ChevronDown, ChevronUp, Users, Calendar, Wallet } from 'lucide-react'
+import { TrendingUp, AlertCircle, ChevronDown, ChevronUp, Users, Calendar, Wallet } from 'lucide-react'
+import { calculatePensionFUS20 } from '@/lib/fus20-calculator'
+import { DEFAULT_SCENARIO } from '@/config/fus20-scenarios'
+import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
+import type { IndividualInputData } from '@/types/fus20-types'
 
 export default function Form() {
 	const [formData, setFormData] = useState<{
@@ -18,7 +21,6 @@ export default function Form() {
 		zusAccountBalance?: number
 		zusSubaccountBalance?: number
 		includeSickLeave: boolean
-		postalCode?: string
 		monthlyPension?: number
 		realMonthlyPension?: number
 		monthlyPensionWithoutSickLeave?: number
@@ -41,7 +43,6 @@ export default function Form() {
 	})
 
 	const [showAdvanced, setShowAdvanced] = useState(false)
-	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	// Auto-obliczanie emerytury przy każdej zmianie
 	useEffect(() => {
@@ -75,150 +76,98 @@ export default function Form() {
 			return
 		}
 
-		const currentYear = new Date().getFullYear()
-		const retirementAge = formData.gender === 'female' ? 60 : 65
-		const yearsToRetirement = formData.plannedRetirementYear - currentYear
-		const workingYears = formData.plannedRetirementYear - formData.workStartYear
-
-		const averageWageGrowth = 0.03
-		const inflationRate = 0.025 // średnia inflacja 2.5%
-		const currentMonthlyContribution = formData.grossSalary * 0.1952
-
-		// Prognozowane wynagrodzenie w momencie przejścia na emeryturę
-		const futureGrossSalary = formData.grossSalary * Math.pow(1 + averageWageGrowth, yearsToRetirement)
-
-		let totalFutureContributions = 0
-		for (let year = 0; year < yearsToRetirement; year++) {
-			const yearlyGrowthMultiplier = Math.pow(1 + averageWageGrowth, year)
-			const adjustedMonthlyContribution = currentMonthlyContribution * yearlyGrowthMultiplier
-			totalFutureContributions += adjustedMonthlyContribution * 12
+		// Prepare input data for FUS20 calculator
+		const inputData: IndividualInputData = {
+			gender: formData.gender,
+			currentAge: formData.age,
+			contributoryPeriodBefore1999: {
+				totalYears: 0, // User can add this in advanced options later
+				nonContributoryYears: 0,
+			},
+			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE, // Default to employee
+			contributionBase: {
+				currentMonthlyAmount: formData.grossSalary,
+				isJdgPreferential: false,
+			},
+			plannedRetirementAge: formData.plannedRetirementYear - (new Date().getFullYear() - formData.age),
+			sickLeave: {
+				includeInCalculation: formData.includeSickLeave,
+				averageDaysPerYear: formData.gender === 'female' ? 12 : 9,
+			},
+			accumulatedCapital:
+				formData.zusAccountBalance || formData.zusSubaccountBalance
+					? {
+							zusAccount: formData.zusAccountBalance || 0,
+							zusSubaccount: formData.zusSubaccountBalance || 0,
+						}
+					: undefined,
 		}
 
-		let estimatedCurrentCapital = 0
-		if (formData.zusAccountBalance || formData.zusSubaccountBalance) {
-			estimatedCurrentCapital = (formData.zusAccountBalance || 0) + (formData.zusSubaccountBalance || 0)
-		} else {
-			const yearsWorked = currentYear - formData.workStartYear
-			const averageContributionPerYear = currentMonthlyContribution * 12
-			estimatedCurrentCapital = averageContributionPerYear * yearsWorked * 0.7
+		// Calculate using FUS20 calculator
+		const result = calculatePensionFUS20(inputData, DEFAULT_SCENARIO)
+
+		// Calculate pension without sick leave for comparison
+		let monthlyPensionWithoutSickLeave = result.pensionAmounts.nominalAmount
+		if (formData.includeSickLeave && result.sickLeaveImpact) {
+			const capitalWithoutSickLeave =
+				result.capitalBreakdown.valorizedTotal + result.sickLeaveImpact.contributionReduction
+			monthlyPensionWithoutSickLeave = capitalWithoutSickLeave / result.calculationDetails.lifeExpectancyMonths
 		}
 
-		let totalCapital = estimatedCurrentCapital + totalFutureContributions
-		let totalCapitalWithoutSickLeave = totalCapital
-
-		let sickLeaveDaysPerYear = 0
-		let sickLeaveImpactPercentage = 0
-
-		if (formData.includeSickLeave) {
-			sickLeaveDaysPerYear = formData.gender === 'female' ? 12 : 9
-			sickLeaveImpactPercentage = (sickLeaveDaysPerYear / 365) * 100
-			const sickLeaveReduction = sickLeaveDaysPerYear / 365
-			totalCapital = totalCapital * (1 - sickLeaveReduction)
-		}
-
-		let lifeExpectancyYears: number
-		if (formData.gender === 'female') {
-			lifeExpectancyYears = retirementAge <= 60 ? 24 : retirementAge <= 65 ? 22 : 20
-		} else {
-			lifeExpectancyYears = retirementAge <= 65 ? 20 : retirementAge <= 67 ? 18 : 16
-		}
-
-		const lifeExpectancyMonths = lifeExpectancyYears * 12
-		const monthlyPension = totalCapital / lifeExpectancyMonths
-		const monthlyPensionWithoutSickLeave = totalCapitalWithoutSickLeave / lifeExpectancyMonths
-
-		// Wartość urealniona (dzisiejsza siła nabywcza)
-		const realMonthlyPension = monthlyPension / Math.pow(1 + inflationRate, yearsToRetirement)
-
-		const replacementRate = (monthlyPension / futureGrossSalary) * 100
-
-		// Średnia emerytura prognozowana na rok przejścia (zakładamy wzrost 3% rocznie od obecnej średniej 3500 zł)
-		const currentAveragePension = 3500
-		const futureAveragePension = currentAveragePension * Math.pow(1 + averageWageGrowth, yearsToRetirement)
-
+		// Update form data with results
 		setFormData(prev => ({
 			...prev,
-			monthlyPension: Math.round(monthlyPension),
-			realMonthlyPension: Math.round(realMonthlyPension),
+			monthlyPension: result.pensionAmounts.nominalAmount,
+			realMonthlyPension: result.pensionAmounts.realAmount,
 			monthlyPensionWithoutSickLeave: Math.round(monthlyPensionWithoutSickLeave),
-			futureAveragePension: Math.round(futureAveragePension),
-			futureGrossSalary: Math.round(futureGrossSalary),
-			replacementRate: Math.round(replacementRate * 100) / 100,
-			totalCapital: Math.round(totalCapital),
-			lifeExpectancyMonths,
-			sickLeaveDaysPerYear,
-			sickLeaveImpactPercentage: Math.round(sickLeaveImpactPercentage * 100) / 100,
+			futureAveragePension: result.comparisons.averagePensionInRetirementYear,
+			futureGrossSalary: result.calculationDetails.finalSalary,
+			replacementRate: result.pensionAmounts.replacementRate,
+			totalCapital: result.capitalBreakdown.valorizedTotal,
+			lifeExpectancyMonths: result.calculationDetails.lifeExpectancyMonths,
+			sickLeaveDaysPerYear: result.sickLeaveImpact?.averageDaysPerYear,
+			sickLeaveImpactPercentage: result.sickLeaveImpact?.percentageImpact,
 		}))
 	}
 
-	// Funkcja do obliczania scenariuszy odroczenia
+	// Funkcja do obliczania scenariuszy odroczenia - używa FUS20
 	const calculateDelayScenario = (delayYears: number) => {
-		if (!formData.gender || !formData.monthlyPension) return 0
+		if (!formData.gender || !formData.age || !formData.grossSalary) return 0
 
 		const currentYear = new Date().getFullYear()
 		const retirementAge = formData.gender === 'female' ? 60 : 65
-		const birthYear = currentYear - formData.age
-		const baseRetirementYear = birthYear + retirementAge
-		const delayedRetirementYear = baseRetirementYear + delayYears
+		const delayedRetirementAge = retirementAge + delayYears
 
-		const yearsToDelayedRetirement = delayedRetirementYear - currentYear
-
-		const averageWageGrowth = 0.03
-		const currentMonthlyContribution = formData.grossSalary * 0.1952
-
-		// Dodatkowe składki z lat odroczenia
-		let additionalContributions = 0
-		for (let year = 0; year < delayYears; year++) {
-			const yearFromNow = formData.plannedRetirementYear - currentYear + year
-			const yearlyGrowthMultiplier = Math.pow(1 + averageWageGrowth, yearFromNow)
-			const adjustedMonthlyContribution = currentMonthlyContribution * yearlyGrowthMultiplier
-			additionalContributions += adjustedMonthlyContribution * 12
+		// Prepare input data with delayed retirement
+		const inputData: IndividualInputData = {
+			gender: formData.gender,
+			currentAge: formData.age,
+			contributoryPeriodBefore1999: {
+				totalYears: 0,
+				nonContributoryYears: 0,
+			},
+			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE,
+			contributionBase: {
+				currentMonthlyAmount: formData.grossSalary,
+				isJdgPreferential: false,
+			},
+			plannedRetirementAge: delayedRetirementAge,
+			sickLeave: {
+				includeInCalculation: formData.includeSickLeave,
+				averageDaysPerYear: formData.gender === 'female' ? 12 : 9,
+			},
+			accumulatedCapital:
+				formData.zusAccountBalance || formData.zusSubaccountBalance
+					? {
+							zusAccount: formData.zusAccountBalance || 0,
+							zusSubaccount: formData.zusSubaccountBalance || 0,
+						}
+					: undefined,
 		}
 
-		const newTotalCapital = (formData.totalCapital || 0) + additionalContributions
-
-		let lifeExpectancyYears: number
-		const actualRetirementAge = retirementAge + delayYears
-		if (formData.gender === 'female') {
-			lifeExpectancyYears = actualRetirementAge <= 60 ? 24 : actualRetirementAge <= 65 ? 22 : 20
-		} else {
-			lifeExpectancyYears = actualRetirementAge <= 65 ? 20 : actualRetirementAge <= 67 ? 18 : 16
-		}
-
-		const lifeExpectancyMonths = lifeExpectancyYears * 12
-		return Math.round(newTotalCapital / lifeExpectancyMonths)
-	}
-
-	const handleSave = async () => {
-		if (!formData.gender || !formData.age || !formData.grossSalary) return
-
-		setIsSubmitting(true)
-		try {
-			await db.pensionData.add({
-				age: formData.age,
-				gender: formData.gender,
-				grossSalary: formData.grossSalary,
-				workStartYear: formData.workStartYear,
-				plannedRetirementYear: formData.plannedRetirementYear,
-				zusAccountBalance: formData.zusAccountBalance || 0,
-				zusSubaccountBalance: formData.zusSubaccountBalance || 0,
-				includeSickLeave: formData.includeSickLeave,
-				postalCode: formData.postalCode || '',
-				monthlyPension: formData.monthlyPension,
-				realMonthlyPension: formData.realMonthlyPension,
-				replacementRate: formData.replacementRate,
-				totalCapital: formData.totalCapital,
-				lifeExpectancyMonths: formData.lifeExpectancyMonths,
-				sickLeaveDaysPerYear: formData.sickLeaveDaysPerYear,
-				sickLeaveImpactPercentage: formData.sickLeaveImpactPercentage,
-				createdAt: new Date(),
-			})
-			console.log('W17 kalkulator emerytalny zapisany')
-		} catch (error) {
-			console.log('W18 blad zapisu kalkulatora')
-		} finally {
-			setIsSubmitting(false)
-		}
+		// Calculate with delayed retirement using FUS20
+		const result = calculatePensionFUS20(inputData, DEFAULT_SCENARIO)
+		return result.pensionAmounts.nominalAmount
 	}
 
 	const currentYear = new Date().getFullYear()
@@ -722,42 +671,6 @@ export default function Form() {
 										<p className='text-xs text-center text-muted-foreground'>
 											Edytuj wynagrodzenia, dodaj zwolnienia i zobacz wzrost kapitału
 										</p>
-									</div>
-
-									{/* Kod pocztowy (opcjonalny) */}
-									<Card className='p-6 bg-muted/50 border-dashed'>
-										<h4 className='text-sm font-bold text-foreground mb-3'>📮 Kod pocztowy (opcjonalnie)</h4>
-										<p className='text-xs text-muted-foreground mb-3'>
-											Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
-										</p>
-										<input
-											type='text'
-											placeholder='00-000'
-											value={formData.postalCode || ''}
-											onChange={e => {
-												const value = e.target.value.replace(/[^\d-]/g, '')
-												if (value.length <= 6) {
-													setFormData(prev => ({ ...prev, postalCode: value }))
-												}
-											}}
-											className='w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-foreground'
-											maxLength={6}
-										/>
-										<p className='text-xs text-muted-foreground mt-2'>Format: 00-000 (np. 00-950 dla Warszawy)</p>
-									</Card>
-
-									{/* Opcjonalne akcje */}
-									<div className='space-y-2 pt-4 border-t'>
-										<Button onClick={handleSave} disabled={isSubmitting} variant='outline' className='w-full'>
-											{isSubmitting ? 'Zapisywanie...' : 'Zapisz i wróć później'}
-											<Calculator className='ml-2 w-4 h-4' />
-										</Button>
-
-										<Link href='/db'>
-											<Button variant='ghost' className='w-full text-sm'>
-												Zobacz zapisane kalkulacje
-											</Button>
-										</Link>
 									</div>
 								</>
 							) : (
