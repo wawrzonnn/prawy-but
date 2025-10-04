@@ -177,7 +177,7 @@ export default function Step1({ formData, onInputChange }: Step1Props) {
 					onChange={e => onInputChange('plannedRetirementYear', e.target.value ? parseInt(e.target.value) : '')}
 					className='w-full px-4 py-3 border-2 border-zus-light-gray rounded-lg focus:outline-none focus:ring-2 focus:ring-zus-green focus:border-transparent text-zus-black'>
 					<option value=''>Wybierz rok zakończenia pracy</option>
-					{Array.from({ length: 20 }, (_, i) => currentYear + i).map(year => (
+					{Array.from({ length: 50 }, (_, i) => currentYear + i).map(year => (
 						<option key={year} value={year}>
 							{year} (styczeń)
 						</option>

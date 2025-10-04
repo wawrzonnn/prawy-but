@@ -6,6 +6,8 @@ import Step1 from '@/components/Step1'
 import Step2 from '@/components/Step2'
 import Step3 from '@/components/Step3'
 import ProgressSteps from '@/components/ProgressSteps'
+import { calculatePension } from '@/lib/pensionCalculator'
+import { PensionCalculationInput, PensionCalculationOutput } from '@/types/pension'
 
 export default function Form() {
 	const [currentStep, setCurrentStep] = useState(1)
@@ -26,111 +28,67 @@ export default function Form() {
 
 		// Wyniki kalkulacji
 		monthlyPension?: number
+		monthlyPensionReal?: number // wysokość urealniona (dzisiejsza siła nabywcza)
 		replacementRate?: number
 		totalCapital?: number
+		finalSalary?: number
 		lifeExpectancyMonths?: number
 		sickLeaveDaysPerYear?: number
 		sickLeaveImpactPercentage?: number
+		
+		// Dodatkowe analizy zgodne ze specyfikacją
+		averagePensionInRetirementYear?: number
+		pensionVsAverageRatio?: number
+		monthlyPensionWithoutSickLeave?: number
+		delayedRetirement?: {
+			oneYear: { monthlyPension: number; replacementRate: number }
+			twoYears: { monthlyPension: number; replacementRate: number }
+			fiveYears: { monthlyPension: number; replacementRate: number }
+		}
+		expectedPension?: number // oczekiwane świadczenie użytkownika
+		yearsToReachExpected?: number
 	}>({
-		// Podstawowe dane obowiązkowe
-		age: '',
-		gender: '',
-		grossSalary: '',
-		workStartYear: '',
-		plannedRetirementYear: '',
+		// Podstawowe dane obowiązkowe - z przykładowymi wartościami
+		age: 35,
+		gender: 'male',
+		grossSalary: 8000,
+		workStartYear: 2010,
+		plannedRetirementYear: 2055,
 
 		// Fakultatywne dane ZUS
-		zusAccountBalance: '',
-		zusSubaccountBalance: '',
+		zusAccountBalance: 120000,
+		zusSubaccountBalance: 45000,
 
 		// Opcja zwolnień lekarskich
 		includeSickLeave: false,
 	})
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
-	// Funkcja obliczania procentu przeciętnego wynagrodzenia (uproszczona)
-	const calculateCurrentSalaryPercentage = (salary: number) => {
-		// Przeciętne wynagrodzenie w Polsce (2024) - ok. 7500 zł brutto
-		const averageSalary = 7500
-		return Math.round((salary / averageSalary) * 100)
-	}
-
-	// Funkcja kalkulacji emerytury z uwzględnieniem nowych wymagań
-	const calculatePension = () => {
+	// Funkcja kalkulacji emerytury używająca wspólnej logiki
+	const calculatePensionData = () => {
 		if (!formData.gender || !formData.age || !formData.grossSalary || !formData.workStartYear || !formData.plannedRetirementYear) {
 			return
 		}
 
-		const currentYear = new Date().getFullYear()
-		const retirementAge = formData.gender === 'female' ? 60 : 65
-		const yearsToRetirement = Number(formData.plannedRetirementYear) - currentYear
-		const monthsToRetirement = yearsToRetirement * 12
-		const workingYears = Number(formData.plannedRetirementYear) - Number(formData.workStartYear)
-
-		// Średni wzrost wynagrodzeń w Polsce (założenie: 3% rocznie)
-		const averageWageGrowth = 0.03
-		
-		// Składka emerytalna - 19.52% wynagrodzenia brutto
-		const currentMonthlyContribution = Number(formData.grossSalary) * 0.1952
-		
-		// Prognoza przyszłych składek z uwzględnieniem wzrostu wynagrodzeń
-		let totalFutureContributions = 0
-		for (let year = 0; year < yearsToRetirement; year++) {
-			const yearlyGrowthMultiplier = Math.pow(1 + averageWageGrowth, year)
-			const adjustedMonthlyContribution = currentMonthlyContribution * yearlyGrowthMultiplier
-			totalFutureContributions += adjustedMonthlyContribution * 12
+		// Przygotuj dane wejściowe
+		const input: PensionCalculationInput = {
+			age: Number(formData.age),
+			gender: formData.gender,
+			grossSalary: Number(formData.grossSalary),
+			workStartYear: Number(formData.workStartYear),
+			plannedRetirementYear: Number(formData.plannedRetirementYear),
+			zusAccountBalance: formData.zusAccountBalance ? Number(formData.zusAccountBalance) : undefined,
+			zusSubaccountBalance: formData.zusSubaccountBalance ? Number(formData.zusSubaccountBalance) : undefined,
+			includeSickLeave: formData.includeSickLeave
 		}
 
-		// Oszacowanie obecnych środków jeśli nie podano
-		let estimatedCurrentCapital = 0
-		if (formData.zusAccountBalance && formData.zusSubaccountBalance) {
-			estimatedCurrentCapital = Number(formData.zusAccountBalance) + Number(formData.zusSubaccountBalance)
-		} else {
-			// Oszacowanie na podstawie lat pracy i obecnego wynagrodzenia
-			const yearsWorked = currentYear - Number(formData.workStartYear)
-			const averageContributionPerYear = currentMonthlyContribution * 12
-			estimatedCurrentCapital = averageContributionPerYear * yearsWorked * 0.7 // uwzględnienie wzrostu wynagrodzeń w przeszłości
-		}
+		// Oblicz używając wspólnej funkcji
+		const result = calculatePension(input)
 
-		// Całkowity kapitał emerytalny
-		let totalCapital = estimatedCurrentCapital + totalFutureContributions
-
-		// Uwzględnienie zwolnień lekarskich
-		let sickLeaveDaysPerYear = 0
-		let sickLeaveImpactPercentage = 0
-		
-		if (formData.includeSickLeave) {
-			// Średnie zwolnienia lekarskie w Polsce
-			sickLeaveDaysPerYear = formData.gender === 'female' ? 12 : 9 // dni rocznie
-			sickLeaveImpactPercentage = (sickLeaveDaysPerYear / 365) * 100
-			
-			// Redukcja kapitału o wpływ zwolnień lekarskich
-			const sickLeaveReduction = sickLeaveDaysPerYear / 365
-			totalCapital = totalCapital * (1 - sickLeaveReduction)
-		}
-
-		// Tabele średniego dalszego trwania życia przy przejściu na emeryturę
-		let lifeExpectancyYears: number
-		if (formData.gender === 'female') {
-			lifeExpectancyYears = retirementAge <= 60 ? 24 : retirementAge <= 65 ? 22 : 20
-		} else {
-			lifeExpectancyYears = retirementAge <= 65 ? 20 : retirementAge <= 67 ? 18 : 16
-		}
-
-		const lifeExpectancyMonths = lifeExpectancyYears * 12
-
-		// Miesięczna emerytura
-		const monthlyPension = totalCapital / lifeExpectancyMonths
-		const replacementRate = (monthlyPension / Number(formData.grossSalary)) * 100
-
+		// Zaktualizuj stan formularza
 		setFormData(prev => ({
 			...prev,
-			monthlyPension: Math.round(monthlyPension),
-			replacementRate: Math.round(replacementRate * 100) / 100,
-			totalCapital: Math.round(totalCapital),
-			lifeExpectancyMonths,
-			sickLeaveDaysPerYear,
-			sickLeaveImpactPercentage: Math.round(sickLeaveImpactPercentage * 100) / 100,
+			...result
 		}))
 	}
 
@@ -138,7 +96,7 @@ export default function Form() {
 		setFormData(prev => ({ ...prev, [field]: value }))
 		// Przelicz emeryturę po każdej zmianie w kroku 3
 		if (currentStep === 3) {
-			setTimeout(calculatePension, 100)
+			setTimeout(calculatePensionData, 100)
 		}
 	}
 
@@ -155,13 +113,12 @@ export default function Form() {
 			setCurrentStep(step)
 		}
 	}
-
 	const handleSubmit = async () => {
 		if (formData.gender && formData.age && formData.grossSalary && formData.workStartYear && formData.plannedRetirementYear) {
 			setIsSubmitting(true)
 			try {
 				// Oblicz emeryturę przed zapisem
-				calculatePension()
+				calculatePensionData()
 
 				await db.pensionData.add({
 					age: Number(formData.age),
@@ -183,15 +140,15 @@ export default function Form() {
 
 				console.log('W17 kalkulator emerytalny zapisany')
 
-				// Reset formularza
+				// Reset formularza do przykładowych wartości
 				setFormData({
-					age: '',
-					gender: '',
-					grossSalary: '',
-					workStartYear: '',
-					plannedRetirementYear: '',
-					zusAccountBalance: '',
-					zusSubaccountBalance: '',
+					age: 35,
+					gender: 'male',
+					grossSalary: 8000,
+					workStartYear: 2010,
+					plannedRetirementYear: 2054,
+					zusAccountBalance: 120000,
+					zusSubaccountBalance: 45000,
 					includeSickLeave: false,
 				})
 				setCurrentStep(1)
@@ -223,7 +180,7 @@ export default function Form() {
 			case 2:
 				return <Step2 formData={formData} onInputChange={handleInputChange} />
 			case 3:
-				return <Step3 formData={formData} onInputChange={handleInputChange} calculatePension={calculatePension} />
+				return <Step3 formData={formData} onInputChange={handleInputChange} calculatePension={calculatePensionData} />
 			default:
 				return null
 		}

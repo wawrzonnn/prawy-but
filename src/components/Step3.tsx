@@ -9,11 +9,23 @@ interface Step3Props {
 		zusSubaccountBalance?: number | ''
 		includeSickLeave: boolean
 		monthlyPension?: number
+		monthlyPensionReal?: number
 		replacementRate?: number
 		totalCapital?: number
+		finalSalary?: number
 		lifeExpectancyMonths?: number
 		sickLeaveDaysPerYear?: number
 		sickLeaveImpactPercentage?: number
+		averagePensionInRetirementYear?: number
+		pensionVsAverageRatio?: number
+		monthlyPensionWithoutSickLeave?: number
+		delayedRetirement?: {
+			oneYear: { monthlyPension: number; replacementRate: number }
+			twoYears: { monthlyPension: number; replacementRate: number }
+			fiveYears: { monthlyPension: number; replacementRate: number }
+		}
+		expectedPension?: number
+		yearsToReachExpected?: number
 	}
 	onInputChange: (field: string, value: string | number | boolean) => void
 	calculatePension: () => void
