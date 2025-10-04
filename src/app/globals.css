@@ -36,16 +36,16 @@
   --color-zus-light-gray: var(--zus-light-gray);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--zus-white);
+  color: var(--zus-black);
      font-family: "Lato Bold", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
