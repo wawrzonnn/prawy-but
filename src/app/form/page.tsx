@@ -19,6 +19,10 @@ export default function Form() {
 		zusSubaccountBalance?: number
 		includeSickLeave: boolean
 		monthlyPension?: number
+		realMonthlyPension?: number
+		monthlyPensionWithoutSickLeave?: number
+		futureAveragePension?: number
+		futureGrossSalary?: number
 		replacementRate?: number
 		totalCapital?: number
 		lifeExpectancyMonths?: number
@@ -29,7 +33,7 @@ export default function Form() {
 		gender: 'male',
 		grossSalary: 7500,
 		workStartYear: 2015,
-		plannedRetirementYear: 2055,
+		plannedRetirementYear: 2060, // 30 lat w 2025 → urodzony 1995 → emerytura w wieku 65 lat = 2060
 		zusAccountBalance: 0,
 		zusSubaccountBalance: 0,
 		includeSickLeave: false,
@@ -76,7 +80,11 @@ export default function Form() {
 		const workingYears = formData.plannedRetirementYear - formData.workStartYear
 
 		const averageWageGrowth = 0.03
+		const inflationRate = 0.025 // średnia inflacja 2.5%
 		const currentMonthlyContribution = formData.grossSalary * 0.1952
+
+		// Prognozowane wynagrodzenie w momencie przejścia na emeryturę
+		const futureGrossSalary = formData.grossSalary * Math.pow(1 + averageWageGrowth, yearsToRetirement)
 
 		let totalFutureContributions = 0
 		for (let year = 0; year < yearsToRetirement; year++) {
@@ -95,6 +103,7 @@ export default function Form() {
 		}
 
 		let totalCapital = estimatedCurrentCapital + totalFutureContributions
+		let totalCapitalWithoutSickLeave = totalCapital
 
 		let sickLeaveDaysPerYear = 0
 		let sickLeaveImpactPercentage = 0
@@ -115,17 +124,68 @@ export default function Form() {
 
 		const lifeExpectancyMonths = lifeExpectancyYears * 12
 		const monthlyPension = totalCapital / lifeExpectancyMonths
-		const replacementRate = (monthlyPension / formData.grossSalary) * 100
+		const monthlyPensionWithoutSickLeave = totalCapitalWithoutSickLeave / lifeExpectancyMonths
+
+		// Wartość urealniona (dzisiejsza siła nabywcza)
+		const realMonthlyPension = monthlyPension / Math.pow(1 + inflationRate, yearsToRetirement)
+
+		const replacementRate = (monthlyPension / futureGrossSalary) * 100
+
+		// Średnia emerytura prognozowana na rok przejścia (zakładamy wzrost 3% rocznie od obecnej średniej 3500 zł)
+		const currentAveragePension = 3500
+		const futureAveragePension = currentAveragePension * Math.pow(1 + averageWageGrowth, yearsToRetirement)
 
 		setFormData(prev => ({
 			...prev,
 			monthlyPension: Math.round(monthlyPension),
+			realMonthlyPension: Math.round(realMonthlyPension),
+			monthlyPensionWithoutSickLeave: Math.round(monthlyPensionWithoutSickLeave),
+			futureAveragePension: Math.round(futureAveragePension),
+			futureGrossSalary: Math.round(futureGrossSalary),
 			replacementRate: Math.round(replacementRate * 100) / 100,
 			totalCapital: Math.round(totalCapital),
 			lifeExpectancyMonths,
 			sickLeaveDaysPerYear,
 			sickLeaveImpactPercentage: Math.round(sickLeaveImpactPercentage * 100) / 100,
 		}))
+	}
+
+	// Funkcja do obliczania scenariuszy odroczenia
+	const calculateDelayScenario = (delayYears: number) => {
+		if (!formData.gender || !formData.monthlyPension) return 0
+
+		const currentYear = new Date().getFullYear()
+		const retirementAge = formData.gender === 'female' ? 60 : 65
+		const birthYear = currentYear - formData.age
+		const baseRetirementYear = birthYear + retirementAge
+		const delayedRetirementYear = baseRetirementYear + delayYears
+
+		const yearsToDelayedRetirement = delayedRetirementYear - currentYear
+
+		const averageWageGrowth = 0.03
+		const currentMonthlyContribution = formData.grossSalary * 0.1952
+
+		// Dodatkowe składki z lat odroczenia
+		let additionalContributions = 0
+		for (let year = 0; year < delayYears; year++) {
+			const yearFromNow = formData.plannedRetirementYear - currentYear + year
+			const yearlyGrowthMultiplier = Math.pow(1 + averageWageGrowth, yearFromNow)
+			const adjustedMonthlyContribution = currentMonthlyContribution * yearlyGrowthMultiplier
+			additionalContributions += adjustedMonthlyContribution * 12
+		}
+
+		const newTotalCapital = (formData.totalCapital || 0) + additionalContributions
+
+		let lifeExpectancyYears: number
+		const actualRetirementAge = retirementAge + delayYears
+		if (formData.gender === 'female') {
+			lifeExpectancyYears = actualRetirementAge <= 60 ? 24 : actualRetirementAge <= 65 ? 22 : 20
+		} else {
+			lifeExpectancyYears = actualRetirementAge <= 65 ? 20 : actualRetirementAge <= 67 ? 18 : 16
+		}
+
+		const lifeExpectancyMonths = lifeExpectancyYears * 12
+		return Math.round(newTotalCapital / lifeExpectancyMonths)
 	}
 
 	const handleSave = async () => {
@@ -304,6 +364,71 @@ export default function Form() {
 								</p>
 							</Card>
 
+							{/* Planowany rok przejścia na emeryturę - slider */}
+							<Card className='p-6'>
+								<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
+									<Calendar className='w-5 h-5 text-primary' />
+									Planowany rok przejścia na emeryturę
+								</h3>
+								<div className='space-y-4'>
+									<div className='flex items-center justify-between'>
+										<span className='text-muted-foreground'>Przejście na emeryturę:</span>
+										<span className='text-3xl font-bold text-primary'>{formData.plannedRetirementYear}</span>
+									</div>
+									<input
+										type='range'
+										min={(() => {
+											const retirementAge = formData.gender === 'female' ? 60 : 65
+											const birthYear = currentYear - formData.age
+											return birthYear + retirementAge
+										})()}
+										max={(() => {
+											const retirementAge = formData.gender === 'female' ? 60 : 65
+											const birthYear = currentYear - formData.age
+											return birthYear + retirementAge + 10
+										})()}
+										value={formData.plannedRetirementYear}
+										onChange={e => setFormData(prev => ({ ...prev, plannedRetirementYear: parseInt(e.target.value) }))}
+										className='w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary'
+									/>
+									<div className='flex justify-between text-xs text-muted-foreground'>
+										<span>Wiek emerytalny ({formData.gender === 'female' ? '60' : '65'} lat)</span>
+										<span>+10 lat</span>
+									</div>
+									{(() => {
+										const retirementAge = formData.gender === 'female' ? 60 : 65
+										const birthYear = currentYear - formData.age
+										const minRetirementYear = birthYear + retirementAge
+										const yearsDelayed = formData.plannedRetirementYear - minRetirementYear
+
+										if (yearsDelayed > 0) {
+											return (
+												<div className='bg-green-50 border border-green-200 p-3 rounded-lg'>
+													<p className='text-sm text-green-800'>
+														<strong>
+															💡 Odroczenie o {yearsDelayed}{' '}
+															{yearsDelayed === 1 ? 'rok' : yearsDelayed < 5 ? 'lata' : 'lat'}:
+														</strong>{' '}
+														Każdy rok dłuższej pracy zwiększa emeryturę o ~5-7%. Twoja emerytura będzie wyższa o około{' '}
+														{Math.round(yearsDelayed * 6)}%!
+													</p>
+												</div>
+											)
+										}
+										return (
+											<div className='bg-blue-50 border border-blue-200 p-3 rounded-lg'>
+												<p className='text-sm text-blue-800'>
+													Przejście na emeryturę w wieku emerytalnym ({retirementAge} lat)
+												</p>
+											</div>
+										)
+									})()}
+									<p className='text-xs text-muted-foreground'>
+										Całkowity staż pracy: <strong>{formData.plannedRetirementYear - formData.workStartYear} lat</strong>
+									</p>
+								</div>
+							</Card>
+
 							{/* Opcje zaawansowane */}
 							<Card className='p-6'>
 								<button
@@ -350,11 +475,18 @@ export default function Form() {
 												onChange={e => setFormData(prev => ({ ...prev, includeSickLeave: e.target.checked }))}
 												className='w-5 h-5 text-primary focus:ring-primary border-2 rounded mt-1'
 											/>
-											<div>
+											<div className='flex-1'>
 												<span className='text-foreground font-medium block'>Uwzględnij zwolnienia lekarskie</span>
 												<p className='text-xs text-muted-foreground mt-1'>
-													Średnio {formData.gender === 'female' ? '12' : '9'} dni rocznie
+													Średnio {formData.gender === 'female' ? '12' : '9'} dni rocznie dla{' '}
+													{formData.gender === 'female' ? 'kobiet' : 'mężczyzn'}
 												</p>
+												{formData.includeSickLeave && (
+													<div className='mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800'>
+														📊 Zwolnienia lekarskie nie generują składek emerytalnych, co obniża świadczenie o ~
+														{(((formData.gender === 'female' ? 12 : 9) / 365) * 100).toFixed(1)}%
+													</div>
+												)}
 											</div>
 										</label>
 									</div>
@@ -366,29 +498,152 @@ export default function Form() {
 						<div className='space-y-6 lg:sticky lg:top-24 lg:self-start'>
 							{formData.gender && formData.monthlyPension ? (
 								<>
-									{/* Główny wynik */}
+									{/* Główny wynik - dwie wartości */}
 									<Card className='p-8 bg-[var(--zus-green-primary)] text-white'>
 										<div className='text-center'>
-											<h3 className='text-xl font-bold mb-2'>Twoja przyszła emerytura</h3>
-											<div className='text-6xl font-bold my-6'>
-												{formData.monthlyPension.toLocaleString('pl-PL')} zł
+											<h3 className='text-xl font-bold mb-4'>Twoja przyszła emerytura</h3>
+
+											{/* Wartość rzeczywista */}
+											<div className='mb-6'>
+												<div className='text-sm opacity-80 mb-2'>Wartość rzeczywista (nominalna)</div>
+												<div className='text-5xl font-bold mb-1'>
+													{formData.monthlyPension.toLocaleString('pl-PL')} zł
+												</div>
+												<p className='text-white/80 text-sm'>w roku {formData.plannedRetirementYear}</p>
 											</div>
-											<p className='text-white/90 mb-4'>miesięcznie</p>
-											<div className='bg-white/20 rounded-lg p-4'>
+
+											{/* Wartość urealniona */}
+											<div className='bg-white/20 rounded-lg p-4 mb-4'>
+												<div className='text-sm opacity-90 mb-2'>Wartość urealniona (dzisiejsza siła nabywcza)</div>
+												<div className='text-4xl font-bold mb-1'>
+													{formData.realMonthlyPension?.toLocaleString('pl-PL')} zł
+												</div>
+												<p className='text-white/80 text-xs'>równowartość w dzisiejszych złotówkach</p>
+											</div>
+
+											<div className='bg-white/10 rounded-lg p-3'>
 												<div className='text-sm opacity-90 mb-1'>Stopa zastąpienia</div>
-												<div className='text-3xl font-bold'>{formData.replacementRate}%</div>
-												<div className='text-sm opacity-90 mt-1'>twojego obecnego wynagrodzenia</div>
+												<div className='text-2xl font-bold'>{formData.replacementRate}%</div>
+												<div className='text-xs opacity-80 mt-1'>
+													przyszłego wynagrodzenia ({formData.futureGrossSalary?.toLocaleString('pl-PL')} zł)
+												</div>
 											</div>
 										</div>
 									</Card>
 
-									{/* Dodatkowe informacje */}
+									{/* Porównanie ze średnią */}
+									<Card className='p-6 bg-primary/5'>
+										<h3 className='text-lg font-bold text-foreground mb-4'>📊 Porównanie ze średnią krajową</h3>
+										<div className='space-y-3'>
+											<div className='flex justify-between items-center'>
+												<span className='text-sm text-muted-foreground'>Twoja emerytura:</span>
+												<span className='font-bold text-foreground text-lg'>
+													{formData.monthlyPension.toLocaleString('pl-PL')} zł
+												</span>
+											</div>
+											<div className='flex justify-between items-center'>
+												<span className='text-sm text-muted-foreground'>
+													Średnia w {formData.plannedRetirementYear}:
+												</span>
+												<span className='font-bold text-muted-foreground text-lg'>
+													{formData.futureAveragePension?.toLocaleString('pl-PL')} zł
+												</span>
+											</div>
+											<div className='h-px bg-border my-2'></div>
+											<div className='flex justify-between items-center'>
+												<span className='text-sm font-medium text-foreground'>Różnica:</span>
+												<span
+													className={`font-bold text-lg ${(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? 'text-green-600' : 'text-orange-600'}`}>
+													{(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? '+' : ''}
+													{(((formData.monthlyPension || 0) / (formData.futureAveragePension || 1) - 1) * 100).toFixed(
+														1
+													)}
+													%
+												</span>
+											</div>
+										</div>
+									</Card>
+
+									{/* Wpływ zwolnień chorobowych */}
+									{formData.includeSickLeave && (
+										<Card className='p-6 bg-orange-50 border-2 border-orange-200'>
+											<h3 className='text-lg font-bold text-foreground mb-4'>🏥 Wpływ zwolnień lekarskich</h3>
+											<div className='space-y-3'>
+												<div className='flex justify-between'>
+													<span className='text-sm text-muted-foreground'>Bez zwolnień:</span>
+													<span className='font-bold text-foreground'>
+														{formData.monthlyPensionWithoutSickLeave?.toLocaleString('pl-PL')} zł
+													</span>
+												</div>
+												<div className='flex justify-between'>
+													<span className='text-sm text-muted-foreground'>Ze zwolnieniami:</span>
+													<span className='font-bold text-orange-600'>
+														{formData.monthlyPension.toLocaleString('pl-PL')} zł
+													</span>
+												</div>
+												<div className='h-px bg-orange-200 my-2'></div>
+												<div className='flex justify-between items-center'>
+													<span className='text-sm font-medium text-foreground'>Strata miesięczna:</span>
+													<span className='font-bold text-orange-600'>
+														-
+														{(
+															(formData.monthlyPensionWithoutSickLeave || 0) - (formData.monthlyPension || 0)
+														).toLocaleString('pl-PL')}{' '}
+														zł
+													</span>
+												</div>
+												<p className='text-xs text-orange-700 mt-2'>
+													Średnio {formData.sickLeaveDaysPerYear} dni zwolnień rocznie obniża emeryturę o{' '}
+													{formData.sickLeaveImpactPercentage}%
+												</p>
+											</div>
+										</Card>
+									)}
+
+									{/* Scenariusze odroczenia */}
+									<Card className='p-6 bg-green-50 border-2 border-green-200'>
+										<h3 className='text-lg font-bold text-foreground mb-4'>💡 Scenariusze odroczenia emerytury</h3>
+										<p className='text-sm text-muted-foreground mb-4'>
+											Zobacz, jak zmieni się Twoja emerytura, jeśli będziesz pracować dłużej:
+										</p>
+										<div className='space-y-3'>
+											{[1, 2, 5].map(years => {
+												const delayedPension = calculateDelayScenario(years)
+												const increase = delayedPension - (formData.monthlyPension || 0)
+												const increasePercent = ((increase / (formData.monthlyPension || 1)) * 100).toFixed(1)
+												return (
+													<div key={years} className='bg-white rounded-lg p-3'>
+														<div className='flex justify-between items-center'>
+															<div>
+																<span className='font-medium text-foreground'>
+																	+{years} {years === 1 ? 'rok' : years < 5 ? 'lata' : 'lat'}
+																</span>
+																<span className='text-xs text-muted-foreground block'>
+																	do wieku {(formData.gender === 'female' ? 60 : 65) + years} lat
+																</span>
+															</div>
+															<div className='text-right'>
+																<div className='font-bold text-green-600 text-lg'>
+																	{delayedPension.toLocaleString('pl-PL')} zł
+																</div>
+																<div className='text-xs text-green-600'>
+																	+{increase.toLocaleString('pl-PL')} zł (+{increasePercent}%)
+																</div>
+															</div>
+														</div>
+													</div>
+												)
+											})}
+										</div>
+									</Card>
+
+									{/* Szczegóły prognozy */}
 									<Card className='p-6'>
 										<h3 className='text-lg font-bold text-foreground mb-4 flex items-center gap-2'>
 											<TrendingUp className='w-5 h-5 text-primary' />
 											Szczegóły prognozy
 										</h3>
-										<div className='space-y-3'>
+										<div className='space-y-3 text-sm'>
 											<div className='flex justify-between'>
 												<span className='text-muted-foreground'>Lata do emerytury:</span>
 												<span className='font-bold text-foreground'>{yearsToRetirement} lat</span>
@@ -405,12 +660,14 @@ export default function Form() {
 													{formData.lifeExpectancyMonths ? Math.round(formData.lifeExpectancyMonths / 12) : 0} lat
 												</span>
 											</div>
-											{formData.includeSickLeave && (
-												<div className='flex justify-between'>
-													<span className='text-muted-foreground'>Wpływ zwolnień:</span>
-													<span className='font-bold text-orange-600'>-{formData.sickLeaveImpactPercentage}%</span>
-												</div>
-											)}
+											<div className='flex justify-between'>
+												<span className='text-muted-foreground'>Średni wzrost wynagrodzeń:</span>
+												<span className='font-bold text-foreground'>3% rocznie</span>
+											</div>
+											<div className='flex justify-between'>
+												<span className='text-muted-foreground'>Zakładana inflacja:</span>
+												<span className='font-bold text-foreground'>2.5% rocznie</span>
+											</div>
 										</div>
 									</Card>
 
