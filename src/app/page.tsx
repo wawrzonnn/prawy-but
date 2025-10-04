@@ -1,95 +1,217 @@
+'use client'
+
+import Link from "next/link"
+import Image from "next/image"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart, Users, Award } from "lucide-react"
+import { Calculator, TrendingUp, PiggyBank, Calendar, Target, Wallet, LineChart, Users, Award, AlertCircle, Lightbulb, BarChart3 } from "lucide-react"
 
 export default function Home() {
+  const [selectedPensionAmount, setSelectedPensionAmount] = useState<number | null>(null)
+
+  const pensionGroups = [
+    {
+      range: "Poniżej 2 000 zł",
+      average: "1 650 zł",
+      percentage: "18%",
+      description: "Świadczeniobiorcy otrzymujący emeryturę poniżej minimalnej wykazywali się niską aktywnością zawodową. Nie przepracowali minimum 25 lat dla mężczyzn i 20 lat dla kobiet, w związku z tym nie nabyli prawa do gwarancji minimalnej emerytury."
+    },
+    {
+      range: "2 000 - 3 000 zł",
+      average: "2 550 zł",
+      percentage: "35%",
+      description: "Największa grupa emerytów w Polsce. Osoby te przepracowały wymagany okres, ale ich wynagrodzenia były na poziomie zbliżonym do średniej krajowej lub niższym."
+    },
+    {
+      range: "3 000 - 4 500 zł",
+      average: "3 700 zł",
+      percentage: "28%",
+      description: "Emeryci z tej grupy pracowali przez długi okres i zarabiali powyżej średniej krajowej. Regularnie odprowadzali składki emerytalne przez co najmniej 30-35 lat."
+    },
+    {
+      range: "Powyżej 4 500 zł",
+      average: "5 800 zł",
+      percentage: "19%",
+      description: "Najwyższe emerytury otrzymują osoby, które przez całe życie zawodowe zarabiały znacznie powyżej średniej krajowej, pracowały przez 35-40 lat bez przerw i nie korzystały często ze zwolnień lekarskich."
+    }
+  ]
+
+  const funFacts = [
+    "Czy wiesz, że najwyższa emerytura w Polsce wynosi ponad 48 000 zł miesięcznie? Otrzymuje ją emerytowany górnik z województwa śląskiego, który przepracował 42 lata.",
+    "Średni wiek przejścia na emeryturę w Polsce to 61 lat dla kobiet i 63 lata dla mężczyzn, choć ustawowy wiek emerytalny to 60/65 lat.",
+    "Każdy rok dłuższej pracy zwiększa wysokość emerytury średnio o 5-7%. Odroczenie emerytury o 5 lat może zwiększyć świadczenie nawet o 30-35%!",
+    "W Polsce jest ponad 9 milionów emerytów, a przeciętna emerytura wynosi około 3 500 zł brutto."
+  ]
+
+  const [currentFact] = useState(funFacts[Math.floor(Math.random() * funFacts.length)])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">ZUS</h1>
-          </div>
-          <Button
-            size="lg"
-            className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
-          >
-            Rozpocznij grę
-          </Button>
+          <Link href="/" className="flex items-center gap-3">
+            <Image 
+              src="/logozus.svg" 
+              alt="ZUS Logo" 
+              width={120} 
+              height={32}
+              className="h-8 w-auto"
+            />
+          </Link>
+          <Link href="/form">
+            <Button
+              size="lg"
+              className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+            >
+              Sprawdź swoją emeryturę
+            </Button>
+          </Link>
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section - Question about expected pension */}
       <section className="pt-32 pb-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[0.25rem] text-sm font-bold mb-4">
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              Edukacyjna gra symulacyjna
+              Narzędzie edukacyjne ZUS
             </div>
 
             <h2 className="text-5xl md:text-7xl font-bold text-foreground text-balance leading-tight">
-              Symuluj swoje życie finansowe
+              Jaką chcesz mieć emeryturę?
             </h2>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
-              Naucz się, jak rezygnować dziś z części dochodu na rzecz uprawnień w przyszłości. Odkryj sposoby
-              finansowania przyszłej konsumpcji w interaktywnej grze.
+              Większość osób wkraczających na rynek pracy nie ma świadomości, jaką będzie mieć emeryturę. 
+              Poznaj rzeczywistość i zaplanuj swoją przyszłość finansową.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
-              <Button
-                size="lg"
-                className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
-              >
-                Rozpocznij grę
-                <TrendingUp className="ml-2 w-5 h-5" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 py-6 h-auto border-2 bg-transparent border-primary text-primary hover:bg-primary/10 font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
-              >
-                Dowiedz się więcej
-              </Button>
+              <Link href="/form">
+                <Button
+                  size="lg"
+                  className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+                >
+                  Oblicz swoją emeryturę
+                  <Calculator className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
             </div>
           </div>
 
-          {/* Hero Visual */}
-          <div className="mt-16 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/10 blur-3xl opacity-30"></div>
-            <Card className="relative overflow-hidden bg-card border shadow-2xl">
-              <div className="aspect-video bg-gradient-to-br from-primary via-secondary to-primary/80 flex items-center justify-center p-8">
-                <div className="bg-white/95 backdrop-blur-sm rounded-lg p-8 max-w-md w-full shadow-xl">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-sm font-bold text-muted-foreground">Twój portfel</span>
-                    <Wallet className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-4xl font-bold text-foreground">45 250 zł</div>
-                      <div className="text-sm text-primary flex items-center gap-1 mt-1 font-bold">
-                        <TrendingUp className="w-4 h-4" />
-                        +12.5% w tym miesiącu
+          {/* Pension Groups Comparison - Interactive Section */}
+          <div className="mt-16">
+            <Card className="p-8 md:p-12 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                  Porównaj do rzeczywistości - Średnie emerytury w Polsce
+                </h3>
+                <p className="text-lg text-muted-foreground">
+                  Najedź na grupę, aby zobaczyć szczegóły i charakterystykę emerytów
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-4 gap-4 mb-8">
+                {pensionGroups.map((group, index) => (
+                  <Card
+                    key={index}
+                    className="p-6 hover:shadow-xl transition-all cursor-pointer group border-2 hover:border-primary bg-white"
+                    onMouseEnter={() => setSelectedPensionAmount(index)}
+                  >
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-muted-foreground mb-2">{group.range}</div>
+                      <div className="text-3xl font-bold text-primary mb-1">{group.average}</div>
+                      <div className="text-sm text-muted-foreground font-medium">
+                        <BarChart3 className="w-4 h-4 inline mr-1" />
+                        {group.percentage} emerytów
                       </div>
                     </div>
-                    <div className="h-32 bg-muted rounded flex items-end gap-2 p-4">
-                      {[40, 55, 45, 70, 60, 85, 75].map((height, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 bg-gradient-to-t from-primary to-secondary rounded-sm"
-                          style={{ height: `${height}%` }}
-                        ></div>
-                      ))}
+                  </Card>
+                ))}
+              </div>
+
+              {selectedPensionAmount !== null && (
+                <Card className="p-6 bg-blue/10 border-2 border-blue">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-6 h-6 text-blue flex-shrink-0 mt-1" />
+                    <div>
+                      <h4 className="text-lg font-bold text-foreground mb-2">
+                        {pensionGroups[selectedPensionAmount].range}
+                      </h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {pensionGroups[selectedPensionAmount].description}
+                      </p>
                     </div>
                   </div>
+                </Card>
+              )}
+            </Card>
+          </div>
+
+          {/* Fun Fact Section */}
+          <div className="mt-8">
+            <Card className="p-6 bg-yellow/10 border-2 border-yellow">
+              <div className="flex items-start gap-4">
+                <Lightbulb className="w-8 h-8 text-yellow flex-shrink-0" />
+                <div>
+                  <h4 className="text-xl font-bold text-foreground mb-2">Ciekawostka</h4>
+                  <p className="text-lg text-foreground leading-relaxed">
+                    {currentFact}
+                  </p>
                 </div>
               </div>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Reality Check Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-blue to-blue-dark text-white">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">Oczekiwania vs. Rzeczywistość</h3>
+            <p className="text-xl text-white/90">
+              Większość ludzi nie zdaje sobie sprawy, jak duża jest różnica między ich oczekiwaniami a rzeczywistością
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="p-8 bg-white/10 backdrop-blur-sm border-2 border-white/20">
+              <div className="flex items-center gap-3 mb-4">
+                <Target className="w-8 h-8 text-yellow" />
+                <h4 className="text-2xl font-bold">Chciałbym otrzymać:</h4>
+              </div>
+              <div className="text-5xl font-bold mb-4">~5 000 zł</div>
+              <p className="text-white/80">
+                Większość osób oczekuje emerytury pozwalającej utrzymać podobny standard życia jak obecnie
+              </p>
+            </Card>
+
+            <Card className="p-8 bg-red/20 backdrop-blur-sm border-2 border-red">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertCircle className="w-8 h-8 text-red" />
+                <h4 className="text-2xl font-bold">Rzeczywiście otrzymam:</h4>
+              </div>
+              <div className="text-5xl font-bold mb-4">~2 550 zł</div>
+              <p className="text-white/80">
+                Przeciętna emerytura w Polsce - stopa zastąpienia wynosi około 40-50% ostatniego wynagrodzenia
+              </p>
+            </Card>
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link href="/form">
+              <Button
+                size="lg"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+              >
+                Sprawdź, ile faktycznie dostaniesz
+                <Calculator className="ml-2 w-6 h-6" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -98,43 +220,43 @@ export default function Home() {
       <section className="py-20 px-4 bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Czego się nauczysz?</h3>
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Co zasimulujesz?</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Gra symulacyjna, która przygotuje Cię do podejmowania mądrych decyzji finansowych
+              Kompleksowe narzędzie do prognozowania Twojej przyszłej emerytury
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                icon: PiggyBank,
-                title: "Oszczędzanie na przyszłość",
-                description: "Naucz się, jak odkładać część dochodu na emeryturę i inne cele długoterminowe",
-              },
-              {
-                icon: Calendar,
-                title: "Planowanie życiowe",
-                description: "Symuluj różne scenariusze życiowe i zobacz ich wpływ na Twoje finanse",
-              },
-              {
-                icon: Target,
-                title: "Cele finansowe",
-                description: "Ustal cele i śledź postępy w ich realizacji przez całe życie",
+                icon: Calculator,
+                title: "Wysokość emerytury",
+                description: "Oblicz przewidywaną wysokość świadczenia emerytalnego w wartości rzeczywistej i urealnionej",
               },
               {
                 icon: LineChart,
-                title: "Inwestowanie",
-                description: "Poznaj podstawy inwestowania i budowania kapitału na przyszłość",
+                title: "Stopa zastąpienia",
+                description: "Zobacz, jaki procent Twojego wynagrodzenia będzie stanowić Twoja emerytura",
+              },
+              {
+                icon: Calendar,
+                title: "Scenariusze przejścia",
+                description: "Symuluj różne warianty wieku przejścia na emeryturę i zobacz wpływ na wysokość świadczenia",
+              },
+              {
+                icon: TrendingUp,
+                title: "Wzrost kapitału",
+                description: "Śledź, jak zwiększa się kwota zgromadzona na Twoim koncie i subkoncie w ZUS",
               },
               {
                 icon: Users,
-                title: "System emerytalny",
-                description: "Zrozum, jak działa system ubezpieczeń społecznych i ZUS",
+                title: "Wpływ zwolnień lekarskich",
+                description: "Uwzględnij średnią długość zwolnień i zobacz, jak wpływają na wysokość emerytury",
               },
               {
-                icon: Award,
-                title: "Mądre decyzje",
-                description: "Podejmuj świadome decyzje finansowe i zobacz ich długoterminowe skutki",
+                icon: Target,
+                title: "Porównanie ze średnią",
+                description: "Porównaj swoją prognozowaną emeryturę ze średnim świadczeniem w roku przejścia",
               },
             ].map((feature, index) => (
               <Card key={index} className="p-6 hover:shadow-lg transition-shadow bg-card border">
@@ -155,7 +277,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">Jak to działa?</h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Prosta ścieżka do lepszego zrozumienia finansów osobistych
+              Trzy proste kroki do poznania swojej przyszłej emerytury
             </p>
           </div>
 
@@ -163,18 +285,18 @@ export default function Home() {
             {[
               {
                 step: "01",
-                title: "Rozpocznij swoją podróż",
-                description: "Stwórz swoją postać i rozpocznij symulację życia od młodości",
+                title: "Wprowadź dane",
+                description: "Podaj podstawowe informacje: wiek, płeć, wynagrodzenie, planowany wiek emerytury oraz opcjonalnie dane z konta ZUS",
               },
               {
                 step: "02",
-                title: "Podejmuj decyzje",
-                description: "Wybieraj między wydatkami dziś a oszczędnościami na jutro",
+                title: "Dostosuj parametry",
+                description: "Uwzględnij zwolnienia lekarskie, różne scenariusze wynagrodzeń i zobacz wpływ odroczenia emerytury",
               },
               {
                 step: "03",
-                title: "Zobacz rezultaty",
-                description: "Obserwuj, jak Twoje decyzje wpływają na jakość życia w przyszłości",
+                title: "Poznaj wynik",
+                description: "Otrzymaj szczegółową prognozę: emeryturę rzeczywistą, urealnioną, stopę zastąpienia i porównanie ze średnią",
               },
             ].map((item, index) => (
               <div key={index} className="relative">
@@ -193,9 +315,9 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
-              { value: "50+", label: "Scenariuszy życiowych" },
-              { value: "100%", label: "Darmowa gra" },
-              { value: "∞", label: "Możliwości rozwoju" },
+              { value: "100%", label: "Darmowe narzędzie" },
+              { value: "2080", label: "Prognozy do roku" },
+              { value: "WCAG 2.0", label: "Standard dostępności" },
             ].map((stat, index) => (
               <div key={index}>
                 <div className="text-5xl md:text-6xl font-bold mb-2">{stat.value}</div>
@@ -210,17 +332,22 @@ export default function Home() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl">
           <Card className="p-12 text-center bg-blue border rounded-[0.25rem]">
-            <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">Gotowy na bieg przez życie?</h3>
+            <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
+              Nie czekaj - sprawdź swoją przyszłą emeryturę już dziś
+            </h3>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty">
-              Rozpocznij swoją przygodę z finansami i naucz się podejmować mądre decyzje o swojej przyszłości
+              Im wcześniej poznasz prawdę o swojej przyszłej emeryturze, tym więcej czasu będziesz miał 
+              na podjęcie działań, które poprawią Twoją sytuację finansową na emeryturze
             </p>
-            <Button
-              size="lg"
-              className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
-            >
-              Rozpocznij grę teraz
-              <TrendingUp className="ml-2 w-6 h-6" />
-            </Button>
+            <Link href="/form">
+              <Button
+                size="lg"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+              >
+                Zaprognozuj moją przyszłą emeryturę
+                <Calculator className="ml-2 w-6 h-6" />
+              </Button>
+            </Link>
           </Card>
         </div>
       </section>
@@ -229,14 +356,17 @@ export default function Home() {
       <footer className="py-12 px-4 border-t border-gray-200 bg-muted">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-foreground">ZUS</span>
-            </div>
+            <Link href="/" className="flex items-center">
+              <Image 
+                src="/logozus.svg" 
+                alt="ZUS Logo" 
+                width={100} 
+                height={28}
+                className="h-7 w-auto"
+              />
+            </Link>
             <p className="text-sm text-muted-foreground text-center">
-              Projekt edukacyjny o finansach i systemie ubezpieczeń społecznych
+              Narzędzie edukacyjne Zakładu Ubezpieczeń Społecznych do prognozowania wysokości emerytury
             </p>
           </div>
         </div>
