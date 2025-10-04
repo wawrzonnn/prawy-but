@@ -119,14 +119,9 @@ export default function Home() {
   }, [])
 
   // Track mouse position for tooltip
-// Track mouse position for tooltip
 const handleMouseMove = (e: React.MouseEvent) => {
-  // Uwzględnij przewijanie strony
-  const scrollX = window.scrollX || document.documentElement.scrollLeft
-  const scrollY = window.scrollY || document.documentElement.scrollTop
-  
   setTooltipPosition({ 
-    x: e.clientX, 
+    x: e.clientX,
     y: e.clientY
   })
 }
@@ -863,14 +858,14 @@ const handleMouseMove = (e: React.MouseEvent) => {
 
 									return (
 										<div
-											className='fixed z-50 pointer-events-none transition-all duration-200 ease-out'
+											className='fixed z-50 pointer-events-none'
 											style={{
-												left: `${tooltipPosition.x + 20}px`,
-												top: `${tooltipPosition.y - 80}px`,
-												maxWidth: '350px',
+												left: `${tooltipPosition.x - 150}px`,
+												top: `${tooltipPosition.y - 70}px`,
+												maxWidth: '280px'
 											}}>
 											<div
-												className='bg-white rounded-lg shadow-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-150'
+												className='bg-white rounded-lg shadow-2xl p-3'
 												style={{
 													borderWidth: '2px',
 													borderColor: currentColor,
