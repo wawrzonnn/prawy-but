@@ -374,11 +374,15 @@ export default function Form() {
 											</label>
 											<input
 												type='number'
+												min='0'
 												value={formData.zusAccountBalance || ''}
-												onChange={e =>
-													setFormData(prev => ({ ...prev, zusAccountBalance: parseFloat(e.target.value) || 0 }))
-												}
-												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
+												onChange={e => {
+													const value = parseFloat(e.target.value)
+													if (e.target.value === '' || value >= 0) {
+														setFormData(prev => ({ ...prev, zusAccountBalance: value || 0 }))
+													}
+												}}
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												placeholder='0'
 											/>
 										</div>
@@ -388,11 +392,15 @@ export default function Form() {
 											</label>
 											<input
 												type='number'
+												min='0'
 												value={formData.zusSubaccountBalance || ''}
-												onChange={e =>
-													setFormData(prev => ({ ...prev, zusSubaccountBalance: parseFloat(e.target.value) || 0 }))
-												}
-												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
+												onChange={e => {
+													const value = parseFloat(e.target.value)
+													if (e.target.value === '' || value >= 0) {
+														setFormData(prev => ({ ...prev, zusSubaccountBalance: value || 0 }))
+													}
+												}}
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												placeholder='0'
 											/>
 										</div>

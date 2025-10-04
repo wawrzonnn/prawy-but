@@ -634,14 +634,16 @@ export default function Dashboard() {
 										<div className='mb-4 p-3 border-0 bg-muted/20 rounded space-y-2'>
 											<input
 												type='number'
+												min='0'
 												placeholder='Rok'
-												className='w-full px-3 py-2 border border-gray-100 rounded text-sm'
+												className='w-full px-3 py-2 border border-gray-100 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												id='sickLeaveYear'
 											/>
 											<input
 												type='number'
+												min='0'
 												placeholder='Liczba dni'
-												className='w-full px-3 py-2 border border-gray-100 rounded text-sm'
+												className='w-full px-3 py-2 border border-gray-100 rounded text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 												id='sickLeaveDays'
 											/>
 											<div className='flex gap-2'>
@@ -650,7 +652,7 @@ export default function Dashboard() {
 													onClick={() => {
 														const year = parseInt((document.getElementById('sickLeaveYear') as HTMLInputElement).value)
 														const days = parseInt((document.getElementById('sickLeaveDays') as HTMLInputElement).value)
-														if (year && days) {
+														if (year && year > 0 && days && days >= 0) {
 															addSickLeave(year, days)
 														}
 													}}
