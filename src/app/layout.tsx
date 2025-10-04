@@ -33,7 +33,8 @@ export default function RootLayout({
       <body
         className={`${lato.variable} antialiased`}
       >
-        <header className="fixed top-0 left-0 z-50 p-4">
+        <div className="container">
+        <header className="fixed top-0 left-0 w-full z-50 p-4 bg-white">
           <img
             src="/logozus.svg"
             alt="Logo ZUS"
@@ -42,6 +43,7 @@ export default function RootLayout({
         </header>
         <div className="pt-20">
           {children}
+        </div>
         </div>
       </body>
     </html>
