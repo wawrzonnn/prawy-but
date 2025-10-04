@@ -92,7 +92,6 @@
   --sidebar-primary: oklch(0.55 0.12 155);
   --sidebar-primary-foreground: oklch(0.15 0 0);
   --sidebar-accent: oklch(0.3 0.01 250);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
   /* Added blue color tokens for dark theme */
   --blue: oklch(0.35 0.12 240);
   --blue-dark: oklch(0.25 0.1 240);
@@ -110,17 +109,17 @@
     @apply bg-background text-foreground;
     overflow-x: hidden;
   }
-}
-
-/* Pension Chart Animations */
-@keyframes growUp {
-  from {
-    transform: scaleY(0);
-    opacity: 0;
+  
+  /* Style dla suwaków (range inputs) */
+  input[type="range"]:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 120, 52, 0.2);
   }
-  to {
-    transform: scaleY(1);
-    opacity: 1;
+  
+  input[type="range"]:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 }
 
