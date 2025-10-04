@@ -5,11 +5,12 @@ import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { db, PensionData } from '@/lib/db'
-import { Download, LogOut, ArrowUpDown, X, Users, TrendingUp, BarChart3, Calendar } from 'lucide-react'
+import { Download, LogOut, ArrowUpDown, X, Users, TrendingUp, BarChart3, Calendar, AlertCircle } from 'lucide-react'
 
 export default function AdminPanel() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
 	const [password, setPassword] = useState('')
+	const [loginError, setLoginError] = useState('')
 	const [data, setData] = useState<PensionData[]>([])
 	const [filteredData, setFilteredData] = useState<PensionData[]>([])
 	const [filters, setFilters] = useState({
@@ -168,13 +169,15 @@ export default function AdminPanel() {
 
 	const handleLogin = (e: React.FormEvent) => {
 		e.preventDefault()
+		setLoginError('')
+
 		// Proste hasło - w produkcji użyj prawdziwego auth
 		if (password === 'zus2025') {
 			sessionStorage.setItem('adminAuth', 'authenticated')
 			setIsAuthenticated(true)
 			loadData()
 		} else {
-			alert('Nieprawidłowe hasło')
+			setLoginError('Nieprawidłowe hasło. Spróbuj ponownie.')
 		}
 	}
 
@@ -247,11 +250,22 @@ export default function AdminPanel() {
 							<input
 								type='password'
 								value={password}
-								onChange={e => setPassword(e.target.value)}
-								className='w-full px-4 py-3 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent'
+								onChange={e => {
+									setPassword(e.target.value)
+									setLoginError('') // Wyczyść błąd przy wpisywaniu
+								}}
+								className={`w-full px-4 py-3 border rounded focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
+									loginError ? 'border-red-500 focus:ring-red-500' : 'border-gray-100 focus:ring-primary'
+								}`}
 								placeholder='Wprowadź hasło'
 								required
 							/>
+							{loginError && (
+								<p className='mt-2 text-sm text-red-600 flex items-center gap-1'>
+									<AlertCircle className='w-4 h-4' />
+									{loginError}
+								</p>
+							)}
 						</div>
 						<Button
 							type='submit'
