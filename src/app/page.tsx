@@ -32,6 +32,7 @@ export default function Home() {
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar')
   const [chartKey, setChartKey] = useState(0)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const [isSpinning, setIsSpinning] = useState(false)
   const chartSectionRef = useRef<HTMLDivElement>(null)
 
   const pensionGroups = [
@@ -67,9 +68,15 @@ export default function Home() {
     setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
   }, [])
 
-  // Function to randomize fact
+  // Function to randomize fact with spinning animation (avoid repeating same fact)
   const randomizeFact = () => {
-    setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
+    setIsSpinning(true)
+    setTimeout(() => {
+      const availableFacts = funFacts.filter(fact => fact !== currentFact)
+      const newFact = availableFacts[Math.floor(Math.random() * availableFacts.length)]
+      setCurrentFact(newFact)
+      setIsSpinning(false)
+    }, 800)
   }
 
   // Reset and trigger animation when chart type changes
@@ -200,10 +207,15 @@ export default function Home() {
                   type="number"
                   value={desiredPension}
                   onChange={(e) => setDesiredPension(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                      e.preventDefault()
+                    }
+                  }}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="5000"
                   min="0"
-                  step="100"
                   aria-label="Oczekiwana kwota emerytury w złotych"
                 />
                 <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight" aria-hidden="true">zł</span>
@@ -692,18 +704,40 @@ export default function Home() {
 
           {/* Fun Fact Section */}
           {currentFact && (
-            <div className="mt-8">
-              <Card className="p-6 bg-yellow/10 border-2 border-yellow">
-                <div className="flex items-start gap-4">
-                  <Lightbulb className="w-8 h-8 text-yellow flex-shrink-0" />
+            <div className="mt-24 px-20">
+              <div className="flex items-center gap-10">
+                {/* Left side - Large spinning wheel */}
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={randomizeFact}
+                    disabled={isSpinning}
+                    className="group relative focus:outline-none"
+                  >
+                    {/* Main spinning circle */}
+                    <div className={`w-64 h-64 rounded-full bg-yellow shadow-2xl transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105 hover:shadow-3xl'}`}>
+                      {/* Inner white circle */}
+                      <div className="w-48 h-48 rounded-full bg-white flex items-center justify-center shadow-inner">
+                        <Lightbulb className="w-32 h-32 text-yellow" />
+                      </div>
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Right side - Fun fact content */}
+                <div className="flex-1 min-h-[256px] flex items-center">
                   <div>
-                    <h4 className="text-xl font-bold text-foreground mb-2">Ciekawostka</h4>
-                    <p className="text-lg text-foreground leading-relaxed">
+                    <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                      Ciekawostki emerytalne
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Kliknij koło, aby wylosować nową ciekawostkę
+                    </p>
+                    <p className={`text-lg text-muted-foreground leading-relaxed transition-opacity duration-300 ${isSpinning ? 'opacity-30' : 'opacity-100'}`}>
                       {currentFact}
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
             </div>
           )}
         </div>
@@ -731,7 +765,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-[var(--zus-green-primary)] text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 text-balance">
-          Sprawdź swoją przyszłą emeryturę zanim zrobi to czas</h3>
+          Sprawdź swoją przyszłą emeryturę - zanim zrobi to czas</h3>
 
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty">
 Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.</p>
