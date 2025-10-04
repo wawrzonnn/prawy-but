@@ -458,7 +458,7 @@ const handleMouseMove = (e: React.MouseEvent) => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-10 md:gap-14">
             {[
               {
                 step: "01",
@@ -477,10 +477,9 @@ const handleMouseMove = (e: React.MouseEvent) => {
               },
             ].map((item, index) => (
               <div key={index} className={`relative transition-all duration-700 ${visibleSections.has('howItWorks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`} style={{ transitionDelay: `${200 + index * 150}ms` }}>
-                <div className="text-6xl font-bold text-primary/20 mb-4">{item.step}</div>
+                <div className="text-6xl font-medium text-[#c4e8d8] mb-5">{item.step}</div>
                 <h4 className="text-2xl font-bold text-foreground mb-3">{item.title}</h4>
                 <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-                {index < 2 && <div className="hidden md:block absolute top-12 -right-4 w-8 h-0.5 bg-primary/30"></div>}
               </div>
             ))}
           </div>
