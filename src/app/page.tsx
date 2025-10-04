@@ -76,7 +76,7 @@ export default function Home() {
           <Link href="/form">
             <Button
               size="lg"
-              className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+              className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
             >
               Sprawdź swoją emeryturę
             </Button>
@@ -106,7 +106,7 @@ export default function Home() {
               <Link href="/form">
                 <Button
                   size="lg"
-                  className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+                  className="bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
                 >
                   Oblicz swoją emeryturę
                   <Calculator className="ml-2 w-5 h-5" />
@@ -133,22 +133,22 @@ export default function Home() {
                 <Target className="w-8 h-8 text-yellow flex-shrink-0" />
                 <label htmlFor="desired-pension-input" className="text-xl font-bold">Chciałbym otrzymać:</label>
               </div>
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-baseline gap-4 mb-6">
                 <input
                   id="desired-pension-input"
                   type="number"
                   value={desiredPension}
                   onChange={(e) => setDesiredPension(e.target.value)}
-                  className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="text-5xl font-bold bg-transparent border-b-2 border-white/40 pb-2 text-white placeholder-white/50 focus:outline-none focus:border-yellow transition-all w-full leading-tight [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   placeholder="5000"
                   min="0"
                   step="100"
                   aria-label="Oczekiwana kwota emerytury w złotych"
                 />
-                <span className="text-4xl font-bold text-white/80 whitespace-nowrap" aria-hidden="true">zł</span>
+                <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight" aria-hidden="true">zł</span>
               </div>
               <p className="text-base text-white/70 leading-relaxed">
-                Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie
+                Wprowadź kwotę emerytury, którą chciałbyś otrzymywać miesięcznie.
               </p>
             </Card>
 
@@ -157,11 +157,11 @@ export default function Home() {
                 <AlertCircle className="w-8 h-8 text-yellow flex-shrink-0" />
                 <h4 className="text-xl font-bold">Rzeczywiście otrzymam:</h4>
               </div>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40">
+              <div className="flex items-baseline gap-4 mb-6">
+                <div className="text-5xl font-bold text-white w-full pb-2 border-b-2 border-white/40 leading-tight">
                   ~{calculateRealPension().toLocaleString('pl-PL')}
                 </div>
-                <span className="text-4xl font-bold text-white/80 whitespace-nowrap">zł</span>
+                <span className="text-5xl font-bold text-white/80 whitespace-nowrap leading-tight">zł</span>
               </div>
               <p className="text-base text-white/70 leading-relaxed">
                 Przy stopie zastąpienia 50% - przeciętna emerytura w Polsce wynosi około 40-50% ostatniego wynagrodzenia
@@ -173,7 +173,7 @@ export default function Home() {
             <Link href="/form">
               <Button
                 size="lg"
-                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
               >
                 Sprawdź, ile faktycznie dostaniesz
                 <Calculator className="ml-2 w-6 h-6" />
@@ -382,7 +382,7 @@ export default function Home() {
             <Link href="/form">
               <Button
                 size="lg"
-                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out"
+                className="bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-xl px-12 py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer"
               >
                 Zaprognozuj moją przyszłą emeryturę
                 <Calculator className="ml-2 w-6 h-6" />
