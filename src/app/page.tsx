@@ -73,6 +73,14 @@ export default function Home() {
     setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
   }, [])
 
+  // Strip the hash and reset scroll on hard refresh of /#reality-check
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#reality-check') {
+      history.replaceState(null, '', window.location.pathname + window.location.search)
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    }
+  }, [])
+
   // Function to randomize fact with spinning animation (avoid repeating same fact)
   const randomizeFact = () => {
     setIsSpinning(true)
