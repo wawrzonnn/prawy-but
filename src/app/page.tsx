@@ -67,6 +67,24 @@ export default function Home() {
     setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
   }, [])
 
+  // Function to randomize fact
+  const randomizeFact = () => {
+    setCurrentFact(funFacts[Math.floor(Math.random() * funFacts.length)])
+  }
+
+  // Reset and trigger animation when chart type changes
+  useEffect(() => {
+    setChartKey(prev => prev + 1)
+    setIsChartVisible(false)
+    const timer = setTimeout(() => setIsChartVisible(true), 100)
+    return () => clearTimeout(timer)
+  }, [chartType])
+
+  // Track mouse position for tooltip
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setTooltipPosition({ x: e.clientX, y: e.clientY })
+  }
+
   // Intersection Observer to trigger chart animation when section is visible
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -93,19 +111,6 @@ export default function Home() {
       }
     }
   }, [isChartVisible])
-
-  // Reset and trigger animation when chart type changes
-  useEffect(() => {
-    setChartKey(prev => prev + 1)
-    setIsChartVisible(false)
-    const timer = setTimeout(() => setIsChartVisible(true), 100)
-    return () => clearTimeout(timer)
-  }, [chartType])
-
-  // Track mouse position for tooltip
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setTooltipPosition({ x: e.clientX, y: e.clientY })
-  }
 
   // Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
   const calculateRealPension = () => {
@@ -282,11 +287,17 @@ export default function Home() {
       <section className="py-12 px-4" ref={chartSectionRef}>
         <div className="container mx-auto max-w-6xl">
           {/* Pension Groups Comparison - Interactive Section */}
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-balance">ZUS w liczbach i ciekawostkach</h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+              Sprawdź, co naprawdę kryje się za emeryturą
+            </p>
+          </div>
           <div>
             <Card className="p-5 md:p-8 bg-gradient-to-br from-primary/5 to-secondary/5 border-2">
               <div className="text-center mb-6">
                 <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1.5">
-                  Rozkład emerytur w Polsce
+                Jak kształtują się emerytury w Polsce
                 </h3>
                 <p className="text-xs md:text-sm text-muted-foreground mb-3">
                   Najedź na pasek, aby zobaczyć szczegóły
