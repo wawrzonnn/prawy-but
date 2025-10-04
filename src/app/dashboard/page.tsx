@@ -285,7 +285,13 @@ export default function Dashboard() {
 									<Download className='w-5 h-5 mr-2' />
 									Pobierz raport PDF
 								</Button>
-								<Button onClick={() => localStorage.removeItem('pensionCalculatorData')} variant='outline' size='lg'>
+								<Button
+									onClick={() => {
+										localStorage.removeItem('pensionCalculatorData')
+										window.location.href = '/form'
+									}}
+									variant='outline'
+									size='lg'>
 									<FileText className='w-4 h-4 mr-2' />
 									Nowa symulacja
 								</Button>
@@ -709,7 +715,14 @@ export default function Dashboard() {
 										placeholder='00-000'
 										value={postalCode}
 										onChange={e => {
-											const value = e.target.value.replace(/[^\d-]/g, '')
+											let value = e.target.value.replace(/[^\d]/g, '') // Usuń wszystko oprócz cyfr
+											
+											// Automatycznie dodaj myślnik po drugiej cyfrze
+											if (value.length > 2) {
+												value = value.slice(0, 2) + '-' + value.slice(2, 5)
+											}
+											
+											// Ogranicz do 6 znaków (00-000)
 											if (value.length <= 6) {
 												setPostalCode(value)
 											}
