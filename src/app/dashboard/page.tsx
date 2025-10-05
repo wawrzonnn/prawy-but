@@ -354,6 +354,19 @@ export default function Dashboard() {
 				{/* Main Content */}
 				<div className='pt-20 md:pt-24 pb-16 md:pb-20 px-4'>
 					<div className='container mx-auto max-w-7xl'>
+						{/* Print-only header - MUSI być na samej górze */}
+						<div className='hidden print:block'>
+							<div className='flex items-center justify-center mb-6 pt-4'>
+								<Image src='/logozus.svg' alt='ZUS Logo' width={120} height={32} className='mr-3' />
+								<div className='border-l border-gray-300 pl-3'>
+									<h1 className='text-lg font-bold mb-0.5'>Raport Prognozy Emerytalnej</h1>
+									<p className='text-xs text-muted-foreground'>
+										Wygenerowano: {new Date().toLocaleDateString('pl-PL')}
+									</p>
+								</div>
+							</div>
+						</div>
+
 						<div className='text-center mb-6 no-print'>
 							<h1 className='text-xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2 md:mb-3'>
 								Panel Symulacji Emerytalnej
@@ -1033,14 +1046,22 @@ export default function Dashboard() {
 					</div>
 				</div>
 
-				{/* Print-only header */}
-				<div className='hidden print:block'>
-					<div className='flex items-center justify-center mb-8 pt-8'>
-						<Image src='/logozus.svg' alt='ZUS Logo' width={150} height={40} className='mr-4' />
-						<div className='border-l border-gray-300 pl-4'>
-							<h1 className='text-2xl font-bold mb-1'>Raport Prognozy Emerytalnej</h1>
-							<p className='text-xs text-muted-foreground'>Wygenerowano: {new Date().toLocaleDateString('pl-PL')}</p>
+				{/* Print-only footer */}
+				<div className='hidden print:block mt-12 pt-6 border-t border-gray-200'>
+					<div className='flex items-center justify-between text-xs text-muted-foreground mb-3'>
+						<div className='flex items-center gap-2'>
+							<Image src='/logozus.svg' alt='ZUS Logo' width={80} height={20} />
+							<span>Symulator Emerytalny ZUS</span>
 						</div>
+						<div>
+							<p>Raport wygenerowany: {new Date().toLocaleString('pl-PL')}</p>
+						</div>
+					</div>
+					<div className='text-xs text-center text-muted-foreground'>
+						<p>
+							To narzędzie edukacyjne służy do oszacowania przyszłej emerytury. Rzeczywista wysokość świadczenia może
+							się różnić.
+						</p>
 					</div>
 				</div>
 
