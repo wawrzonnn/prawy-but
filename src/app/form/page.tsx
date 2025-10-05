@@ -11,6 +11,7 @@ import { DEFAULT_SCENARIO } from '@/config/fus20-scenarios'
 import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
 import type { IndividualInputData } from '@/types/fus20-types'
 import { db } from '@/lib/db'
+import { ChatWidget } from '@/components/ChatWidget'
 
 export default function Form() {
 	const [formData, setFormData] = useState<{
@@ -105,9 +106,9 @@ export default function Form() {
 			accumulatedCapital:
 				formData.zusAccountBalance || formData.zusSubaccountBalance
 					? {
-							zusAccount: formData.zusAccountBalance || 0,
-							zusSubaccount: formData.zusSubaccountBalance || 0,
-						}
+						zusAccount: formData.zusAccountBalance || 0,
+						zusSubaccount: formData.zusSubaccountBalance || 0,
+					}
 					: undefined,
 		}
 
@@ -167,9 +168,9 @@ export default function Form() {
 			accumulatedCapital:
 				formData.zusAccountBalance || formData.zusSubaccountBalance
 					? {
-							zusAccount: formData.zusAccountBalance || 0,
-							zusSubaccount: formData.zusSubaccountBalance || 0,
-						}
+						zusAccount: formData.zusAccountBalance || 0,
+						zusSubaccount: formData.zusSubaccountBalance || 0,
+					}
 					: undefined,
 		}
 
@@ -180,6 +181,14 @@ export default function Form() {
 
 	const currentYear = new Date().getFullYear()
 	const yearsToRetirement = formData.plannedRetirementYear - currentYear
+
+	// Callback dla aktualizacji formularza z AI chatu
+	const handleFormUpdate = (updates: Record<string, any>) => {
+		setFormData(prev => ({
+			...prev,
+			...updates,
+		}))
+	}
 
 	return (
 		<div className='min-h-screen bg-background overflow-x-hidden'>
@@ -200,7 +209,7 @@ export default function Form() {
 			{/* Main Content */}
 			<div className='pt-20 pb-16'>
 				<div className='container mx-auto max-w-7xl px-4 md:px-6'>
-					<div className='text-center mb-6'>
+					<div className='text-left mb-6 mt-6'>
 						<h1 className='text-2xl md:text-3xl font-bold text-foreground mb-2'>Kalkulator Emerytury ZUS</h1>
 						<p className='text-sm text-muted-foreground'>Poznaj swoją przyszłą emeryturę w czasie rzeczywistym</p>
 					</div>
@@ -217,11 +226,10 @@ export default function Form() {
 								<div className='grid grid-cols-2 gap-3'>
 									<button
 										onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
-										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary ${
-											formData.gender === 'male'
-												? 'border-primary bg-primary/10 shadow-sm'
-												: 'border-gray-100 hover:border-primary/50'
-										}`}>
+										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary ${formData.gender === 'male'
+											? 'border-primary bg-primary/10 shadow-sm'
+											: 'border-gray-100 hover:border-primary/50'
+											}`}>
 										<div className='text-center'>
 											<div className='text-2xl mb-1'>👨</div>
 											<div className='font-semibold text-sm text-foreground'>Mężczyzna</div>
@@ -230,11 +238,10 @@ export default function Form() {
 									</button>
 									<button
 										onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
-										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary ${
-											formData.gender === 'female'
-												? 'border-primary bg-primary/10 shadow-sm'
-												: 'border-gray-100 hover:border-primary/50'
-										}`}>
+										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary ${formData.gender === 'female'
+											? 'border-primary bg-primary/10 shadow-sm'
+											: 'border-gray-100 hover:border-primary/50'
+											}`}>
 										<div className='text-center'>
 											<div className='text-2xl mb-1'>👩</div>
 											<div className='font-semibold text-sm text-foreground'>Kobieta</div>
@@ -677,6 +684,9 @@ export default function Form() {
 					</div>
 				</div>
 			</div>
+
+			{/* AI Chat Assistant */}
+			<ChatWidget formContext={formData} onFormUpdate={handleFormUpdate} />
 		</div>
 	)
 }

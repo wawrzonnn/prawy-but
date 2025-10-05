@@ -23,6 +23,7 @@ import {
 	Download,
 	FileText,
 } from 'lucide-react'
+import { ChatWidget } from '@/components/ChatWidget'
 
 interface SickLeave {
 	id: string
@@ -990,6 +991,38 @@ export default function Dashboard() {
 						<p className='text-sm text-muted-foreground'>Wygenerowano: {new Date().toLocaleDateString('pl-PL')}</p>
 					</div>
 				</div>
+
+				{/* AI Chat Assistant */}
+				<ChatWidget
+					formContext={{
+						// Parametry użytkownika
+						age: parameters.currentAge,
+						gender: parameters.gender,
+						grossSalary: parameters.currentSalary,
+						workStartYear: parameters.workStartYear,
+						plannedRetirementYear: parameters.retirementYear,
+						zusAccountBalance: parameters.zusAccountBalance,
+						zusSubaccountBalance: parameters.zusSubaccountBalance,
+						// Wyniki końcowe
+						monthlyPension: monthlyPension,
+						realMonthlyPension: realMonthlyPension,
+						totalCapital: totalCapital,
+						realTotalCapital: realTotalCapital,
+						replacementRate:
+							finalYearData?.monthlyPension && finalYearData?.grossSalary
+								? Math.round((finalYearData.monthlyPension / finalYearData.grossSalary) * 10000) / 100
+								: 0,
+						// Dodatkowe dane dashboardu
+						yearsToRetirement: yearsToRetirement,
+						scenario: scenario.name,
+						scenarioDescription: scenario.description,
+						wageGrowth: ((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1),
+						inflation: ((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1),
+						unemployment: (scenario.parameters.unemploymentRate2080 * 100).toFixed(1),
+						sickLeavesCount: sickLeaves.length,
+						yearDataLength: yearData.length,
+					}}
+				/>
 			</div>
 		</>
 	)
