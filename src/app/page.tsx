@@ -198,14 +198,14 @@ export default function Home() {
 			// Calculate path for donut - larger size
 			const outerRadius = 140
 			const innerRadius = 80
-			const x1 = outerRadius * Math.cos(startRad)
-			const y1 = outerRadius * Math.sin(startRad)
-			const x2 = outerRadius * Math.cos(endRad)
-			const y2 = outerRadius * Math.sin(endRad)
-			const x3 = innerRadius * Math.cos(endRad)
-			const y3 = innerRadius * Math.sin(endRad)
-			const x4 = innerRadius * Math.cos(startRad)
-			const y4 = innerRadius * Math.sin(startRad)
+			const x1 = Number((outerRadius * Math.cos(startRad)).toFixed(2))
+			const y1 = Number((outerRadius * Math.sin(startRad)).toFixed(2))
+			const x2 = Number((outerRadius * Math.cos(endRad)).toFixed(2))
+			const y2 = Number((outerRadius * Math.sin(endRad)).toFixed(2))
+			const x3 = Number((innerRadius * Math.cos(endRad)).toFixed(2))
+			const y3 = Number((innerRadius * Math.sin(endRad)).toFixed(2))
+			const x4 = Number((innerRadius * Math.cos(startRad)).toFixed(2))
+			const y4 = Number((innerRadius * Math.sin(startRad)).toFixed(2))
 
 			const pathData = `
         M ${x1} ${y1}
@@ -217,17 +217,17 @@ export default function Home() {
 
 			// Line starts from outer edge of donut (exactly at the edge)
 			const lineStartRadius = 140
-			const lineStartX = lineStartRadius * Math.cos(midRad)
-			const lineStartY = lineStartRadius * Math.sin(midRad)
+			const lineStartX = Number((lineStartRadius * Math.cos(midRad)).toFixed(2))
+			const lineStartY = Number((lineStartRadius * Math.sin(midRad)).toFixed(2))
 
 			// Line middle point (further out)
 			const lineMidRadius = 155
-			const lineMidX = lineMidRadius * Math.cos(midRad)
-			const lineMidY = lineMidRadius * Math.sin(midRad)
+			const lineMidX = Number((lineMidRadius * Math.cos(midRad)).toFixed(2))
+			const lineMidY = Number((lineMidRadius * Math.sin(midRad)).toFixed(2))
 
 			// Horizontal line end position
 			const horizontalLength = 40
-			const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
+			const lineEndX = Number((lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)).toFixed(2))
 			const lineEndY = lineMidY
 
 			// Text position
@@ -792,14 +792,14 @@ export default function Home() {
 													// Calculate path for donut - larger size
 													const outerRadius = 140
 													const innerRadius = 80
-													const x1 = outerRadius * Math.cos(startRad)
-													const y1 = outerRadius * Math.sin(startRad)
-													const x2 = outerRadius * Math.cos(endRad)
-													const y2 = outerRadius * Math.sin(endRad)
-													const x3 = innerRadius * Math.cos(endRad)
-													const y3 = innerRadius * Math.sin(endRad)
-													const x4 = innerRadius * Math.cos(startRad)
-													const y4 = innerRadius * Math.sin(startRad)
+													const x1 = Number((outerRadius * Math.cos(startRad)).toFixed(2))
+													const y1 = Number((outerRadius * Math.sin(startRad)).toFixed(2))
+													const x2 = Number((outerRadius * Math.cos(endRad)).toFixed(2))
+													const y2 = Number((outerRadius * Math.sin(endRad)).toFixed(2))
+													const x3 = Number((innerRadius * Math.cos(endRad)).toFixed(2))
+													const y3 = Number((innerRadius * Math.sin(endRad)).toFixed(2))
+													const x4 = Number((innerRadius * Math.cos(startRad)).toFixed(2))
+													const y4 = Number((innerRadius * Math.sin(startRad)).toFixed(2))
 
 													const pathData = `
                               M ${x1} ${y1}
@@ -811,17 +811,17 @@ export default function Home() {
 
 													// Line starts from outer edge of donut (exactly at the edge)
 													const lineStartRadius = 140
-													const lineStartX = lineStartRadius * Math.cos(midRad)
-													const lineStartY = lineStartRadius * Math.sin(midRad)
+													const lineStartX = Number((lineStartRadius * Math.cos(midRad)).toFixed(2))
+													const lineStartY = Number((lineStartRadius * Math.sin(midRad)).toFixed(2))
 
 													// Line middle point (further out)
 													const lineMidRadius = 155
-													const lineMidX = lineMidRadius * Math.cos(midRad)
-													const lineMidY = lineMidRadius * Math.sin(midRad)
+													const lineMidX = Number((lineMidRadius * Math.cos(midRad)).toFixed(2))
+													const lineMidY = Number((lineMidRadius * Math.sin(midRad)).toFixed(2))
 
 													// Horizontal line end position
 													const horizontalLength = 40
-													const lineEndX = lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)
+													const lineEndX = Number((lineMidX + (lineMidX > 0 ? horizontalLength : -horizontalLength)).toFixed(2))
 													const lineEndY = lineMidY
 
 													// Text position

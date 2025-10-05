@@ -11,7 +11,7 @@ export function Tooltip({ content, children, className = '' }: TooltipProps) {
 	const [isVisible, setIsVisible] = useState(false)
 
 	return (
-		<div className='relative inline-block'>
+		<span className='relative inline-block'>
 			<button
 				type='button'
 				onMouseEnter={() => setIsVisible(true)}
@@ -29,16 +29,16 @@ export function Tooltip({ content, children, className = '' }: TooltipProps) {
 			</button>
 
 			{isVisible && (
-				<div className='absolute z-50 w-64 p-3 text-xs text-white bg-gray-900 rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none'>
-					<div className='relative'>
+				<span className='absolute z-50 w-64 p-3 text-xs text-white bg-gray-900 rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none block'>
+					<span className='relative block'>
 						{content}
 						{/* Strzałka */}
-						<div className='absolute top-full left-1/2 transform -translate-x-1/2 -mt-1'>
-							<div className='border-4 border-transparent border-t-gray-900'></div>
-						</div>
-					</div>
-				</div>
+						<span className='absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 block'>
+							<span className='border-4 border-transparent border-t-gray-900 block'></span>
+						</span>
+					</span>
+				</span>
 			)}
-		</div>
+		</span>
 	)
 }

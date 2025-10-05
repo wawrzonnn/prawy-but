@@ -53,6 +53,7 @@ export default function Dashboard() {
 	const [customSalaries, setCustomSalaries] = useState<Record<number, number>>({})
 	const [postalCode, setPostalCode] = useState('')
 	const [showAllYears, setShowAllYears] = useState(false)
+	const [currentDate, setCurrentDate] = useState<string>('')
 	const [hoveredPoint, setHoveredPoint] = useState<{
 		year: number
 		age: number
@@ -83,6 +84,9 @@ export default function Dashboard() {
 				console.error('Błąd wczytywania danych', e)
 			}
 		}
+		
+		// Ustaw datę tylko na kliencie (fix hydration mismatch)
+		setCurrentDate(new Date().toLocaleString('pl-PL'))
 	}, [])
 
 	// Oblicz dane dla każdego roku używając kalkulatora FUS20
@@ -357,7 +361,7 @@ export default function Dashboard() {
 								<div className='border-l border-gray-300 pl-3'>
 									<h1 className='text-lg font-bold mb-0.5'>Raport Prognozy Emerytalnej</h1>
 									<p className='text-xs text-muted-foreground'>
-										Wygenerowano: {new Date().toLocaleDateString('pl-PL')}
+										Wygenerowano: {currentDate ? currentDate.split(',')[0] : '...'}
 									</p>
 								</div>
 							</div>
@@ -1052,7 +1056,7 @@ export default function Dashboard() {
 							<span>Symulator Emerytalny ZUS</span>
 						</div>
 						<div>
-							<p>Raport wygenerowany: {new Date().toLocaleString('pl-PL')}</p>
+							<p>Raport wygenerowany: {currentDate || '...'}</p>
 						</div>
 					</div>
 					<div className='text-xs text-center text-muted-foreground'>
