@@ -423,16 +423,35 @@ export default function Form() {
 											</label>
 											<input
 												id='zus-account-balance'
-												type='number'
-												min='0'
+												type='text'
+												inputMode='numeric'
 												value={formData.zusAccountBalance || ''}
 												onChange={e => {
-													const value = parseFloat(e.target.value)
-													if (e.target.value === '' || value >= 0) {
-														setFormData(prev => ({ ...prev, zusAccountBalance: value || 0 }))
+													const rawValue = e.target.value.replace(/[^\d]/g, '')
+													if (rawValue === '') {
+														setFormData(prev => ({ ...prev, zusAccountBalance: 0 }))
+													} else {
+														const value = parseInt(rawValue)
+														if (value >= 0) {
+															setFormData(prev => ({ ...prev, zusAccountBalance: value }))
+														}
 													}
 												}}
-												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+												onKeyDown={e => {
+													if (
+														e.key === 'ArrowUp' ||
+														e.key === 'ArrowDown' ||
+														e.key === 'e' ||
+														e.key === 'E' ||
+														e.key === '+' ||
+														e.key === '-' ||
+														e.key === ','
+													) {
+														e.preventDefault()
+													}
+												}}
+												onWheel={e => e.currentTarget.blur()}
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
 												placeholder='0'
 											/>
 										</div>
@@ -444,16 +463,35 @@ export default function Form() {
 											</label>
 											<input
 												id='zus-subaccount-balance'
-												type='number'
-												min='0'
+												type='text'
+												inputMode='numeric'
 												value={formData.zusSubaccountBalance || ''}
 												onChange={e => {
-													const value = parseFloat(e.target.value)
-													if (e.target.value === '' || value >= 0) {
-														setFormData(prev => ({ ...prev, zusSubaccountBalance: value || 0 }))
+													const rawValue = e.target.value.replace(/[^\d]/g, '')
+													if (rawValue === '') {
+														setFormData(prev => ({ ...prev, zusSubaccountBalance: 0 }))
+													} else {
+														const value = parseInt(rawValue)
+														if (value >= 0) {
+															setFormData(prev => ({ ...prev, zusSubaccountBalance: value }))
+														}
 													}
 												}}
-												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+												onKeyDown={e => {
+													if (
+														e.key === 'ArrowUp' ||
+														e.key === 'ArrowDown' ||
+														e.key === 'e' ||
+														e.key === 'E' ||
+														e.key === '+' ||
+														e.key === '-' ||
+														e.key === ','
+													) {
+														e.preventDefault()
+													}
+												}}
+												onWheel={e => e.currentTarget.blur()}
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
 												placeholder='0'
 											/>
 										</div>
