@@ -23,6 +23,7 @@ import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
 import type { IndividualInputData } from '@/types/fus20-types'
 import { db } from '@/lib/db'
 import { ChatWidget } from '@/components/ChatWidget'
+import { Tooltip } from '@/components/ui/tooltip'
 
 export default function Form() {
 	const [formData, setFormData] = useState<{
@@ -326,6 +327,7 @@ export default function Form() {
 								<h3 className='text-sm font-semibold text-foreground mb-3 flex items-center gap-2'>
 									<Wallet className='w-4 h-4 text-primary' />
 									Zgromadzone środki (opcjonalnie)
+									<Tooltip content='Jeśli masz już środki na koncie ZUS, możesz je tutaj wpisać. Znajdziesz je w Portalu PUE ZUS w zakładce "Informacja o stanie konta". To zwiększy dokładność prognozy.' />
 								</h3>
 								<div className='space-y-3'>
 									<div>
@@ -382,8 +384,11 @@ export default function Form() {
 										className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
 									/>
 									<div className='flex-1'>
-										<span className='text-sm font-medium block'>Rozpocząłem/am pracę przed 1999 rokiem</span>
-										<p className='text-xs text-muted-foreground mt-0.5'>
+										<div className='flex items-center gap-1 mb-0.5'>
+											<span className='text-sm font-medium'>Rozpocząłem/am pracę przed 1999 rokiem</span>
+											<Tooltip content='Jeśli pracowałeś przed reformą emerytalną z 1999 roku, ZUS ustalił dla Ciebie kapitał początkowy. To dodatkowe środki, które zwiększą Twoją emeryturę. Sprawdź jego wysokość w PUE ZUS.' />
+										</div>
+										<p className='text-xs text-muted-foreground'>
 											Zaznacz, jeśli posiadasz kapitał początkowy ustalony przez ZUS.
 										</p>
 									</div>
@@ -569,8 +574,11 @@ export default function Form() {
 												className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
 											/>
 											<div className='flex-1'>
-												<span className='text-sm font-medium block'>Uwzględnij zwolnienia lekarskie</span>
-												<p className='text-xs text-muted-foreground mt-0.5'>
+												<div className='flex items-center gap-1 mb-0.5'>
+													<span className='text-sm font-medium'>Uwzględnij zwolnienia lekarskie</span>
+													<Tooltip content='Podczas zwolnienia lekarskiego (L4) składki emerytalne są niższe, co wpływa na wysokość przyszłej emerytury. Uwzględniamy średnią statystyczną dla Polski.' />
+												</div>
+												<p className='text-xs text-muted-foreground'>
 													Średnio {formData.gender === 'female' ? '12' : '9'} dni/rok - obniża emeryturę o ~
 													{(((formData.gender === 'female' ? 12 : 9) / 365) * 100).toFixed(1)}%
 												</p>
@@ -585,27 +593,42 @@ export default function Form() {
 						<div className='space-y-3 lg:sticky lg:top-24 lg:self-start min-w-0'>
 							{formData.gender ? (
 								<>
-									{/* Główny wynik - zielony akcent */}
+									{/* Główny wynik - dwie kwoty obok siebie */}
 									<Card className='p-5 border-0 bg-white'>
 										<div className='text-center'>
-											<p className='text-xs text-muted-foreground mb-2'>Twoja przyszła emerytura</p>
-											<div className='text-5xl font-bold text-[var(--zus-green-primary)] mb-2'>
-												{(formData.monthlyPension ?? 0).toLocaleString('pl-PL')} zł
+											<p className='text-sm font-semibold text-foreground mb-4'>Twoja przyszła emerytura</p>
+											
+											{/* Kwota nominalna - w przyszłości */}
+											<div className='bg-[#FFB34F]/10 rounded-lg p-3 mb-3 border border-[#FFB34F]/20'>
+												<p className='text-xs mb-1 font-medium' style={{ color: '#00416E' }}>
+													💰 W roku {formData.plannedRetirementYear}
+												</p>
+												<div className='text-3xl font-bold' style={{ color: '#FFB34F' }}>
+													{(formData.monthlyPension ?? 0).toLocaleString('pl-PL')} zł
+												</div>
+												<p className='text-xs mt-1' style={{ color: '#00416E', opacity: 0.7 }}>
+													kwota nominalna (z inflacją)
+												</p>
 											</div>
-											<p className='text-xs text-muted-foreground mb-3'>
-												miesięcznie w roku {formData.plannedRetirementYear}
-											</p>
 
-											{/* Wartość urealniona - jako subtelna informacja */}
-											<div className='bg-muted/30 rounded p-2.5'>
-												<p className='text-xs text-muted-foreground mb-1'>W dzisiejszej sile nabywczej:</p>
-												<p className='text-xl font-bold text-foreground'>
-													{formData.realMonthlyPension?.toLocaleString('pl-PL')} zł
+											{/* Kwota realna - dzisiejsza siła nabywcza */}
+											<div className='bg-[var(--zus-green-primary)]/10 rounded-lg p-3'>
+												<p className='text-xs text-[var(--zus-green-primary)] mb-1 font-medium inline-flex items-center gap-1'>
+													💵 W dzisiejszej sile nabywczej
+													<Tooltip content='To pokazuje ile będzie warta Twoja emerytura w dzisiejszych cenach. Uwzględnia inflację - czyli to, że za te same pieniądze w przyszłości kupisz mniej niż dziś.' />
 												</p>
-												<p className='text-xs text-muted-foreground mt-1'>
-													(stopa zastąpienia: {formData.replacementRate}%)
+												<div className='text-3xl font-bold text-[var(--zus-green-primary)]'>
+													{formData.realMonthlyPension?.toLocaleString('pl-PL')} zł
+												</div>
+												<p className='text-xs text-[var(--zus-green-primary)]/70 mt-1 inline-flex items-center gap-1'>
+													stopa zastąpienia: {formData.replacementRate}%
+													<Tooltip content='Stopa zastąpienia pokazuje jaki procent Twojego ostatniego wynagrodzenia będzie stanowić emerytura. Im wyższa, tym lepiej. Zalecane minimum to 40%.' />
 												</p>
 											</div>
+
+											<p className='text-xs text-muted-foreground mt-3 italic'>
+												💡 Obie kwoty to ta sama emerytura - górna pokazuje ile będzie nominalnie, dolna ile to będzie warte w dzisiejszych cenach
+											</p>
 										</div>
 									</Card>
 
@@ -614,7 +637,7 @@ export default function Form() {
 										<div className='flex items-center justify-between mb-1.5'>
 											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
 												<BarChart3 className='w-4 h-4 text-[var(--zus-green-primary)]' />
-												vs Średnia krajowa
+												vs Średnia krajowa w {formData.plannedRetirementYear}
 											</span>
 											<span
 												className={`font-bold ${
@@ -629,7 +652,7 @@ export default function Form() {
 											</span>
 										</div>
 										<p className='text-xs text-muted-foreground'>
-											Średnia: <strong>{formData.futureAveragePension?.toLocaleString('pl-PL')} zł</strong>
+											Prognozowana średnia emerytura: <strong>{formData.futureAveragePension?.toLocaleString('pl-PL')} zł</strong>
 										</p>
 									</Card>
 

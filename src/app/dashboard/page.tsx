@@ -26,6 +26,7 @@ import {
 	MapPin,
 } from 'lucide-react'
 import { ChatWidget } from '@/components/ChatWidget'
+import { Tooltip } from '@/components/ui/tooltip'
 
 interface SickLeave {
 	id: string
@@ -398,6 +399,7 @@ export default function Dashboard() {
 							<h2 className='text-base md:text-xl font-bold text-foreground mb-4 md:mb-6 flex items-center gap-2'>
 								<TrendingUp className='w-4 md:w-5 h-4 md:h-5 text-primary' />
 								Wzrost kapitału emerytalnego
+								<Tooltip content='Kapitał emerytalny to suma wszystkich Twoich składek emerytalnych plus ich waloryzacja (odsetki). Z tego kapitału będzie liczona Twoja emerytura.' />
 							</h2>
 
 							{/* SVG Chart */}
