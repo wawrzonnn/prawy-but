@@ -482,7 +482,85 @@ export default function Form() {
 
 								{showAdvanced && (
 									<div id='advanced-options-content' className='mt-4 space-y-3'>
-										{/* ZMIANA: Usunięto stąd inputy na stan konta i subkonta */}
+										<div>
+											<label htmlFor='zus-account-balance' className='block text-xs font-medium text-foreground mb-1'>
+												Środki na koncie ZUS (opcjonalnie)
+											</label>
+											<input
+												id='zus-account-balance'
+												type='text'
+												inputMode='numeric'
+												value={formData.zusAccountBalance || ''}
+												onChange={(e) => {
+													const rawValue = e.target.value.replace(/[^\d]/g, '')
+													if (rawValue === '') {
+														setFormData((prev) => ({ ...prev, zusAccountBalance: 0 }))
+													} else {
+														const value = parseInt(rawValue)
+														if (value >= 0) {
+															setFormData((prev) => ({ ...prev, zusAccountBalance: value }))
+														}
+													}
+												}}
+												onKeyDown={(e) => {
+													if (
+														e.key === 'ArrowUp' ||
+														e.key === 'ArrowDown' ||
+														e.key === 'e' ||
+														e.key === 'E' ||
+														e.key === '+' ||
+														e.key === '-' ||
+														e.key === ','
+													) {
+														e.preventDefault()
+													}
+												}}
+												onWheel={(e) => e.currentTarget.blur()}
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
+												placeholder='0'
+											/>
+										</div>
+										<div>
+											<label
+												htmlFor='zus-subaccount-balance'
+												className='block text-xs font-medium text-foreground mb-1'
+											>
+												Środki na subkoncie ZUS (opcjonalnie)
+											</label>
+											<input
+												id='zus-subaccount-balance'
+												type='text'
+												inputMode='numeric'
+												value={formData.zusSubaccountBalance || ''}
+												onChange={(e) => {
+													const rawValue = e.target.value.replace(/[^\d]/g, '')
+													if (rawValue === '') {
+														setFormData((prev) => ({ ...prev, zusSubaccountBalance: 0 }))
+													} else {
+														const value = parseInt(rawValue)
+														if (value >= 0) {
+															setFormData((prev) => ({ ...prev, zusSubaccountBalance: value }))
+														}
+													}
+												}}
+												onKeyDown={(e) => {
+													if (
+														e.key === 'ArrowUp' ||
+														e.key === 'ArrowDown' ||
+														e.key === 'e' ||
+														e.key === 'E' ||
+														e.key === '+' ||
+														e.key === '-' ||
+														e.key === ','
+													) {
+														e.preventDefault()
+													}
+												}}
+												onWheel={(e) => e.currentTarget.blur()}
+												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
+												placeholder='0'
+											/>
+										</div>
 										<label className='flex items-start space-x-2 p-3 border border-gray-100 rounded cursor-pointer hover:border-primary transition-colors'>
 											<input
 												type='checkbox'

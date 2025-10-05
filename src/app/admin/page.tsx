@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { db, PensionData } from '@/lib/db'
 import { Download, LogOut, ArrowUpDown, X, Users, TrendingUp, BarChart3, Calendar, AlertCircle } from 'lucide-react'
+import * as XLSX from 'xlsx'
 
 export default function AdminPanel() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -188,31 +189,30 @@ export default function AdminPanel() {
 	}
 
 	const exportToXLS = () => {
-		// Nagłówki zgodnie z wymaganiami
-		const headers = [
-			'Data użycia',
-			'Godzina użycia',
-			'Emerytura oczekiwana',
-			'Wiek',
-			'Płeć',
-			'Wysokość wynagrodzenia',
-			'Czy uwzględniał okresy choroby',
-			'Wysokość zgromadzonych środków na koncie',
-			'Wysokość zgromadzonych środków na subkoncie',
-			'Emerytura rzeczywista',
-			'Emerytura urealniona',
-			'Kod pocztowy',
-		]
-
-		// Konwersja danych do CSV (kompatybilne z Excel)
-		const csvContent = [
-			headers.join(';'),
+		// Przygotuj dane do arkusza
+		const worksheetData = [
+			// Nagłówki
+			[
+				'Data użycia',
+				'Godzina użycia',
+				'Emerytura oczekiwana',
+				'Wiek',
+				'Płeć',
+				'Wysokość wynagrodzenia',
+				'Czy uwzględniał okresy choroby',
+				'Wysokość zgromadzonych środków na koncie',
+				'Wysokość zgromadzonych środków na subkoncie',
+				'Emerytura rzeczywista',
+				'Emerytura urealniona',
+				'Kod pocztowy',
+			],
+			// Dane
 			...filteredData.map(d => {
 				const date = new Date(d.createdAt)
 				return [
 					date.toLocaleDateString('pl-PL'),
 					date.toLocaleTimeString('pl-PL'),
-					'', // Emerytura oczekiwana - nie mamy tej informacji
+					'', // Emerytura oczekiwana - nie mamy
 					d.age,
 					d.gender === 'male' ? 'Mężczyzna' : 'Kobieta',
 					d.grossSalary,
@@ -222,17 +222,35 @@ export default function AdminPanel() {
 					d.monthlyPension || '',
 					d.realMonthlyPension || '',
 					d.postalCode || '',
-				].join(';')
+				]
 			}),
-		].join('\n')
+		]
 
-		// BOM dla polskich znaków
-		const BOM = '\uFEFF'
-		const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
-		const link = document.createElement('a')
-		link.href = URL.createObjectURL(blob)
-		link.download = `raport_symulator_${new Date().toISOString().split('T')[0]}.csv`
-		link.click()
+		// Utwórz arkusz
+		const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
+
+		// Ustaw szerokości kolumn
+		worksheet['!cols'] = [
+			{ wch: 12 }, // Data
+			{ wch: 10 }, // Godzina
+			{ wch: 18 }, // Emerytura oczekiwana
+			{ wch: 6 }, // Wiek
+			{ wch: 12 }, // Płeć
+			{ wch: 20 }, // Wynagrodzenie
+			{ wch: 28 }, // Choroby
+			{ wch: 35 }, // Konto
+			{ wch: 35 }, // Subkonto
+			{ wch: 20 }, // Emerytura rzeczywista
+			{ wch: 18 }, // Urealniona
+			{ wch: 12 }, // Kod pocztowy
+		]
+
+		// Utwórz workbook
+		const workbook = XLSX.utils.book_new()
+		XLSX.utils.book_append_sheet(workbook, worksheet, 'Symulacje')
+
+		// Eksportuj do pliku
+		XLSX.writeFile(workbook, `raport_symulator_${new Date().toISOString().split('T')[0]}.xlsx`)
 	}
 
 	if (!isAuthenticated) {
