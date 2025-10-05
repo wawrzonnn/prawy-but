@@ -35,10 +35,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<FUS20ApiR
     const completeInputData: IndividualInputData = {
       gender: inputData.gender,
       currentAge: inputData.currentAge,
-      contributoryPeriodBefore1999: inputData.contributoryPeriodBefore1999 || {
-        totalYears: 0,
-        nonContributoryYears: 0
-      },
+      initialCapital: inputData.initialCapital || 0,
       insuranceTitle: inputData.insuranceTitle || INSURANCE_TITLE_CODES.EMPLOYEE,
       contributionBase: {
         currentMonthlyAmount: inputData.contributionBase.currentMonthlyAmount,
@@ -150,9 +147,9 @@ export async function GET(): Promise<NextResponse> {
     
     optionalFields: [
       {
-        field: 'contributoryPeriodBefore1999',
-        type: 'object',
-        description: 'Contribution history before 1999 (for initial capital calculation)'
+        field: 'initialCapital',
+        type: 'number',
+        description: 'Initial capital for people who started working before 1999 (valorized amount from ZUS)'
       },
       {
         field: 'insuranceTitle',
@@ -180,9 +177,7 @@ export async function GET(): Promise<NextResponse> {
       inputData: {
         gender: 'male',
         currentAge: 35,
-        contributoryPeriodBefore1999: {
-          totalYears: 0
-        },
+        initialCapital: 0,
         insuranceTitle: {
           code: '05',
           type: 'employee',

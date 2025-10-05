@@ -1,0 +1,113 @@
+### Test API Kalkulatora Emerytalnego
+### Użyj VS Code REST Client extension lub skopiuj do Postman/Insomnia
+
+### 1. Podstawowy test - minimalny request
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 30,
+  "gender": "male",
+  "grossSalary": 7500,
+  "plannedRetirementYear": 2060
+}
+
+###
+
+### 2. Pełny request - wszystkie parametry
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 30,
+  "gender": "male",
+  "grossSalary": 7500,
+  "workStartYear": 2015,
+  "plannedRetirementYear": 2060,
+  "zusAccountBalance": 50000,
+  "zusSubaccountBalance": 12000,
+  "includeSickLeave": true,
+  "scenarioId": "moderate"
+}
+
+###
+
+### 3. Test scenariusza pesymistycznego
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 25,
+  "gender": "female",
+  "grossSalary": 6000,
+  "plannedRetirementYear": 2055,
+  "scenarioId": "pessimistic"
+}
+
+###
+
+### 4. Test scenariusza optymistycznego
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 35,
+  "gender": "male",
+  "grossSalary": 10000,
+  "plannedRetirementYear": 2055,
+  "scenarioId": "optimistic"
+}
+
+###
+
+### 5. Test z wysokim wynagrodzeniem
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 40,
+  "gender": "male",
+  "grossSalary": 20000,
+  "plannedRetirementYear": 2050,
+  "zusAccountBalance": 150000,
+  "zusSubaccountBalance": 35000
+}
+
+###
+
+### 6. Test błędu - brak wymaganych pól
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 30,
+  "gender": "male"
+}
+
+###
+
+### 7. Test błędu - nieprawidłowy wiek
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 70,
+  "gender": "male",
+  "grossSalary": 7500,
+  "plannedRetirementYear": 2030
+}
+
+###
+
+### 8. Test błędu - nieprawidłowa płeć
+POST http://localhost:3000/api/calculate-pension
+Content-Type: application/json
+
+{
+  "age": 30,
+  "gender": "other",
+  "grossSalary": 7500,
+  "plannedRetirementYear": 2060
+}
+
+###
