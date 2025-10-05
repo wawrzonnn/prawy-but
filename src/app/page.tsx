@@ -318,38 +318,69 @@ export default function Home() {
 							</div>
 						</div>
 
-						{/* Prawa część: video demo */}
-						<div className='w-full md:w-[60%] relative flex justify-center items-center mt-12 md:mt-0'>
-							<div className='relative w-full max-w-xl'>
+						{/* Prawa część: stacked screenshots + video */}
+						<div className='w-full md:w-[60%] relative flex justify-center items-center mt-20 md:mt-12'>
+							<div className='relative w-full max-w-xl h-[550px] md:h-[650px]'>
 								{/* Efekt tła - koło */}
-								<div className='absolute z-0 w-56 h-56 md:w-80 md:h-80 bg-yellow/20 rounded-full blur-3xl animate-pulse -top-10 left-1/2 -translate-x-1/2'></div>
+								<div className='absolute z-0 w-56 h-56 md:w-80 md:h-80 bg-yellow/20 rounded-full blur-3xl animate-pulse top-10 left-1/2 -translate-x-1/2'></div>
 
-								{/* Video demo z kalkulatorem */}
-								{/* Dostępny opis wideo dla czytników ekranu */}
-								<div className="sr-only">
-									<p>Nagranie prezentujące działanie kalkulatora emerytalnego. Użytkownik wypełnia formularz swoimi danymi, a następnie otrzymuje prognozowaną kwotę emerytury oraz dodatkowe analizy i wizualizacje.</p>
-								</div>
-								
-								<div className='relative z-10 shadow-2xl rounded-xl overflow-hidden border-4 border-white opacity-0 animate-[fadeIn_1s_ease-out_0.3s_forwards]'>
-									<video
-										autoPlay
-										loop
-										muted
-										playsInline
-										title="Prezentacja działania kalkulatora emerytalnego"
-										aria-label="Nagranie pokazujące funkcje kalkulatora emerytalnego ZUS"
-										role="presentation"
-										aria-hidden="false"
-										className='w-full h-auto'
-										controls={false}
-										onLoadedMetadata={e => {
-											const video = e.currentTarget
-											video.playbackRate = 2.1
-										}}>
-										<source src='/recordingnew.mov' type='video/quicktime' />
-										<source src='/recordingnew.mov' type='video/mp4' />
-										Twoja przeglądarka nie wspiera odtwarzania wideo. Film pokazuje proces wypełniania formularza kalkulatora emerytalnego i przeglądanie rezultatów.
-								</video>
+								{/* Stack of cards - piramida */}
+								<div className='relative w-full h-full'>
+									{/* Card 3 - Symulacja (najniżej, z tyłu po lewej) */}
+									<div className='absolute top-[280px] -left-[40px] w-[65%] z-[1] opacity-0 animate-[fadeIn_1s_ease-out_0.5s_forwards]'>
+										<div className='shadow-xl rounded-xl overflow-hidden border-4 border-white transform rotate-[-10deg] hover:rotate-[-5deg] transition-transform duration-300'>
+											<Image
+												src='/symulacja_emerytalna_demo.png'
+												alt='Symulacja emerytalna'
+												width={600}
+												height={400}
+												className='w-full h-auto'
+											/>
+										</div>
+									</div>
+
+									{/* Card 2 - Kalkulator (środek, z tyłu po prawej) */}
+									<div className='absolute top-[320px] right-[-40px] w-[65%] z-[2] opacity-0 animate-[fadeIn_1s_ease-out_0.4s_forwards]'>
+										<div className='shadow-xl rounded-xl overflow-hidden border-4 border-white transform rotate-[10deg] hover:rotate-[5deg] transition-transform duration-300'>
+											<Image
+												src='/kalkulator_emerytalny_demo.png'
+												alt='Kalkulator emerytalny'
+												width={600}
+												height={400}
+												className='w-full h-auto'
+											/>
+										</div>
+									</div>
+
+									{/* Card 1 - Video (na wierzchu, wycentrowane) */}
+									<div className='absolute top-[80px] left-1/2 -translate-x-1/2 w-[85%] z-[3]'>
+										{/* Dostępny opis wideo dla czytników ekranu */}
+										<div className="sr-only">
+											<p>Nagranie prezentujące działanie kalkulatora emerytalnego. Użytkownik wypełnia formularz swoimi danymi, a następnie otrzymuje prognozowaną kwotę emerytury oraz dodatkowe analizy i wizualizacje.</p>
+										</div>
+										
+										<div className='relative shadow-2xl rounded-xl overflow-hidden border-4 border-white opacity-0 animate-[fadeIn_1s_ease-out_0.3s_forwards] hover:scale-105 transition-transform duration-300'>
+											<video
+												autoPlay
+												loop
+												muted
+												playsInline
+												title="Prezentacja działania kalkulatora emerytalnego"
+												aria-label="Nagranie pokazujące funkcje kalkulatora emerytalnego ZUS"
+												role="presentation"
+												aria-hidden="false"
+												className='w-full h-auto'
+												controls={false}
+												onLoadedMetadata={e => {
+													const video = e.currentTarget
+													video.playbackRate = 2.1
+												}}>
+												<source src='/recordingnew.mov' type='video/quicktime' />
+												<source src='/recordingnew.mov' type='video/mp4' />
+												Twoja przeglądarka nie wspiera odtwarzania wideo. Film pokazuje proces wypełniania formularza kalkulatora emerytalnego i przeglądanie rezultatów.
+											</video>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
