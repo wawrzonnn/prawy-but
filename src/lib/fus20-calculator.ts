@@ -48,7 +48,7 @@ export function calculatePensionFUS20(
 	const lifeExpectancyMonths = lifeExpectancyYears * 12
 
 	// 6. Calculate monthly pension (nominal)
-	const nominalPension = totalCapital / lifeExpectancyMonths
+	const nominalPension = totalCapital > 0 && lifeExpectancyMonths > 0 ? totalCapital / lifeExpectancyMonths : 0
 
 	// 7. Calculate real pension (discounted)
 	const yearsToRetirement = inputData.plannedRetirementAge - inputData.currentAge
@@ -56,7 +56,7 @@ export function calculatePensionFUS20(
 
 	// 8. Calculate final salary and replacement rate
 	const finalSalary = projectFinalSalary(inputData.contributionBase.currentMonthlyAmount, yearsToRetirement, scenario)
-	const replacementRate = (nominalPension / finalSalary) * 100
+	const replacementRate = finalSalary > 0 ? (nominalPension / finalSalary) * 100 : 0
 
 	// 9. Format amounts
 	const pensionAmounts: PensionAmounts = {
@@ -190,8 +190,10 @@ function calculateRealPension(
  * Project final salary at retirement
  */
 function projectFinalSalary(currentSalary: number, yearsToRetirement: number, scenario: MacroeconomicScenario): number {
-	const wageGrowthRate = getAnnualWageGrowthRate(scenario)
-	return currentSalary * Math.pow(1 + wageGrowthRate, yearsToRetirement)
+	// POPRAWKA: Używamy pełnego wskaźnika waloryzacji (wzrost płac + inflacja),
+	// aby pensja była prognozowana w wartościach nominalnych, tak jak kapitał.
+	const nominalGrowthRate = getValorizationRate(scenario)
+	return currentSalary * Math.pow(1 + nominalGrowthRate, yearsToRetirement)
 }
 
 /**
@@ -204,16 +206,22 @@ function calculateComparisons(
 ): Comparisons {
 	const currentAveragePension = ZUS_SYSTEM_PARAMETERS.CURRENT_AVERAGES.PENSION
 	const currentMinimumPension = ZUS_SYSTEM_PARAMETERS.CURRENT_AVERAGES.MINIMUM_PENSION
-	const wageGrowthRate = getAnnualWageGrowthRate(scenario)
+	const nominalGrowthRate = getValorizationRate(scenario) // Używamy nominalnego wzrostu
 
-	const averagePensionInRetirementYear = currentAveragePension * Math.pow(1 + wageGrowthRate, yearsToRetirement)
-	const minimumPensionInRetirementYear = currentMinimumPension * Math.pow(1 + wageGrowthRate, yearsToRetirement)
+	const averagePensionInRetirementYear = currentAveragePension * Math.pow(1 + nominalGrowthRate, yearsToRetirement)
+	const minimumPensionInRetirementYear = currentMinimumPension * Math.pow(1 + nominalGrowthRate, yearsToRetirement)
 
 	return {
 		averagePensionInRetirementYear: Math.round(averagePensionInRetirementYear),
-		percentageOfAveragePension: Math.round((monthlyPension / averagePensionInRetirementYear) * 10000) / 100,
+		percentageOfAveragePension:
+			averagePensionInRetirementYear > 0
+				? Math.round((monthlyPension / averagePensionInRetirementYear) * 10000) / 100
+				: 0,
 		minimumPensionInRetirementYear: Math.round(minimumPensionInRetirementYear),
-		percentageOfMinimumPension: Math.round((monthlyPension / minimumPensionInRetirementYear) * 10000) / 100,
+		percentageOfMinimumPension:
+			minimumPensionInRetirementYear > 0
+				? Math.round((monthlyPension / minimumPensionInRetirementYear) * 10000) / 100
+				: 0,
 	}
 }
 
@@ -264,8 +272,8 @@ function getAnnualInflationRate(scenario: MacroeconomicScenario): number {
 }
 
 function getValorizationRate(scenario: MacroeconomicScenario): number {
-	// Valorization = wage growth + inflation
-	return getAnnualWageGrowthRate(scenario) + getAnnualInflationRate(scenario)
+	// Valorization = real wage growth + inflation (approximation of nominal growth)
+	return (1 + getAnnualWageGrowthRate(scenario)) * (1 + getAnnualInflationRate(scenario)) - 1
 }
 
 /**
