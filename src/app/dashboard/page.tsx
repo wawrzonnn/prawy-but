@@ -898,7 +898,8 @@ export default function Dashboard() {
 											size='sm'
 											onClick={() => setShowAddSickLeave(true)}
 											className='bg-primary text-primary-foreground text-xs md:text-sm px-2 md:px-3'>
-											<Plus className='w-3 md:w-4 h-3 md:h-4' />
+											<Plus className='w-3 md:w-4 h-3 md:h-4' aria-hidden="true" />
+									<span className="sr-only">Dodaj zwolnienie lekarskie</span>
 										</Button>
 									</div>
 
