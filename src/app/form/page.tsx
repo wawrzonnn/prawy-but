@@ -29,8 +29,9 @@ export default function Form() {
 		age: number
 		gender: 'male' | 'female' | ''
 		grossSalary: number
-		workStartYear: number
 		plannedRetirementYear: number
+		startedWorkBefore1999: boolean
+		initialCapital?: number
 		zusAccountBalance?: number
 		zusSubaccountBalance?: number
 		includeSickLeave: boolean
@@ -48,8 +49,9 @@ export default function Form() {
 		age: 30,
 		gender: 'male',
 		grossSalary: 7500,
-		workStartYear: 2015,
 		plannedRetirementYear: 2060, // 30 lat w 2025 → urodzony 1995 → emerytura w wieku 65 lat = 2060
+		startedWorkBefore1999: false,
+		initialCapital: 0,
 		zusAccountBalance: 0,
 		zusSubaccountBalance: 0,
 		includeSickLeave: false,
@@ -68,11 +70,12 @@ export default function Form() {
 		formData.age,
 		formData.gender,
 		formData.grossSalary,
-		formData.workStartYear,
 		formData.plannedRetirementYear,
 		formData.includeSickLeave,
 		formData.zusAccountBalance,
 		formData.zusSubaccountBalance,
+		formData.startedWorkBefore1999,
+		formData.initialCapital,
 	])
 
 	// Automatyczne ustawianie lat pracy na podstawie wieku i płci
@@ -82,7 +85,7 @@ export default function Form() {
 			const retirementAge = formData.gender === 'female' ? 60 : 65
 			const birthYear = currentYear - formData.age
 			const plannedRetirement = birthYear + retirementAge
-			setFormData(prev => ({ ...prev, plannedRetirementYear: plannedRetirement }))
+			setFormData((prev) => ({ ...prev, plannedRetirementYear: plannedRetirement }))
 		}
 	}, [formData.age, formData.gender])
 
@@ -91,19 +94,11 @@ export default function Form() {
 			return
 		}
 
-		// Calculate contributory period before 1999
-		const currentYear = new Date().getFullYear()
-		const yearsBefore1999 =
-			formData.workStartYear < 1999 ? Math.min(1999 - formData.workStartYear, currentYear - formData.workStartYear) : 0
-
 		// Prepare input data for FUS20 calculator
 		const inputData: IndividualInputData = {
 			gender: formData.gender,
 			currentAge: formData.age,
-			contributoryPeriodBefore1999: {
-				totalYears: yearsBefore1999,
-				nonContributoryYears: 0,
-			},
+			initialCapital: formData.startedWorkBefore1999 ? formData.initialCapital || 0 : 0,
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE, // Default to employee
 			contributionBase: {
 				currentMonthlyAmount: formData.grossSalary,
@@ -119,7 +114,7 @@ export default function Form() {
 					? {
 							zusAccount: formData.zusAccountBalance || 0,
 							zusSubaccount: formData.zusSubaccountBalance || 0,
-						}
+					  }
 					: undefined,
 		}
 
@@ -135,7 +130,7 @@ export default function Form() {
 		}
 
 		// Update form data with results
-		setFormData(prev => ({
+		setFormData((prev) => ({
 			...prev,
 			monthlyPension: result.pensionAmounts.nominalAmount,
 			realMonthlyPension: result.pensionAmounts.realAmount,
@@ -154,7 +149,6 @@ export default function Form() {
 	const calculateDelayScenario = (delayYears: number) => {
 		if (!formData.gender || !formData.age || !formData.grossSalary) return 0
 
-		const currentYear = new Date().getFullYear()
 		const retirementAge = formData.gender === 'female' ? 60 : 65
 		const delayedRetirementAge = retirementAge + delayYears
 
@@ -162,10 +156,7 @@ export default function Form() {
 		const inputData: IndividualInputData = {
 			gender: formData.gender,
 			currentAge: formData.age,
-			contributoryPeriodBefore1999: {
-				totalYears: 0,
-				nonContributoryYears: 0,
-			},
+			initialCapital: formData.startedWorkBefore1999 ? formData.initialCapital || 0 : 0,
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE,
 			contributionBase: {
 				currentMonthlyAmount: formData.grossSalary,
@@ -181,7 +172,7 @@ export default function Form() {
 					? {
 							zusAccount: formData.zusAccountBalance || 0,
 							zusSubaccount: formData.zusSubaccountBalance || 0,
-						}
+					  }
 					: undefined,
 		}
 
@@ -195,7 +186,7 @@ export default function Form() {
 
 	// Callback dla aktualizacji formularza z AI chatu
 	const handleFormUpdate = (updates: Record<string, any>) => {
-		setFormData(prev => ({
+		setFormData((prev) => ({
 			...prev,
 			...updates,
 		}))
@@ -211,7 +202,8 @@ export default function Form() {
 					</Link>
 					<Link
 						href='/'
-						className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground transition-colors'>
+						className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground transition-colors'
+					>
 						← Powrót do strony głównej
 					</Link>
 				</div>
@@ -236,12 +228,13 @@ export default function Form() {
 								</h3>
 								<div className='grid grid-cols-2 gap-3'>
 									<button
-										onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
+										onClick={() => setFormData((prev) => ({ ...prev, gender: 'male' }))}
 										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
 											formData.gender === 'male'
 												? 'border-primary bg-primary/10 shadow-sm'
 												: 'border-gray-100 hover:border-primary/50'
-										}`}>
+										}`}
+									>
 										<div className='text-center'>
 											<div className='text-2xl mb-1'>👨</div>
 											<div className='font-semibold text-sm text-foreground'>Mężczyzna</div>
@@ -249,12 +242,13 @@ export default function Form() {
 										</div>
 									</button>
 									<button
-										onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
+										onClick={() => setFormData((prev) => ({ ...prev, gender: 'female' }))}
 										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
 											formData.gender === 'female'
 												? 'border-primary bg-primary/10 shadow-sm'
 												: 'border-gray-100 hover:border-primary/50'
-										}`}>
+										}`}
+									>
 										<div className='text-center'>
 											<div className='text-2xl mb-1'>👩</div>
 											<div className='font-semibold text-sm text-foreground'>Kobieta</div>
@@ -282,7 +276,7 @@ export default function Form() {
 									min='18'
 									max={formData.gender === 'female' ? '59' : '64'}
 									value={formData.age}
-									onChange={e => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) }))}
+									onChange={(e) => setFormData((prev) => ({ ...prev, age: parseInt(e.target.value) }))}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
 								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
@@ -315,7 +309,7 @@ export default function Form() {
 									max='25000'
 									step='100'
 									value={formData.grossSalary}
-									onChange={e => setFormData(prev => ({ ...prev, grossSalary: parseInt(e.target.value) }))}
+									onChange={(e) => setFormData((prev) => ({ ...prev, grossSalary: parseInt(e.target.value) }))}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
 								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
@@ -327,27 +321,95 @@ export default function Form() {
 								</p>
 							</Card>
 
-							{/* Rok rozpoczęcia pracy */}
+							{/* ZMIANA: NOWA KARTA NA ZGROMADZONE ŚRODKI */}
 							<Card className='p-4 border-0'>
-								<label htmlFor='work-start-year' className='text-sm font-semibold text-foreground mb-2'>
-									Rok rozpoczęcia pracy
-								</label>
-								<select
-									id='work-start-year'
-									value={formData.workStartYear}
-									onChange={e => setFormData(prev => ({ ...prev, workStartYear: parseInt(e.target.value) }))}
-									className='w-full px-3 py-2 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm text-foreground'>
-									{Array.from({ length: currentYear - 1970 + 1 }, (_, i) => 1970 + i)
-										.reverse()
-										.map(year => (
-											<option key={year} value={year}>
-												{year}
-											</option>
-										))}
-								</select>
+								<h3 className='text-sm font-semibold text-foreground mb-3 flex items-center gap-2'>
+									<Wallet className='w-4 h-4 text-primary' />
+									Zgromadzone środki (opcjonalnie)
+								</h3>
+								<div className='space-y-3'>
+									<div>
+										<label htmlFor='zus-account-balance' className='block text-xs font-medium text-foreground mb-1'>
+											Środki na koncie ZUS
+										</label>
+										<input
+											id='zus-account-balance'
+											type='number'
+											min='0'
+											value={formData.zusAccountBalance || ''}
+											onChange={(e) => {
+												const value = parseFloat(e.target.value)
+												if (e.target.value === '' || value >= 0) {
+													setFormData((prev) => ({ ...prev, zusAccountBalance: value || 0 }))
+												}
+											}}
+											className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+											placeholder='0'
+										/>
+									</div>
+									<div>
+										<label htmlFor='zus-subaccount-balance' className='block text-xs font-medium text-foreground mb-1'>
+											Środki na subkoncie ZUS
+										</label>
+										<input
+											id='zus-subaccount-balance'
+											type='number'
+											min='0'
+											value={formData.zusSubaccountBalance || ''}
+											onChange={(e) => {
+												const value = parseFloat(e.target.value)
+												if (e.target.value === '' || value >= 0) {
+													setFormData((prev) => ({ ...prev, zusSubaccountBalance: value || 0 }))
+												}
+											}}
+											className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+											placeholder='0'
+										/>
+									</div>
+								</div>
 								<p className='text-xs text-muted-foreground mt-2'>
-									Staż pracy: <strong>{currentYear - formData.workStartYear} lat</strong>
+									Wartości te znajdziesz w informacji o stanie konta w PUE ZUS.
 								</p>
+							</Card>
+
+							{/* SEKCJA: Kapitał początkowy */}
+							<Card className='p-4 border-0 space-y-3'>
+								<label className='flex items-start space-x-2 p-2 border border-transparent rounded cursor-pointer hover:bg-gray-50 transition-colors'>
+									<input
+										type='checkbox'
+										checked={formData.startedWorkBefore1999}
+										onChange={(e) => setFormData((prev) => ({ ...prev, startedWorkBefore1999: e.target.checked }))}
+										className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
+									/>
+									<div className='flex-1'>
+										<span className='text-sm font-medium block'>Rozpocząłem/am pracę przed 1999 rokiem</span>
+										<p className='text-xs text-muted-foreground mt-0.5'>
+											Zaznacz, jeśli posiadasz kapitał początkowy ustalony przez ZUS.
+										</p>
+									</div>
+								</label>
+
+								{formData.startedWorkBefore1999 && (
+									<div className='px-2 pb-1'>
+										<label htmlFor='initial-capital' className='block text-xs font-medium text-foreground mb-1'>
+											Zwaloryzowany kapitał początkowy (zł)
+										</label>
+										<input
+											id='initial-capital'
+											type='number'
+											min='0'
+											value={formData.initialCapital || ''}
+											onChange={(e) => {
+												const value = parseFloat(e.target.value)
+												if (e.target.value === '' || value >= 0) {
+													setFormData((prev) => ({ ...prev, initialCapital: value || 0 }))
+												}
+											}}
+											className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+											placeholder='Wpisz kwotę z PUE ZUS'
+										/>
+									</div>
+								)}
 							</Card>
 
 							{/* Planowany rok przejścia na emeryturę - slider */}
@@ -376,7 +438,9 @@ export default function Form() {
 										return birthYear + retirementAge + 10
 									})()}
 									value={formData.plannedRetirementYear}
-									onChange={e => setFormData(prev => ({ ...prev, plannedRetirementYear: parseInt(e.target.value) }))}
+									onChange={(e) =>
+										setFormData((prev) => ({ ...prev, plannedRetirementYear: parseInt(e.target.value) }))
+									}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
 								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
@@ -410,7 +474,8 @@ export default function Form() {
 									onClick={() => setShowAdvanced(!showAdvanced)}
 									aria-expanded={showAdvanced}
 									aria-controls='advanced-options-content'
-									className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'>
+									className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'
+								>
 									<h3 className='text-sm font-semibold text-foreground'>Opcje zaawansowane</h3>
 									{showAdvanced ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
 								</button>
@@ -426,18 +491,18 @@ export default function Form() {
 												type='text'
 												inputMode='numeric'
 												value={formData.zusAccountBalance || ''}
-												onChange={e => {
+												onChange={(e) => {
 													const rawValue = e.target.value.replace(/[^\d]/g, '')
 													if (rawValue === '') {
-														setFormData(prev => ({ ...prev, zusAccountBalance: 0 }))
+														setFormData((prev) => ({ ...prev, zusAccountBalance: 0 }))
 													} else {
 														const value = parseInt(rawValue)
 														if (value >= 0) {
-															setFormData(prev => ({ ...prev, zusAccountBalance: value }))
+															setFormData((prev) => ({ ...prev, zusAccountBalance: value }))
 														}
 													}
 												}}
-												onKeyDown={e => {
+												onKeyDown={(e) => {
 													if (
 														e.key === 'ArrowUp' ||
 														e.key === 'ArrowDown' ||
@@ -450,7 +515,7 @@ export default function Form() {
 														e.preventDefault()
 													}
 												}}
-												onWheel={e => e.currentTarget.blur()}
+												onWheel={(e) => e.currentTarget.blur()}
 												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
 												placeholder='0'
 											/>
@@ -458,7 +523,8 @@ export default function Form() {
 										<div>
 											<label
 												htmlFor='zus-subaccount-balance'
-												className='block text-xs font-medium text-foreground mb-1'>
+												className='block text-xs font-medium text-foreground mb-1'
+											>
 												Środki na subkoncie ZUS (opcjonalnie)
 											</label>
 											<input
@@ -466,18 +532,18 @@ export default function Form() {
 												type='text'
 												inputMode='numeric'
 												value={formData.zusSubaccountBalance || ''}
-												onChange={e => {
+												onChange={(e) => {
 													const rawValue = e.target.value.replace(/[^\d]/g, '')
 													if (rawValue === '') {
-														setFormData(prev => ({ ...prev, zusSubaccountBalance: 0 }))
+														setFormData((prev) => ({ ...prev, zusSubaccountBalance: 0 }))
 													} else {
 														const value = parseInt(rawValue)
 														if (value >= 0) {
-															setFormData(prev => ({ ...prev, zusSubaccountBalance: value }))
+															setFormData((prev) => ({ ...prev, zusSubaccountBalance: value }))
 														}
 													}
 												}}
-												onKeyDown={e => {
+												onKeyDown={(e) => {
 													if (
 														e.key === 'ArrowUp' ||
 														e.key === 'ArrowDown' ||
@@ -490,7 +556,7 @@ export default function Form() {
 														e.preventDefault()
 													}
 												}}
-												onWheel={e => e.currentTarget.blur()}
+												onWheel={(e) => e.currentTarget.blur()}
 												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary'
 												placeholder='0'
 											/>
@@ -499,7 +565,7 @@ export default function Form() {
 											<input
 												type='checkbox'
 												checked={formData.includeSickLeave}
-												onChange={e => setFormData(prev => ({ ...prev, includeSickLeave: e.target.checked }))}
+												onChange={(e) => setFormData((prev) => ({ ...prev, includeSickLeave: e.target.checked }))}
 												className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
 											/>
 											<div className='flex-1'>
@@ -551,7 +617,12 @@ export default function Form() {
 												vs Średnia krajowa
 											</span>
 											<span
-												className={`font-bold ${(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? 'text-green-600' : 'text-orange-600'}`}>
+												className={`font-bold ${
+													(formData.monthlyPension || 0) > (formData.futureAveragePension || 0)
+														? 'text-green-600'
+														: 'text-orange-600'
+												}`}
+											>
 												{(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? '+' : ''}
 												{(((formData.monthlyPension || 0) / (formData.futureAveragePension || 1) - 1) * 100).toFixed(1)}
 												%
@@ -590,7 +661,8 @@ export default function Form() {
 											onClick={() => setShowDelayScenarios(!showDelayScenarios)}
 											aria-expanded={showDelayScenarios}
 											aria-controls='delay-scenarios-content'
-											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'>
+											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'
+										>
 											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
 												<Lightbulb className='w-4 h-4 text-yellow-500' />
 												Co jeśli będę pracować dłużej?
@@ -603,7 +675,7 @@ export default function Form() {
 										</button>
 										{showDelayScenarios && (
 											<div id='delay-scenarios-content' className='mt-2 space-y-1.5'>
-												{[1, 2, 5].map(years => {
+												{[1, 2, 5].map((years) => {
 													const delayedPension = calculateDelayScenario(years)
 													const increase = delayedPension - (formData.monthlyPension || 0)
 													const increasePercent = ((increase / (formData.monthlyPension || 1)) * 100).toFixed(1)
@@ -631,7 +703,8 @@ export default function Form() {
 											onClick={() => setShowDetails(!showDetails)}
 											aria-expanded={showDetails}
 											aria-controls='forecast-details-content'
-											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'>
+											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'
+										>
 											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
 												<TrendingUp className='w-3.5 h-3.5 text-primary' />
 												Szczegóły prognozy
@@ -692,8 +765,9 @@ export default function Form() {
 												age: formData.age,
 												gender: formData.gender,
 												grossSalary: formData.grossSalary,
-												workStartYear: formData.workStartYear,
 												plannedRetirementYear: formData.plannedRetirementYear,
+												startedWorkBefore1999: formData.startedWorkBefore1999,
+												initialCapital: formData.initialCapital,
 												zusAccountBalance: formData.zusAccountBalance,
 												zusSubaccountBalance: formData.zusSubaccountBalance,
 												includeSickLeave: formData.includeSickLeave,
@@ -706,8 +780,9 @@ export default function Form() {
 													age: formData.age,
 													gender: formData.gender,
 													grossSalary: formData.grossSalary,
-													workStartYear: formData.workStartYear,
 													plannedRetirementYear: formData.plannedRetirementYear,
+													startedWorkBefore1999: formData.startedWorkBefore1999,
+													initialCapital: formData.initialCapital || 0,
 													zusAccountBalance: formData.zusAccountBalance || 0,
 													zusSubaccountBalance: formData.zusSubaccountBalance || 0,
 													includeSickLeave: formData.includeSickLeave,
@@ -731,7 +806,8 @@ export default function Form() {
 											window.location.href = '/dashboard'
 										}}
 										size='lg'
-										className='w-full bg-[var(--zus-green-primary)] hover:bg-blue-dark text-white font-bold py-8 text-base rounded transition-all duration-150 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/30 focus:ring-offset-2 focus-visible:ring-4 focus-visible:ring-primary/30'>
+										className='w-full bg-[var(--zus-green-primary)] hover:bg-blue-dark text-white font-bold py-8 text-base rounded transition-all duration-150 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/30 focus:ring-offset-2 focus-visible:ring-4 focus-visible:ring-primary/30'
+									>
 										Zobacz szczegółową analizę rok po roku
 										<TrendingUp className='ml-2 w-5 h-5' />
 									</Button>
