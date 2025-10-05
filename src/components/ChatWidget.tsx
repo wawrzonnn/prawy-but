@@ -18,7 +18,9 @@ export function ChatWidget({ formContext, onFormUpdate }: ChatWidgetProps) {
 	// Wykryj czy to dashboard
 	const isDashboard = formContext?.scenario || formContext?.yearDataLength
 
-	const [isOpen, setIsOpen] = useState(true)
+	const [isOpen, setIsOpen] = useState(false)
+	const [hasShownInitially, setHasShownInitially] = useState(false)
+	const [showPulse, setShowPulse] = useState(true)
 	const [messages, setMessages] = useState<Message[]>([
 		{
 			role: 'assistant',
@@ -71,6 +73,41 @@ Napisz co Cię interesuje! 💬`,
 		}
 	}, [isOpen])
 
+	// Auto-otwieranie chatu - tylko desktop, z opóźnieniem, tylko raz
+	useEffect(() => {
+		// Sprawdź czy użytkownik wcześniej zamknął chat
+		const userClosed = localStorage.getItem('chatUserClosed')
+		if (userClosed === 'true') {
+			setHasShownInitially(true)
+			return
+		}
+
+		// Wykryj czy desktop (ekran >= 1024px)
+		const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+
+		if (isDesktop && !hasShownInitially) {
+			// Na desktopie - otwórz po 10 sekundach
+			const timer = setTimeout(() => {
+				setIsOpen(true)
+				setHasShownInitially(true)
+			}, 10000)
+
+			return () => clearTimeout(timer)
+		} else {
+			// Na mobile - nigdy nie otwieraj automatycznie
+			setHasShownInitially(true)
+		}
+	}, [hasShownInitially])
+
+	// Wyłącz pulsowanie po 5 sekundach
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setShowPulse(false)
+		}, 5000)
+
+		return () => clearTimeout(timer)
+	}, [])
+
 	const handleSend = async () => {
 		if (!input.trim() || isLoading) return
 
@@ -118,9 +155,7 @@ Napisz co Cię interesuje! 💬`,
 				}
 
 				// Dodaj wiadomość potwierdzającą
-				const confirmationMessage = data.tool_results
-					.map((tr: any) => tr.result.message)
-					.join('\n')
+				const confirmationMessage = data.tool_results.map((tr: any) => tr.result.message).join('\n')
 
 				setMessages(prev => [
 					...prev,
@@ -158,13 +193,26 @@ Napisz co Cię interesuje! 💬`,
 		}
 	}
 
+	const handleOpen = () => {
+		setIsOpen(true)
+		setShowPulse(false)
+	}
+
+	const handleClose = () => {
+		setIsOpen(false)
+		// Zapamiętaj że użytkownik zamknął - nie otwieraj więcej automatycznie
+		localStorage.setItem('chatUserClosed', 'true')
+	}
+
 	return (
 		<>
 			{/* Floating Button */}
 			{!isOpen && (
 				<button
-					onClick={() => setIsOpen(true)}
-					className='fixed bottom-6 right-6 z-50 bg-[var(--zus-green-primary)] hover:bg-blue-dark text-white rounded-full p-4 shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-primary/30'
+					onClick={handleOpen}
+					className={`fixed bottom-6 right-6 z-50 bg-[var(--zus-green-primary)] hover:bg-blue-dark text-white rounded-full p-4 shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-primary/30 ${
+						showPulse ? 'animate-pulse' : ''
+					}`}
 					aria-label='Otwórz chat z asystentem'>
 					<MessageCircle className='w-6 h-6' />
 				</button>
@@ -172,9 +220,9 @@ Napisz co Cię interesuje! 💬`,
 
 			{/* Chat Window */}
 			{isOpen && (
-				<div className='fixed bottom-6 right-6 z-50 w-[380px] h-[600px] bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200'>
+				<div className='fixed bottom-0 right-0 lg:bottom-6 lg:right-6 z-50 w-full h-full lg:w-[380px] lg:h-[600px] bg-white lg:rounded-lg shadow-2xl flex flex-col border-t lg:border border-gray-200'>
 					{/* Header */}
-					<div className='bg-[var(--zus-green-primary)] text-white p-4 rounded-t-lg flex items-center justify-between'>
+					<div className='bg-[var(--zus-green-primary)] text-white p-4 lg:rounded-t-lg flex items-center justify-between'>
 						<div className='flex items-center gap-2'>
 							<MessageCircle className='w-5 h-5' />
 							<div>
@@ -183,7 +231,7 @@ Napisz co Cię interesuje! 💬`,
 							</div>
 						</div>
 						<button
-							onClick={() => setIsOpen(false)}
+							onClick={handleClose}
 							className='hover:bg-white/20 rounded p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50'
 							aria-label='Zamknij chat'>
 							<X className='w-5 h-5' />
@@ -193,9 +241,7 @@ Napisz co Cię interesuje! 💬`,
 					{/* Messages */}
 					<div className='flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50'>
 						{messages.map((message, index) => (
-							<div
-								key={index}
-								className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+							<div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
 								<div
 									className={`max-w-[80%] rounded-lg p-3 ${
 										message.role === 'user'
@@ -225,7 +271,7 @@ Napisz co Cię interesuje! 💬`,
 					</div>
 
 					{/* Input */}
-					<div className='p-4 border-t border-gray-200 bg-white rounded-b-lg'>
+					<div className='p-4 border-t border-gray-200 bg-white lg:rounded-b-lg'>
 						<div className='flex gap-2'>
 							<input
 								ref={inputRef}

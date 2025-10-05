@@ -22,6 +22,8 @@ import {
 	ArrowLeft,
 	Download,
 	FileText,
+	HeartPulse,
+	MapPin,
 } from 'lucide-react'
 import { ChatWidget } from '@/components/ChatWidget'
 
@@ -245,6 +247,26 @@ export default function Dashboard() {
 		<>
 			<style jsx global>{`
 				@media print {
+					/* Customizacja footera przeglądarki */
+					@page {
+						margin: 1.5cm 1cm 1.5cm 1cm;
+						@bottom-left {
+							content: 'zus.pl/symulator-emerytury';
+							font-size: 9pt;
+							color: #6b7280;
+						}
+						@bottom-center {
+							content: 'Symulator Emerytalny ZUS';
+							font-size: 9pt;
+							color: #6b7280;
+						}
+						@bottom-right {
+							content: counter(page) ' / ' counter(pages);
+							font-size: 9pt;
+							color: #6b7280;
+						}
+					}
+
 					.no-print {
 						display: none !important;
 					}
@@ -263,8 +285,11 @@ export default function Dashboard() {
 					input[type='text'],
 					input[type='number'],
 					button,
-					.no-print {
+					.no-print,
+					svg.lucide-edit-2,
+					svg.lucide-save {
 						display: none !important;
+						visibility: hidden !important;
 					}
 					/* Pokaż wszystkie kolumny tabeli na druku */
 					.hidden {
@@ -329,9 +354,9 @@ export default function Dashboard() {
 				{/* Main Content */}
 				<div className='pt-20 md:pt-24 pb-16 md:pb-20 px-4'>
 					<div className='container mx-auto max-w-7xl'>
-						<div className='text-center mb-6'>
+						<div className='text-center mb-6 no-print'>
 							<h1 className='text-xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2 md:mb-3'>
-								Dashboard Symulacji Emerytalnej
+								Panel Symulacji Emerytalnej
 							</h1>
 							<p className='text-sm md:text-base lg:text-lg text-muted-foreground'>Szczegółowa analiza rok po roku</p>
 
@@ -340,7 +365,7 @@ export default function Dashboard() {
 								<Button
 									onClick={handlePrintReport}
 									size='lg'
-									className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold text-sm md:text-base px-4 md:px-6 py-3 md:py-4 h-auto'>
+									className='bg-yellow hover:bg-[var(--zus-green-primary)] text-yellow-foreground hover:text-white font-bold text-sm md:text-base px-4 md:px-6 py-3 md:py-4 h-auto transition-colors'>
 									<Download className='w-4 md:w-5 h-4 md:h-5 mr-2' />
 									Pobierz raport PDF
 								</Button>
@@ -530,10 +555,27 @@ export default function Dashboard() {
 										const y = 350 - fraction * 300
 										return (
 											<text key={i} x='40' y={y + 5} textAnchor='end' fontSize='12' fill='#6b7280'>
-												{(value / 1000).toFixed(0)}k
+												{(value / 1000).toFixed(0)}
 											</text>
 										)
 									})}
+
+									{/* Opis osi Y (pionowa) */}
+									<text
+										x='3'
+										y='200'
+										textAnchor='middle'
+										fontSize='12'
+										fontWeight='500'
+										fill='#9ca3af'
+										transform='rotate(-90, 3, 200)'>
+										Kapitał (tys. zł)
+									</text>
+
+									{/* Opis osi X (pozioma) */}
+									<text x='500' y='395' textAnchor='middle' fontSize='12' fontWeight='500' fill='#9ca3af'>
+										Rok
+									</text>
 								</svg>
 
 								{/* Tooltip */}
@@ -684,7 +726,7 @@ export default function Dashboard() {
 																			const newValue = parseInt(input.value)
 																			updateSalary(data.year, newValue)
 																		}}
-																		className='text-green-600 hover:text-green-700'>
+																		className='text-green-600 hover:text-green-700 cursor-pointer'>
 																		<Save className='w-4 h-4' />
 																	</button>
 																</div>
@@ -694,7 +736,7 @@ export default function Dashboard() {
 																	<button
 																		onClick={() => setEditingYear(data.year)}
 																		aria-label={`Edytuj wynagrodzenie za rok ${data.year}`}
-																		className='text-blue-600/40 hover:text-blue-700 transition-colors no-print hidden md:inline'
+																		className='text-blue-600/40 hover:text-blue-700 transition-colors no-print hidden md:inline cursor-pointer'
 																		title='Edytuj wynagrodzenie'>
 																		<Edit2 className='w-3 h-3' />
 																	</button>
@@ -824,8 +866,13 @@ export default function Dashboard() {
 											<div className='font-semibold text-foreground mb-1.5'>{scenario.name}</div>
 											<div className='text-muted-foreground'>{scenario.description}</div>
 											<div className='pt-2 space-y-0.5 text-muted-foreground'>
-												<div>• Wzrost wynagrodzeń: {((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}% rocznie</div>
-												<div>• Inflacja: {((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}% rocznie</div>
+												<div>
+													• Wzrost wynagrodzeń: {((scenario.parameters.realWageGrowthIndex2080 - 1) * 100).toFixed(1)}%
+													rocznie
+												</div>
+												<div>
+													• Inflacja: {((scenario.parameters.inflationIndex2080 - 1) * 100).toFixed(1)}% rocznie
+												</div>
 												<div>• Bezrobocie: {(scenario.parameters.unemploymentRate2080 * 100).toFixed(1)}%</div>
 											</div>
 										</div>
@@ -836,7 +883,8 @@ export default function Dashboard() {
 								<Card className='p-4 md:p-5 border-0 bg-white'>
 									<div className='flex items-center justify-between mb-3 md:mb-4'>
 										<h3 className='text-sm md:text-base font-bold text-foreground flex items-center gap-2'>
-											🏥 Zwolnienia lekarskie
+											<HeartPulse className='w-4 md:w-5 h-4 md:h-5 text-orange-500' />
+											Zwolnienia lekarskie
 										</h3>
 										<Button
 											size='sm'
@@ -931,7 +979,8 @@ export default function Dashboard() {
 								{/* Kod pocztowy */}
 								<Card className='p-4 md:p-5 border-0 bg-muted/20'>
 									<h3 className='text-sm md:text-base font-bold text-foreground mb-2 md:mb-3 flex items-center gap-2'>
-										📮 Kod pocztowy (opcjonalnie)
+										<MapPin className='w-4 md:w-5 h-4 md:h-5 text-blue-500' />
+										Kod pocztowy (opcjonalnie)
 									</h3>
 									<p className='text-xs text-muted-foreground mb-2 md:mb-3'>
 										Podanie kodu pocztowego pomoże nam w tworzeniu lepszych narzędzi edukacyjnych dla Twojego regionu.
@@ -986,9 +1035,12 @@ export default function Dashboard() {
 
 				{/* Print-only header */}
 				<div className='hidden print:block'>
-					<div className='text-center mb-8'>
-						<h1 className='text-3xl font-bold mb-2'>Raport Prognozy Emerytalnej</h1>
-						<p className='text-sm text-muted-foreground'>Wygenerowano: {new Date().toLocaleDateString('pl-PL')}</p>
+					<div className='flex items-center justify-center mb-8 pt-8'>
+						<Image src='/logozus.svg' alt='ZUS Logo' width={150} height={40} className='mr-4' />
+						<div className='border-l border-gray-300 pl-4'>
+							<h1 className='text-2xl font-bold mb-1'>Raport Prognozy Emerytalnej</h1>
+							<p className='text-xs text-muted-foreground'>Wygenerowano: {new Date().toLocaleDateString('pl-PL')}</p>
+						</div>
 					</div>
 				</div>
 

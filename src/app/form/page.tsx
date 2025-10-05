@@ -5,7 +5,18 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, AlertCircle, ChevronDown, ChevronUp, Users, Calendar, Wallet } from 'lucide-react'
+import {
+	TrendingUp,
+	AlertCircle,
+	ChevronDown,
+	ChevronUp,
+	Users,
+	Calendar,
+	Wallet,
+	BarChart3,
+	Lightbulb,
+	HeartPulse,
+} from 'lucide-react'
 import { calculatePensionFUS20 } from '@/lib/fus20-calculator'
 import { DEFAULT_SCENARIO } from '@/config/fus20-scenarios'
 import { INSURANCE_TITLE_CODES } from '@/config/zus-constants'
@@ -106,9 +117,9 @@ export default function Form() {
 			accumulatedCapital:
 				formData.zusAccountBalance || formData.zusSubaccountBalance
 					? {
-						zusAccount: formData.zusAccountBalance || 0,
-						zusSubaccount: formData.zusSubaccountBalance || 0,
-					}
+							zusAccount: formData.zusAccountBalance || 0,
+							zusSubaccount: formData.zusSubaccountBalance || 0,
+						}
 					: undefined,
 		}
 
@@ -168,9 +179,9 @@ export default function Form() {
 			accumulatedCapital:
 				formData.zusAccountBalance || formData.zusSubaccountBalance
 					? {
-						zusAccount: formData.zusAccountBalance || 0,
-						zusSubaccount: formData.zusSubaccountBalance || 0,
-					}
+							zusAccount: formData.zusAccountBalance || 0,
+							zusSubaccount: formData.zusSubaccountBalance || 0,
+						}
 					: undefined,
 		}
 
@@ -226,10 +237,11 @@ export default function Form() {
 								<div className='grid grid-cols-2 gap-3'>
 									<button
 										onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
-										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary ${formData.gender === 'male'
-											? 'border-primary bg-primary/10 shadow-sm'
-											: 'border-gray-100 hover:border-primary/50'
-											}`}>
+										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
+											formData.gender === 'male'
+												? 'border-primary bg-primary/10 shadow-sm'
+												: 'border-gray-100 hover:border-primary/50'
+										}`}>
 										<div className='text-center'>
 											<div className='text-2xl mb-1'>👨</div>
 											<div className='font-semibold text-sm text-foreground'>Mężczyzna</div>
@@ -238,10 +250,11 @@ export default function Form() {
 									</button>
 									<button
 										onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
-										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary ${formData.gender === 'female'
-											? 'border-primary bg-primary/10 shadow-sm'
-											: 'border-gray-100 hover:border-primary/50'
-											}`}>
+										className={`p-3 rounded border transition-all focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary cursor-pointer ${
+											formData.gender === 'female'
+												? 'border-primary bg-primary/10 shadow-sm'
+												: 'border-gray-100 hover:border-primary/50'
+										}`}>
 										<div className='text-center'>
 											<div className='text-2xl mb-1'>👩</div>
 											<div className='font-semibold text-sm text-foreground'>Kobieta</div>
@@ -378,9 +391,12 @@ export default function Form() {
 
 									if (yearsDelayed > 0) {
 										return (
-											<p className='text-xs text-green-700 mt-2 bg-green-50 p-2 rounded'>
-												💡 Odroczenie o {yearsDelayed} {yearsDelayed === 1 ? 'rok' : 'lata'} zwiększy emeryturę o ~
-												{Math.round(yearsDelayed * 6)}%
+											<p className='text-xs text-green-700 mt-2 bg-green-50 p-2 rounded flex items-center gap-1.5'>
+												<Lightbulb className='w-3.5 h-3.5 text-green-600 flex-shrink-0' />
+												<span>
+													Odroczenie o {yearsDelayed} {yearsDelayed === 1 ? 'rok' : 'lata'} zwiększy emeryturę o ~
+													{Math.round(yearsDelayed * 6)}%
+												</span>
 											</p>
 										)
 									}
@@ -394,7 +410,7 @@ export default function Form() {
 									onClick={() => setShowAdvanced(!showAdvanced)}
 									aria-expanded={showAdvanced}
 									aria-controls='advanced-options-content'
-									className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors'>
+									className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'>
 									<h3 className='text-sm font-semibold text-foreground'>Opcje zaawansowane</h3>
 									{showAdvanced ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
 								</button>
@@ -492,7 +508,10 @@ export default function Form() {
 									{/* Porównanie ze średnią - kompaktowe */}
 									<Card className='p-3 bg-muted/20 border-0'>
 										<div className='flex items-center justify-between mb-1.5'>
-											<span className='text-xs font-semibold text-foreground'>📊 vs Średnia krajowa</span>
+											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
+												<BarChart3 className='w-4 h-4 text-[var(--zus-green-primary)]' />
+												vs Średnia krajowa
+											</span>
 											<span
 												className={`font-bold ${(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? 'text-green-600' : 'text-orange-600'}`}>
 												{(formData.monthlyPension || 0) > (formData.futureAveragePension || 0) ? '+' : ''}
@@ -509,7 +528,10 @@ export default function Form() {
 									{formData.includeSickLeave && (
 										<Card className='p-3 bg-orange-50/50 border-0'>
 											<div className='flex items-center justify-between mb-1'>
-												<span className='text-xs font-semibold text-foreground'>🏥 Wpływ zwolnień</span>
+												<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
+													<HeartPulse className='w-3.5 h-3.5 text-orange-500' />
+													Wpływ zwolnień
+												</span>
 												<span className='font-bold text-orange-600'>
 													-
 													{(
@@ -530,8 +552,11 @@ export default function Form() {
 											onClick={() => setShowDelayScenarios(!showDelayScenarios)}
 											aria-expanded={showDelayScenarios}
 											aria-controls='delay-scenarios-content'
-											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors'>
-											<span className='text-xs font-semibold text-foreground'>💡 Co jeśli będę pracować dłużej?</span>
+											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'>
+											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
+												<Lightbulb className='w-4 h-4 text-yellow-500' />
+												Co jeśli będę pracować dłużej?
+											</span>
 											{showDelayScenarios ? (
 												<ChevronUp className='w-3.5 h-3.5' />
 											) : (
@@ -568,7 +593,7 @@ export default function Form() {
 											onClick={() => setShowDetails(!showDetails)}
 											aria-expanded={showDetails}
 											aria-controls='forecast-details-content'
-											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors'>
+											className='w-full flex items-center justify-between text-left p-2 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer'>
 											<span className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
 												<TrendingUp className='w-3.5 h-3.5 text-primary' />
 												Szczegóły prognozy
