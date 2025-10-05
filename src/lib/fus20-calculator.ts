@@ -28,10 +28,9 @@ export function calculatePensionFUS20(
 	scenario: MacroeconomicScenario = DEFAULT_SCENARIO
 ): PensionCalculationResult {
 	const currentYear = new Date().getFullYear()
-	const birthYear = currentYear - inputData.currentAge
 
-	// 1. Calculate initial capital (for those born before 1949)
-	const initialCapital = calculateInitialCapital(birthYear, inputData.contributoryPeriodBefore1999.totalYears)
+	// 1. Use provided initial capital (or 0 if not applicable)
+	const initialCapital = inputData.initialCapital || 0
 
 	// 2. Calculate contributions capital with valorization
 	const contributionsCapital = calculateContributionsCapital(inputData, scenario, currentYear)
@@ -105,27 +104,6 @@ export function calculatePensionFUS20(
 		scenarioDetails,
 		calculationDate: new Date(),
 	}
-}
-
-/**
- * Calculate initial capital based on contributory period before 1999
- * For people born before 1949: uses old system formula
- * For people born 1949+: proportional capital for years before 1999
- */
-function calculateInitialCapital(birthYear: number, contributoryYearsBefore1999: number): number {
-	if (contributoryYearsBefore1999 <= 0) return 0
-
-	const baseAmount = ZUS_SYSTEM_PARAMETERS.INITIAL_CAPITAL.BASE_AMOUNT
-	const multiplierPerYear = ZUS_SYSTEM_PARAMETERS.INITIAL_CAPITAL.MULTIPLIER_PER_YEAR
-
-	// For those born before 1949 - full old system formula
-	if (birthYear < 1949) {
-		return baseAmount + contributoryYearsBefore1999 * multiplierPerYear * baseAmount
-	}
-
-	// For those born 1949+ but worked before 1999 - proportional capital
-	// Simplified model: each year before 1999 contributes to initial capital
-	return contributoryYearsBefore1999 * multiplierPerYear * baseAmount
 }
 
 /**

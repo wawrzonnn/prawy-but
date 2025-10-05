@@ -7,8 +7,9 @@ export interface PensionData {
 	age: number // Wiek w latach
 	gender: 'male' | 'female' // Płeć
 	grossSalary: number // Wysokość wynagrodzenia brutto miesięcznie
-	workStartYear: number // Rok rozpoczęcia pracy (styczeń)
 	plannedRetirementYear: number // Planowany rok zakończenia aktywności zawodowej (styczeń)
+	startedWorkBefore1999: boolean // Czy praca rozpoczęta przed 1999
+	initialCapital?: number // Zwaloryzowany kapitał początkowy
 
 	// FAKULTATYWNE - środki w ZUS
 	zusAccountBalance?: number // Wysokość zgromadzonych środków na koncie w ZUS
@@ -37,9 +38,11 @@ export class MyDatabase extends Dexie {
 
 	constructor() {
 		super('ZUSCalculatorDB')
-		this.version(5).stores({
+		// Zwiększono wersję z 5 na 6, aby zastosować zmiany w schemacie
+		this.version(6).stores({
 			pensionData:
-				'++id, age, gender, grossSalary, workStartYear, plannedRetirementYear, zusAccountBalance, zusSubaccountBalance, includeSickLeave, postalCode, monthlyPension, realMonthlyPension, replacementRate, totalCapital, lifeExpectancyMonths, sickLeaveDaysPerYear, sickLeaveImpactPercentage, createdAt',
+				// Zaktualizowano pola: usunięto 'workStartYear', dodano 'startedWorkBefore1999' i 'initialCapital'
+				'++id, age, gender, grossSalary, plannedRetirementYear, startedWorkBefore1999, initialCapital, zusAccountBalance, zusSubaccountBalance, includeSickLeave, postalCode, monthlyPension, realMonthlyPension, replacementRate, totalCapital, lifeExpectancyMonths, sickLeaveDaysPerYear, sickLeaveImpactPercentage, createdAt',
 		})
 	}
 }
