@@ -30,8 +30,8 @@ export default function Form() {
 		gender: 'male' | 'female' | ''
 		grossSalary: number
 		plannedRetirementYear: number
-		startedWorkBefore1999: boolean // NOWE
-		initialCapital?: number // NOWE
+		startedWorkBefore1999: boolean
+		initialCapital?: number
 		zusAccountBalance?: number
 		zusSubaccountBalance?: number
 		includeSickLeave: boolean
@@ -74,8 +74,8 @@ export default function Form() {
 		formData.includeSickLeave,
 		formData.zusAccountBalance,
 		formData.zusSubaccountBalance,
-		formData.startedWorkBefore1999, // NOWA ZALEŻNOŚĆ
-		formData.initialCapital, // NOWA ZALEŻNOŚĆ
+		formData.startedWorkBefore1999,
+		formData.initialCapital,
 	])
 
 	// Automatyczne ustawianie lat pracy na podstawie wieku i płci
@@ -85,10 +85,7 @@ export default function Form() {
 			const retirementAge = formData.gender === 'female' ? 60 : 65
 			const birthYear = currentYear - formData.age
 			const plannedRetirement = birthYear + retirementAge
-			setFormData((prev) => ({
-				...prev,
-				plannedRetirementYear: plannedRetirement,
-			}))
+			setFormData((prev) => ({ ...prev, plannedRetirementYear: plannedRetirement }))
 		}
 	}, [formData.age, formData.gender])
 
@@ -101,7 +98,7 @@ export default function Form() {
 		const inputData: IndividualInputData = {
 			gender: formData.gender,
 			currentAge: formData.age,
-			initialCapital: formData.startedWorkBefore1999 ? formData.initialCapital || 0 : 0, // ZMIANA
+			initialCapital: formData.startedWorkBefore1999 ? formData.initialCapital || 0 : 0,
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE, // Default to employee
 			contributionBase: {
 				currentMonthlyAmount: formData.grossSalary,
@@ -159,7 +156,7 @@ export default function Form() {
 		const inputData: IndividualInputData = {
 			gender: formData.gender,
 			currentAge: formData.age,
-			initialCapital: formData.startedWorkBefore1999 ? formData.initialCapital || 0 : 0, // ZMIANA
+			initialCapital: formData.startedWorkBefore1999 ? formData.initialCapital || 0 : 0,
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE,
 			contributionBase: {
 				currentMonthlyAmount: formData.grossSalary,
@@ -279,12 +276,7 @@ export default function Form() {
 									min='18'
 									max={formData.gender === 'female' ? '59' : '64'}
 									value={formData.age}
-									onChange={(e) =>
-										setFormData((prev) => ({
-											...prev,
-											age: parseInt(e.target.value),
-										}))
-									}
+									onChange={(e) => setFormData((prev) => ({ ...prev, age: parseInt(e.target.value) }))}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
 								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
@@ -317,12 +309,7 @@ export default function Form() {
 									max='25000'
 									step='100'
 									value={formData.grossSalary}
-									onChange={(e) =>
-										setFormData((prev) => ({
-											...prev,
-											grossSalary: parseInt(e.target.value),
-										}))
-									}
+									onChange={(e) => setFormData((prev) => ({ ...prev, grossSalary: parseInt(e.target.value) }))}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
 								<div className='flex justify-between text-xs text-muted-foreground mt-2'>
@@ -334,18 +321,64 @@ export default function Form() {
 								</p>
 							</Card>
 
-							{/* NOWA SEKCJA: Kapitał początkowy */}
+							{/* ZMIANA: NOWA KARTA NA ZGROMADZONE ŚRODKI */}
+							<Card className='p-4 border-0'>
+								<h3 className='text-sm font-semibold text-foreground mb-3 flex items-center gap-2'>
+									<Wallet className='w-4 h-4 text-primary' />
+									Zgromadzone środki (opcjonalnie)
+								</h3>
+								<div className='space-y-3'>
+									<div>
+										<label htmlFor='zus-account-balance' className='block text-xs font-medium text-foreground mb-1'>
+											Środki na koncie ZUS
+										</label>
+										<input
+											id='zus-account-balance'
+											type='number'
+											min='0'
+											value={formData.zusAccountBalance || ''}
+											onChange={(e) => {
+												const value = parseFloat(e.target.value)
+												if (e.target.value === '' || value >= 0) {
+													setFormData((prev) => ({ ...prev, zusAccountBalance: value || 0 }))
+												}
+											}}
+											className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+											placeholder='0'
+										/>
+									</div>
+									<div>
+										<label htmlFor='zus-subaccount-balance' className='block text-xs font-medium text-foreground mb-1'>
+											Środki na subkoncie ZUS
+										</label>
+										<input
+											id='zus-subaccount-balance'
+											type='number'
+											min='0'
+											value={formData.zusSubaccountBalance || ''}
+											onChange={(e) => {
+												const value = parseFloat(e.target.value)
+												if (e.target.value === '' || value >= 0) {
+													setFormData((prev) => ({ ...prev, zusSubaccountBalance: value || 0 }))
+												}
+											}}
+											className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+											placeholder='0'
+										/>
+									</div>
+								</div>
+								<p className='text-xs text-muted-foreground mt-2'>
+									Wartości te znajdziesz w informacji o stanie konta w PUE ZUS.
+								</p>
+							</Card>
+
+							{/* SEKCJA: Kapitał początkowy */}
 							<Card className='p-4 border-0 space-y-3'>
 								<label className='flex items-start space-x-2 p-2 border border-transparent rounded cursor-pointer hover:bg-gray-50 transition-colors'>
 									<input
 										type='checkbox'
 										checked={formData.startedWorkBefore1999}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												startedWorkBefore1999: e.target.checked,
-											}))
-										}
+										onChange={(e) => setFormData((prev) => ({ ...prev, startedWorkBefore1999: e.target.checked }))}
 										className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
 									/>
 									<div className='flex-1'>
@@ -369,10 +402,7 @@ export default function Form() {
 											onChange={(e) => {
 												const value = parseFloat(e.target.value)
 												if (e.target.value === '' || value >= 0) {
-													setFormData((prev) => ({
-														...prev,
-														initialCapital: value || 0,
-													}))
+													setFormData((prev) => ({ ...prev, initialCapital: value || 0 }))
 												}
 											}}
 											className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
@@ -409,10 +439,7 @@ export default function Form() {
 									})()}
 									value={formData.plannedRetirementYear}
 									onChange={(e) =>
-										setFormData((prev) => ({
-											...prev,
-											plannedRetirementYear: parseInt(e.target.value),
-										}))
+										setFormData((prev) => ({ ...prev, plannedRetirementYear: parseInt(e.target.value) }))
 									}
 									className='w-full h-2 bg-gray-100 rounded appearance-none cursor-pointer accent-primary'
 								/>
@@ -455,63 +482,12 @@ export default function Form() {
 
 								{showAdvanced && (
 									<div id='advanced-options-content' className='mt-4 space-y-3'>
-										<div>
-											<label htmlFor='zus-account-balance' className='block text-xs font-medium text-foreground mb-1'>
-												Środki na koncie ZUS (opcjonalnie)
-											</label>
-											<input
-												id='zus-account-balance'
-												type='number'
-												min='0'
-												value={formData.zusAccountBalance || ''}
-												onChange={(e) => {
-													const value = parseFloat(e.target.value)
-													if (e.target.value === '' || value >= 0) {
-														setFormData((prev) => ({
-															...prev,
-															zusAccountBalance: value || 0,
-														}))
-													}
-												}}
-												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-												placeholder='0'
-											/>
-										</div>
-										<div>
-											<label
-												htmlFor='zus-subaccount-balance'
-												className='block text-xs font-medium text-foreground mb-1'
-											>
-												Środki na subkoncie ZUS (opcjonalnie)
-											</label>
-											<input
-												id='zus-subaccount-balance'
-												type='number'
-												min='0'
-												value={formData.zusSubaccountBalance || ''}
-												onChange={(e) => {
-													const value = parseFloat(e.target.value)
-													if (e.target.value === '' || value >= 0) {
-														setFormData((prev) => ({
-															...prev,
-															zusSubaccountBalance: value || 0,
-														}))
-													}
-												}}
-												className='w-full px-3 py-2 text-sm border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-												placeholder='0'
-											/>
-										</div>
+										{/* ZMIANA: Usunięto stąd inputy na stan konta i subkonta */}
 										<label className='flex items-start space-x-2 p-3 border border-gray-100 rounded cursor-pointer hover:border-primary transition-colors'>
 											<input
 												type='checkbox'
 												checked={formData.includeSickLeave}
-												onChange={(e) =>
-													setFormData((prev) => ({
-														...prev,
-														includeSickLeave: e.target.checked,
-													}))
-												}
+												onChange={(e) => setFormData((prev) => ({ ...prev, includeSickLeave: e.target.checked }))}
 												className='w-4 h-4 text-primary focus:ring-primary border-2 rounded mt-0.5'
 											/>
 											<div className='flex-1'>
@@ -596,8 +572,7 @@ export default function Form() {
 												</span>
 											</div>
 											<p className='text-xs text-orange-700/80'>
-												Średnio {formData.sickLeaveDaysPerYear} dni/rok (-
-												{formData.sickLeaveImpactPercentage}%)
+												Średnio {formData.sickLeaveDaysPerYear} dni/rok (-{formData.sickLeaveImpactPercentage}%)
 											</p>
 										</Card>
 									)}
@@ -728,8 +703,8 @@ export default function Form() {
 													gender: formData.gender,
 													grossSalary: formData.grossSalary,
 													plannedRetirementYear: formData.plannedRetirementYear,
-													startedWorkBefore1999: formData.startedWorkBefore1999, // ZMIANA
-													initialCapital: formData.initialCapital || 0, // ZMIANA
+													startedWorkBefore1999: formData.startedWorkBefore1999,
+													initialCapital: formData.initialCapital || 0,
 													zusAccountBalance: formData.zusAccountBalance || 0,
 													zusSubaccountBalance: formData.zusSubaccountBalance || 0,
 													includeSickLeave: formData.includeSickLeave,
