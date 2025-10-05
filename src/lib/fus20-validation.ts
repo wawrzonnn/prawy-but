@@ -77,24 +77,22 @@ export function validateIndividualInputData(data: IndividualInputData): Validati
     }
   }
   
-  // Validate contributory period before 1999
-  if (data.contributoryPeriodBefore1999) {
-    if (data.contributoryPeriodBefore1999.totalYears < 0) {
-      errors.push({
-        field: 'contributoryPeriodBefore1999.totalYears',
-        code: 'INVALID_CONTRIBUTORY_YEARS',
-        message: 'Contributory years cannot be negative'
-      })
-    }
-    
-    if (data.contributoryPeriodBefore1999.totalYears > 50) {
-      warnings.push({
-        field: 'contributoryPeriodBefore1999.totalYears',
-        code: 'HIGH_CONTRIBUTORY_YEARS',
-        message: 'Contributory period before 1999 seems unusually high',
-        suggestion: 'Please verify the number of years'
-      })
-    }
+  // Validate initial capital (for people who started working before 1999)
+  if (data.initialCapital && data.initialCapital < 0) {
+    errors.push({
+      field: 'initialCapital',
+      code: 'INVALID_INITIAL_CAPITAL',
+      message: 'Initial capital cannot be negative'
+    })
+  }
+  
+  if (data.initialCapital && data.initialCapital > 1000000) {
+    warnings.push({
+      field: 'initialCapital',
+      code: 'HIGH_INITIAL_CAPITAL',
+      message: 'Initial capital seems unusually high',
+      suggestion: 'Please verify the valorized initial capital from ZUS'
+    })
   }
   
   // Validate contribution base amount

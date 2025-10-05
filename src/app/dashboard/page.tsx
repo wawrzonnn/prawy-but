@@ -106,13 +106,7 @@ export default function Dashboard() {
 		const inputData: IndividualInputData = {
 			gender: parameters.gender,
 			currentAge: parameters.currentAge,
-			contributoryPeriodBefore1999: {
-				totalYears:
-					parameters.workStartYear < 1999
-						? Math.min(1999 - parameters.workStartYear, currentYear - parameters.workStartYear)
-						: 0,
-				nonContributoryYears: 0,
-			},
+			initialCapital: 0, // Dashboard nie ma tej informacji, można dodać później
 			insuranceTitle: INSURANCE_TITLE_CODES.EMPLOYEE,
 			contributionBase: {
 				currentMonthlyAmount: parameters.currentSalary,
@@ -149,7 +143,8 @@ export default function Dashboard() {
 			age: parameters.currentAge,
 			gender: parameters.gender,
 			grossSalary: parameters.currentSalary,
-			workStartYear: parameters.workStartYear,
+			startedWorkBefore1999: parameters.workStartYear < 1999,
+			initialCapital: 0, // Dashboard nie ma tej informacji
 			plannedRetirementYear: parameters.retirementYear,
 			zusAccountBalance: parameters.zusAccountBalance,
 			zusSubaccountBalance: parameters.zusSubaccountBalance,
