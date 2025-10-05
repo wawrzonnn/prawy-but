@@ -268,19 +268,24 @@ export default function Home() {
 
 	return (
 		<div className='min-h-screen bg-background'>
+			{/* Ukryty nagłówek H1 dla czytników ekranu i SEO */}
+			<h1 className="sr-only">Kalkulator emerytalny ZUS - Oblicz wysokość przyszłej emerytury</h1>
+			
 			{/* Header */}
 			<header className='fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200'>
 				<div className='container mx-auto px-4 py-4 flex items-center justify-between'>
 					<Link href='/' className='flex items-center gap-3'>
 						<Image src='/logozus.svg' alt='ZUS Logo' width={120} height={32} className='h-8 w-auto' />
 					</Link>
-					<a href='#reality-check' className='scroll-smooth'>
-						<Button
-							size='lg'
-							className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
+					<Button
+						size='lg'
+						className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'
+						asChild
+						aria-label='Przejdź do sekcji kalkulatora emerytury'>
+						<a href='#reality-check' className='scroll-smooth inline-flex items-center justify-center'>
 							Oblicz swoją emeryturę
-						</Button>
-					</a>
+						</a>
+					</Button>
 				</div>
 			</header>
 
@@ -300,14 +305,16 @@ export default function Home() {
 							</p>
 
 							<div className='flex flex-col sm:flex-row gap-4 justify-start items-start pt-6 opacity-0 translate-y-8 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]'>
-								<a href='#reality-check' className='scroll-smooth'>
-									<Button
-										size='lg'
-										className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
+								<Button
+									size='lg'
+									className='bg-yellow hover:bg-blue-dark text-yellow-foreground hover:text-yellow text-lg px-8 py-6 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'
+									asChild
+									aria-label='Przejdź do kalkulatora emerytury'>
+									<a href='#reality-check' className='scroll-smooth inline-flex items-center justify-center'>
 										Oblicz swoją emeryturę
-										<Calculator className='ml-2 w-5 h-5' />
-									</Button>
-								</a>
+										<Calculator className='ml-2 w-5 h-5' aria-hidden='true' />
+									</a>
+								</Button>
 							</div>
 						</div>
 
@@ -318,21 +325,31 @@ export default function Home() {
 								<div className='absolute z-0 w-56 h-56 md:w-80 md:h-80 bg-yellow/20 rounded-full blur-3xl animate-pulse -top-10 left-1/2 -translate-x-1/2'></div>
 
 								{/* Video demo z kalkulatorem */}
+								{/* Dostępny opis wideo dla czytników ekranu */}
+								<div className="sr-only">
+									<p>Nagranie prezentujące działanie kalkulatora emerytalnego. Użytkownik wypełnia formularz swoimi danymi, a następnie otrzymuje prognozowaną kwotę emerytury oraz dodatkowe analizy i wizualizacje.</p>
+								</div>
+								
 								<div className='relative z-10 shadow-2xl rounded-xl overflow-hidden border-4 border-white opacity-0 animate-[fadeIn_1s_ease-out_0.3s_forwards]'>
 									<video
 										autoPlay
 										loop
 										muted
 										playsInline
+										title="Prezentacja działania kalkulatora emerytalnego"
+										aria-label="Nagranie pokazujące funkcje kalkulatora emerytalnego ZUS"
+										role="presentation"
+										aria-hidden="false"
 										className='w-full h-auto'
+										controls={false}
 										onLoadedMetadata={e => {
 											const video = e.currentTarget
 											video.playbackRate = 2.1
 										}}>
 										<source src='/recordingnew.mov' type='video/quicktime' />
 										<source src='/recordingnew.mov' type='video/mp4' />
-										Twoja przeglądarka nie wspiera odtwarzania wideo.
-									</video>
+										Twoja przeglądarka nie wspiera odtwarzania wideo. Film pokazuje proces wypełniania formularza kalkulatora emerytalnego i przeglądanie rezultatów.
+								</video>
 								</div>
 							</div>
 						</div>
@@ -438,14 +455,16 @@ export default function Home() {
 
 					<div
 						className={`mt-12 text-center transition-all duration-700 delay-500 ${visibleSections.has('reality') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<Link href='/form'>
-							<Button
-								size='lg'
-								className='bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-base md:text-xl px-6 md:px-12 py-4 md:py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
+						<Button
+							size='lg'
+							className='bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-base md:text-xl px-6 md:px-12 py-4 md:py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'
+							asChild
+							aria-label='Przejdź do formularza kalkulatora emerytury'>
+							<Link href='/form' className='inline-flex items-center justify-center'>
 								Przejdź do kalkulatora emerytury
-								<Calculator className='ml-2 w-6 h-6' />
-							</Button>
-						</Link>
+								<Calculator className='ml-2 w-6 h-6' aria-hidden='true' />
+							</Link>
+						</Button>
 					</div>
 				</div>
 			</section>
@@ -584,37 +603,80 @@ export default function Home() {
 								<p className='text-xs md:text-sm text-muted-foreground mb-3'>Najedź na pasek, aby zobaczyć szczegóły</p>
 
 								{/* Chart type toggle */}
-								<div className='flex items-center justify-center gap-2'>
+								<div className='flex items-center justify-center gap-2' role='group' aria-label='Wybór typu wykresu'>
 									<button
 										onClick={() => setChartType('pie')}
-										className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+										onKeyDown={(e) => {
+											if (e.key === ' ' || e.key === 'Enter') {
+												e.preventDefault();
+												setChartType('pie');
+											}
+											else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+												e.preventDefault();
+												setChartType('bar');
+												const barButton = e.currentTarget.nextElementSibling as HTMLButtonElement;
+												if (barButton) barButton.focus();
+											}
+										}}
+										className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
 											chartType === 'pie'
 												? 'bg-primary text-primary-foreground shadow-sm'
 												: 'bg-muted text-muted-foreground hover:bg-muted/80'
-										}`}>
-										<PiggyBank className='w-3 h-3 inline mr-1' />
+										}`}
+										aria-pressed={chartType === 'pie'}
+										aria-label='Pokaż wykres kołowy'>
+										<PiggyBank className='w-3 h-3 inline mr-1' aria-hidden='true' />
 										Kołowy
 									</button>
 									<button
 										onClick={() => setChartType('bar')}
-										className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+										onKeyDown={(e) => {
+											if (e.key === ' ' || e.key === 'Enter') {
+												e.preventDefault();
+												setChartType('bar');
+											}
+											else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+												e.preventDefault();
+												setChartType('pie');
+												const pieButton = e.currentTarget.previousElementSibling as HTMLButtonElement;
+												if (pieButton) pieButton.focus();
+											}
+										}}
+										className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
 											chartType === 'bar'
 												? 'bg-primary text-primary-foreground shadow-sm'
 												: 'bg-muted text-muted-foreground hover:bg-muted/80'
-										}`}>
-										<BarChart3 className='w-3 h-3 inline mr-1' />
+										}`}
+										aria-pressed={chartType === 'bar'}
+										aria-label='Pokaż wykres słupkowy'>
+										<BarChart3 className='w-3 h-3 inline mr-1' aria-hidden='true' />
 										Słupkowy
 									</button>
 								</div>
 							</div>
 
+							{/* Zbiorczy opis wykresu dla czytników ekranu */}
+							<div className="sr-only" aria-label="Wykres rozkładu emerytur w Polsce">
+								<p id="chart-description-heading">
+									Wykres {chartType === 'bar' ? 'słupkowy' : 'kołowy'} "Jak kształtują się emerytury w Polsce". Prezentuje rozkład emerytur w czterech grupach dochodowych: 
+									(1) Do 2000 zł - {chartType === 'bar' ? 'niebieski słupek' : 'ciemnoniebieski segment'} pokazujący 15% emerytów (ze średnią 1650 zł); 
+									(2) 2001-3500 zł - {chartType === 'bar' ? 'zielony słupek' : 'zielony segment'} przedstawiający 30% emerytów (ze średnią 2550 zł); 
+									(3) 3501-5000 zł - {chartType === 'bar' ? 'żółty słupek' : 'żółty segment'} wskazujący najliczniejszą grupę stanowiącą 40% emerytów (ze średnią 3700 zł); 
+									(4) Powyżej 5000 zł - {chartType === 'bar' ? 'niebieski słupek' : 'jasnoniebieski segment'} pokazujący 15% emerytów (ze średnią 5800 zł). 
+									Wykres ilustruje, że najwięcej emerytów (40%) otrzymuje emeryturę w przedziale 3501-5000 zł.
+								</p>
+							</div>
+							
 							{/* Horizontal Bar Chart */}
 							{chartType === 'bar' && (
 								<div
 									key={`bar-${chartKey}`}
 									className='mb-6 space-y-3 h-[320px]'
 									onMouseMove={handleMouseMove}
-									onMouseLeave={() => setSelectedPensionAmount(null)}>
+									onMouseLeave={() => setSelectedPensionAmount(null)}
+									role="img"
+									aria-labelledby="chart-description-heading"
+									aria-describedby="chart-description-heading">
 									{pensionGroups.map((group, index) => {
 										const percentage = parseInt(group.percentage)
 										// Using only ZUS brand colors - each bar different color
@@ -690,7 +752,10 @@ export default function Home() {
 									key={`pie-${chartKey}`}
 									className='mb-6 h-[320px] flex items-center justify-center'
 									onMouseMove={handleMouseMove}
-									onMouseLeave={() => setSelectedPensionAmount(null)}>
+									onMouseLeave={() => setSelectedPensionAmount(null)}
+									role="img"
+									aria-labelledby="chart-description-heading"
+									aria-describedby="chart-description-heading">
 									{/* Pie chart SVG with labels */}
 									<div className='relative w-full h-full mx-auto'>
 										<svg
@@ -844,6 +909,13 @@ export default function Home() {
 								</div>
 							)}
 
+							{/* Dostępny komunikat dla czytników ekranu przy interakcji z wykresem */}
+							{selectedPensionAmount !== null && (
+								<div className="sr-only" aria-live="polite">
+									Wybrano: {pensionGroups[selectedPensionAmount].range}
+								</div>
+							)}
+							
 							{/* Tooltip */}
 							{selectedPensionAmount !== null &&
 								(() => {
@@ -895,17 +967,26 @@ export default function Home() {
 								{/* Left side - Large spinning wheel */}
 								<div className='flex-shrink-0'>
 									<button
-										onClick={randomizeFact}
+										onClick={!isSpinning ? randomizeFact : undefined}
+										onKeyPress={(e) => {
+											// KeyPress obsługuje Space/Enter w standardowy sposób dla przycisków
+											if (e.key === 'Enter' || e.key === ' ') {
+												e.preventDefault();
+												if (!isSpinning) randomizeFact();
+											}
+										}}
 										disabled={isSpinning}
-										className='group relative focus:outline-none cursor-pointer'
-										aria-label='Wylosuj ciekawostkę'>
-										<span className='sr-only'>Wylosuj ciekawostkę</span>
+										className='group relative cursor-pointer focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-yellow hover:outline-none rounded-full'
+										aria-label='Wylosuj nową ciekawostkę emerytalną'
+										aria-disabled={isSpinning}
+										title='Kliknij, aby wyświetlić nową ciekawostkę'>
+										<span className='sr-only'>Wylosuj nową ciekawostkę</span>
 										{/* Main spinning circle */}
 										<div
-											className={`w-48 h-48 md:w-64 md:h-64 rounded-full bg-yellow transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105'}`}>
+											className={`w-48 h-48 md:w-64 md:h-64 rounded-full bg-yellow transition-all duration-300 flex items-center justify-center ${isSpinning ? 'animate-spin' : 'hover:scale-105 group-focus:scale-105'}`}>
 											{/* Inner white circle */}
 											<div className='w-36 h-36 md:w-48 md:h-48 rounded-full bg-white flex items-center justify-center'>
-												<Lightbulb className='w-24 h-24 md:w-32 md:h-32 text-yellow' />
+												<Lightbulb className='w-24 h-24 md:w-32 md:h-32 text-yellow' aria-hidden='true' />
 											</div>
 										</div>
 									</button>
@@ -962,17 +1043,6 @@ export default function Home() {
 						className={`text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty transition-all duration-700 delay-150 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 						Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.
 					</p>
-					<div
-						className={`transition-all duration-700 delay-300 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-						<Link href='/form'>
-							<Button
-								size='lg'
-								className='bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-base md:text-xl px-6 md:px-12 py-4 md:py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'>
-								Przejdź do kalkulatora emerytury
-								<Calculator className='ml-2 w-6 h-6' />
-							</Button>
-						</Link>
-					</div>
 				</div>
 			</section>
 
