@@ -177,7 +177,7 @@ export default function Home() {
 	}
 
 	// Chart calculations to prevent hydration mismatch
-	const chartCalculations = useMemo(() => {
+/* 	const chartCalculations = useMemo(() => {
 		return pensionGroups.map((group, index) => {
 			const percentage = parseInt(group.percentage)
 			const colors = ['var(--zus-blue-dark)', 'var(--zus-green-primary)', 'var(--zus-yellow)', 'var(--zus-blue)']
@@ -257,7 +257,7 @@ export default function Home() {
 			}
 		})
 	}, [pensionGroups])
-
+ */
 	// Oblicz rzeczywistą emeryturę (stopa zastąpienia ~50%)
 	const calculateRealPension = () => {
 		const desired = parseFloat(desiredPension)
@@ -1074,6 +1074,16 @@ export default function Home() {
 						className={`text-xl text-white/90 mb-8 max-w-2xl mx-auto text-pretty transition-all duration-700 delay-150 ${visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
 						Poznaj prognozę i dowiedz się, jak możesz poprawić swoją finansową przyszłość.
 					</p>
+          <Button
+									size='lg'
+							className='bg-yellow hover:bg-white text-yellow-foreground hover:text-blue-dark text-base md:text-xl px-6 md:px-12 py-4 md:py-7 h-auto font-bold rounded-[0.25rem] transition-all duration-150 ease-in-out cursor-pointer'
+									asChild
+									aria-label='Przejdź do kalkulatora emerytury'>
+									<a href='#reality-check' className='scroll-smooth inline-flex items-center justify-center'>
+										Oblicz swoją emeryturę
+										<Calculator className='ml-2 w-5 h-5' aria-hidden='true' />
+									</a>
+								</Button>
 				</div>
 			</section>
 
